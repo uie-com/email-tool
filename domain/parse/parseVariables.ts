@@ -36,12 +36,13 @@ export function parseVariables(body: string) {
 
     while (index < body.length) {
         if (body[index] === '}') {
-            let startIndex = index - 1, internalVariables = 0;
-            while ((body[startIndex] !== '{' || internalVariables > 0) && startIndex >= 0) {
+            let startIndex = index - 1, tempInternalVariableCount = 0, totalInternalVariableCount = 0;
+            while ((body[startIndex] !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
                 if (body[startIndex] === '}') {
-                    internalVariables++;
-                } else if (body[startIndex] === '{' && internalVariables > 0) {
-                    internalVariables--;
+                    tempInternalVariableCount++;
+                    totalInternalVariableCount++;
+                } else if (body[startIndex] === '{' && tempInternalVariableCount > 0) {
+                    tempInternalVariableCount--;
                 }
                 startIndex--;
             }
@@ -54,15 +55,19 @@ export function parseVariables(body: string) {
             const variableName = parseVariableName(variable);
             const variableId = createVariableId();
             const variableType = parseVariableType(variableName);
+            const internalVariables = Object.keys(variables).reverse().slice(0, totalInternalVariableCount).map(key => variables[key].id);
+            const variableWrittenName = variable.includes('(') ? variable.substring(0, variable.indexOf('(')) : variable;
 
             if (!variables[variableName]) {
                 variables[variableName] = {
                     name: variableName,
                     written: variable,
+                    writtenName: variableWrittenName,
                     type: variableType,
                     value: null,
                     id: variableId,
-                    occurs: 1
+                    occurs: 1,
+                    dependsOn: internalVariables,
                 }
                 console.log('New variable:', variables[variableName]);
             } else {
