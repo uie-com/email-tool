@@ -1,8 +1,8 @@
 
-// bannerPath - path to the banner images
-// bannerFilename - filename of the banner image in the bannerPath
 
-import { getSettingsForTags } from "./settings-parser";
+
+import { SettingValue } from "../schema";
+import { getSettingsForTags } from "./settingsParser";
 
 export const PROGRAM_DEFAULTS = {
     getSettingsForTags: (tags: string[]) => {
@@ -13,62 +13,56 @@ export const PROGRAM_DEFAULTS = {
     },
     'TUXS': {
         settings: {
-            'bannerPath': '/tuxs-banners'
+            'banner': { value: '/tuxs-banners', part: 0 },
         },
         // DST override
         'EDT': {
             settings: {
-                'bannerPath': '/tuxs-banners-edt'
+                'banner': { value: '/tuxs-banners-edt', part: 0 },
             },
         },
         // Email type settings
         'Upcoming Topics': {
             settings: {
-                'bannerFilename': 'upcomingtopics.png'
+                'banner': { value: '/upcomingtopics.png', part: 2 },
             }
         },
         'Today': {
             settings: {
-                add: {
-                    'bannerPath': '/today'
-                }
+                'banner': { value: '/today', part: 1 },
             }
 
         },
         'Recording': {
             settings: {
-                add: {
-                    'bannerPath': '/recording'
-                }
+                'banner': { value: '/recording', part: 1 },
             }
 
         },
         'New Topic': {
             settings: {
-                add: {
-                    'bannerPath': '/new-topic'
-                }
+                'banner': { value: '/new-topic', part: 1 },
             }
         },
         // Topic settings
         'Job Search': {
             settings: {
-                'bannerFilename': 'jobsearch.png'
+                'banner': { value: '/jobsearch.png', part: 2 },
             }
         },
         'Metrics': {
             settings: {
-                'bannerFilename': 'metrics.png'
+                'banner': { value: '/metrics.png', part: 2 },
             }
         },
         'Research': {
             settings: {
-                'bannerFilename': 'research.png'
+                'banner': { value: '/research.png', part: 2 },
             }
         },
         'Win Influence': {
             settings: {
-                'bannerFilename': 'wininfluence.png'
+                'banner': { value: '/wininfluence.png', part: 2 },
             }
         },
     }

@@ -11,6 +11,11 @@ export type EmailVariable = {
 
 export type EmailVariables = { [key: string]: EmailVariable };
 
+export type SettingValue = {
+    value: string;
+    part: number;
+};
+
 
 export class Email {
     sourcePlainText?: string;
