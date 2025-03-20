@@ -1,6 +1,8 @@
+import Quill, { Delta } from "quill";
+
 export type EmailVariable = {
     name: string;
-    written: string;
+    written: string[];
     writtenName: string;
     type: string;
     value: String | Number | Date | null;
@@ -18,7 +20,6 @@ export type SettingValue = {
 
 
 export class Email {
-    sourcePlainText?: string;
-    renderedPlainText?: string;
-    renderedRichText?: string;
+    sourceRichText?: Delta;
+    renderedRichText?: Delta;
 }
