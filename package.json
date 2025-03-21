@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
-    "antd": "^5.24.3",
+    "@mantine/core": "^7.17.2",
+    "@mantine/dates": "^7.17.2",
+    "@mantine/form": "^7.17.2",
+    "@mantine/hooks": "^7.17.2",
+    "@tabler/icons-react": "^3.31.0",
     "dayjs": "^1.11.13",
     "moment-timezone": "^0.5.47",
     "momentjs": "^2.0.0",
@@ -20,7 +24,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-lz-editor": "^0.12.1",
-    "react-quilljs": "^2.0.5"
+    "react-quilljs": "^2.0.5",
+    "tabler": "^1.0.0",
+    "validatorjs": "^3.22.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,6 +34,10 @@
     "@types/quill": "^2.0.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/validatorjs": "^3.15.5",
+    "postcss": "^8.5.3",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

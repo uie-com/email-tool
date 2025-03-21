@@ -2,7 +2,9 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from "@mantine/core";
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 
 const geistSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -28,11 +30,14 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="en">
+    <html lang="en" {...mantineHtmlProps}>
+      <head>
+        <ColorSchemeScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AntdRegistry>{children}</AntdRegistry>
+        <MantineProvider>{children}</MantineProvider>
       </body>
     </html>
   );

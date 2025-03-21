@@ -1,5 +1,5 @@
 import Quill, { Delta } from "quill";
-import { EmailVariables } from "../schema";
+import { EmailVariable, EmailVariableValues } from "../schema";
 import { VARIABLE_TYPES } from "../settings/variables";
 import moment from "moment-timezone";
 import { findDeltaString } from "./parseRichText";
@@ -35,8 +35,8 @@ export function createVariableId() {
     return Math.floor(Math.random() * 1000000).toString();
 }
 
-export function parseVariables(quill: Quill, oldVariables: EmailVariables, shouldId: boolean): EmailVariables {
-    let index = 0, variables: EmailVariables = {};
+export function parseVariables(quill: Quill): EmailVariable[] {
+    let index = 0, variables: EmailVariable[] = [];
 
     while (index < quill.getLength()) {
         if (quill.getText(index, 1) === '}') {
@@ -60,46 +60,19 @@ export function parseVariables(quill: Quill, oldVariables: EmailVariables, shoul
             const variable = quill.getText(startIndex + 1, index - startIndex - 1);
             const variableName = parseVariableName(variable);
             const variableType = parseVariableType(variableName);
-            let variableId = createVariableId();
-            const internalVariables = Object.keys(variables).reverse().slice(0, totalInternalVariableCount).map(key => variables[key].id);
+            const internalVariables = variables.slice(variables.length - totalInternalVariableCount);
             const variableWrittenName = variable.includes('(') ? variable.substring(0, variable.indexOf('(')) : variable;;
+            const variableTransforms = parseVariableTransforms(variable);
 
-            if (!variables[variableName] && !oldVariables[variableName]) {
-                variables[variableName] = {
-                    name: variableName,
-                    written: [variable],
-                    writtenName: variableWrittenName,
-                    type: variableType,
-                    value: null,
-                    id: variableId,
-                    occurs: 1,
-                    dependsOn: internalVariables,
-                }
-                console.log('New variable:', variables[variableName], oldVariables[variableName]);
-            } else if (!variables[variableName] && oldVariables[variableName]) {
-                variables[variableName] = {
-                    ...oldVariables[variableName],
-                    written: [variable],
-                    writtenName: variableWrittenName,
-                    occurs: 1,
-                    dependsOn: internalVariables,
-                }
-                variableId = oldVariables[variableName].id;
-            } else if (variables[variableName] && !oldVariables[variableName]) {
-                console.log('New instance of new variable:', variableName);
-                variables[variableName].written.push(variable);
-                variables[variableName].occurs++;
-            } else if (variables[variableName] && oldVariables[variableName]) {
-                variables[variableName].written.push(variable);
-                variables[variableName].occurs++;
-                variableId = oldVariables[variableName].id;
-            }
+            variables.push({
+                name: variableName,
+                written: '{' + variable + '}',
+                writtenName: variableWrittenName,
+                type: variableType,
+                transforms: variableTransforms,
+                dependsOn: internalVariables,
+            });
 
-            if (shouldId) {
-                quill.insertText(startIndex, variableId);
-                startIndex += variableId.length;
-                index += variableId.length;
-            }
         }
         index++;
     }
@@ -107,25 +80,36 @@ export function parseVariables(quill: Quill, oldVariables: EmailVariables, shoul
     return variables;
 }
 
-export function renderVariables(quill: Quill, variables: EmailVariables) {
-    Object.keys(variables).forEach(key => {
-        const variable = variables[key];
-        while (findDeltaString(quill, variable.id) !== -1) {
-            const index = findDeltaString(quill, variable.id);
-            if (index === -1) {
-                console.error('Could not find variable', variable.id, 'in', quill.getContents());
-                return;
+export function renderVariables(quill: Quill, variables: EmailVariable[], values: EmailVariableValues) {
+    let index = 0;
+    while (index < quill.getLength()) {
+        if (quill.getText(index, 1) === '}') {
+            let startIndex = index - 1, tempInternalVariableCount = 0, totalInternalVariableCount = 0;
+            while ((quill.getText(startIndex, 1) !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
+                if (quill.getText(startIndex, 1) === '}') {
+                    tempInternalVariableCount++;
+                    totalInternalVariableCount++;
+                } else if (quill.getText(startIndex, 1) === '{' && tempInternalVariableCount > 0) {
+                    tempInternalVariableCount--;
+                }
+                startIndex--;
             }
-            if (variable.value === null) {
-                quill.deleteText(index, 6);
-                return;
+            const foundVariable = quill.getText(startIndex + 1, index - startIndex - 1);
+            const foundName = parseVariableName(foundVariable);
+            const value = values[foundName];
+            if (value !== undefined) {
+                const finalValue = applyVariableTransforms(value, parseVariableTransforms(foundVariable))
+                if (typeof finalValue === 'string') {
+                    quill.deleteText(startIndex, foundVariable.length + 2);
+                    index -= foundVariable.length + 2;
+                    quill.insertText(startIndex, finalValue);
+                    index += finalValue.length;
+                }
             }
-            const instanceName = quill.getText(index, findDeltaString(quill, '}', index) + 1 - index);
-            const value = applyVariableTransforms(variable.value, parseVariableTransforms(instanceName));
-            quill.deleteText(index, instanceName.length);
-            quill.insertText(index, value);
         }
-    });
+        index++;
+
+    }
 }
 
 function applyVariableTransforms(value: any, transforms: string[]): string {
@@ -141,4 +125,39 @@ function applyVariableTransforms(value: any, transforms: string[]): string {
         }
     });
     return value;
+}
+
+export function resolveDependencies(textVariables: EmailVariable[], values: EmailVariableValues) {
+    let variables: EmailVariable[] = [];
+    // console.log('Resolving dependencies for', variables, 'with', values);
+    for (let i = 0; i < textVariables.length; i++) {
+        const variable = { ...textVariables[i] };
+        variables.push(tryResolveDependencies(variable, values));
+    }
+    // console.log('Done all', variables);
+    return variables;
+}
+
+function tryResolveDependencies(inputVariable: EmailVariable, values: EmailVariableValues) {
+    // console.log('Resolving ' + inputVariable.dependsOn.length + ' dependencies for', inputVariable);
+    let variable = { ...inputVariable };
+    const dependsOn = variable.dependsOn;
+    variable.dependsOn = [];
+    for (let j = 0; j < dependsOn.length; j++) {
+        let dependency = dependsOn[j];
+        if (dependency.dependsOn.length > 0) {
+            // console.log('+ Dependency ' + dependency.dependsOn.length + ' dependencies for', dependency);
+            dependency = tryResolveDependencies(dependency, values);
+        }
+        if (dependency.name && values[dependency.name]) {
+            const newValue = applyVariableTransforms(values[dependency.name], dependency.transforms);
+            variable.name = variable.name.replace('{' + parseVariableName(dependency.name) + '}', parseVariableName(newValue));
+            variable.written = variable.written.replace(dependency.written, newValue);
+            variable.writtenName = variable.writtenName.replace(dependency.written, newValue);
+        } else {
+            variable.dependsOn.push(dependency);
+        }
+    }
+    // console.log('Done', variable);
+    return variable;
 }

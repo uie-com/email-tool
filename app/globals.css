@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.ql-editor>* {
+  padding-top: 0.5rem !important;
+  font-size: 13px !important;
+  /* padding-bottom: 0.25rem !important; */
+}
