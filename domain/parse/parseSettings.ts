@@ -5,7 +5,7 @@
 // Settings: a simple collection of settings that are applied to an email, ie. "font-size": "12px", "font-family": "Arial"
 // Bundle: a one-level object that contains all the settings, before multi-part settings have been merged
 
-import { parseVariableName } from "../parse/parseVariables";
+import { parseVariableName } from "./parseVariables";
 import { SettingValue } from "../schema";
 
 
@@ -55,7 +55,7 @@ function mergeMultiPartSettings(settings: { [settingName: string]: SettingValue[
     let collapsedSettings: { [settingName: string]: any } = {};
     Object.keys(settings).forEach((key) => {
         if (settings[key].length > 1 && settings[key].find((setting) => setting.part === undefined) === undefined) {
-            settings[key].sort((a, b) => a.part - b.part);
+            settings[key].sort((a, b) => (a.part ?? 0) - (b.part ?? 0));
             collapsedSettings[key] = settings[key].map((setting) => setting.value).join('');
         } else {
             collapsedSettings[key] = settings[key][0].value;

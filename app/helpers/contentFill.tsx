@@ -1,10 +1,10 @@
 "use client";
 
-import { parseVariables, renderVariables, resolveDependencies } from "@/domain/parse/parseVariables";
+import { parseVariables, fillVariables, resolveDependencies, parseValuesDependencies } from "@/domain/parse/parseVariables";
 import { Email, EmailVariable, EmailVariableValues } from "@/domain/schema";
-import { PROGRAM_DEFAULTS } from "@/domain/settings/programs"
+import { PROGRAM_VALUES } from "@/domain/settings/emails"
 import TextArea from "antd/es/input/TextArea";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 
 import { useQuill } from "react-quilljs";
@@ -13,28 +13,32 @@ import { Flex, Textarea, TextInput } from "@mantine/core";
 import { DateInput, DateTimePicker, TimeInput } from "@mantine/dates";
 import { IconLink, IconLinkOff, IconLinkPlus, IconPlus } from "@tabler/icons-react";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
+import Quill from "quill";
+import { EditorContext } from "../page";
 
 
 
 export function ContentHelper() {
-    const settings = PROGRAM_DEFAULTS.getSettingsForTags(['TUXS', 'Today', 'EDT', 'Job search']);
+    const settings = PROGRAM_VALUES.getSettingsForTags(['TUXS', 'Today', 'EDT', 'Job search']);
     const [email, setEmail] = useState<Email>({});
-    const [variables, setVariables] = useState<EmailVariable[]>([]);
-    const [values, setValues] = useState<EmailVariableValues>({});
+    const [parsedVariables, setParsedVariables] = useState<EmailVariable[]>([]);
     const [displayRendered, setDisplayRendered] = useState(false);
+
+    const [editorState, setEditorState] = useContext(EditorContext);
 
 
     const handleVariableChange = (newVariables: EmailVariable[]) => {
-        setVariables(newVariables);
+        setParsedVariables(newVariables);
     }
 
-    const handleVariableInput = (newValues: EmailVariableValues) => {
+    const handleValueInput = (newValues: EmailVariableValues) => {
         setDisplayRendered(true);
-        setValues({ ...values, ...newValues });
+        setEditorState({ ...editorState, email: { ...editorState.email, values: { ...editorState.email?.values ?? {}, ...newValues } } });
     }
 
     const handleContentChange = (content: any) => {
         setEmail({ ...email, ...content });
+        setEditorState({ ...editorState, email: { ...editorState.email, content: { ...editorState.email?.content ?? {}, ...content } } });
     }
 
     // Show editable content when click on
@@ -45,33 +49,36 @@ export function ContentHelper() {
     return (
         <Flex align="center" justify="center" className="h-full w-full" gap={20} style={{ position: 'relative' }}>
             {/* <TextArea style={{ height: 820, width: 520 }} value={email.sourcePlainText || ''} onChange={handleInputChange} className="resize-none" /> */}
-            <RichTextEditor variables={variables} values={values} setVariables={handleVariableChange} updateEmail={handleContentChange} displayRendered={displayRendered} handleEditorFocus={handleEditorFocus} />
-            <VariableForm variables={variables} values={values} setValue={handleVariableInput} />
+            <RichTextEditor variables={parsedVariables} values={editorState.email?.values} setVariables={handleVariableChange} updateEmail={handleContentChange} displayRendered={displayRendered} handleEditorFocus={handleEditorFocus} />
+            <VariableForm variables={parsedVariables} values={editorState.email?.values} setValue={handleValueInput} />
         </Flex>
 
     );
 }
 
 
-export function VariableForm({ variables, values, setValue }: { variables: EmailVariable[], values: EmailVariableValues, setValue: (values: EmailVariableValues) => void }) {
+export function VariableForm({ variables, values, setValue }: { variables: EmailVariable[], values?: EmailVariableValues, setValue: (values: EmailVariableValues) => void }) {
     const [formVariables, setFormVariables] = useState<EmailVariable[]>([]);
 
     useEffect(() => {
-        let parsedVariables = resolveDependencies(variables, values);
+        let parsedVariables: EmailVariable[] = [...variables];
+        parsedVariables = parsedVariables.concat(parseValuesDependencies(values));
+        parsedVariables = resolveDependencies(parsedVariables, values);
         parsedVariables = parsedVariables.filter((variable, index) => {
             if (variables.slice(0, index).find(duplicate => duplicate.name === variable.name) !== undefined) {
                 return false;
             }
             return true;
         });
+        console.log('Creating form', parsedVariables);
         setFormVariables(parsedVariables);
     }, [variables, values])
 
     return (
         <Flex direction="column" align="start" justify="center" className="h-full" gap={20} key={'form'}>
             {formVariables && formVariables.map((variable, index) =>
-                <VariableInput key={'ve' + index} index={index} variable={variable} value={values[variable.name]} setValue={(value) => {
-                    setValue({ [variable.name]: value });
+                <VariableInput key={'ve' + index} index={index} variable={variable} value={values && values[variable.name] ? values[variable.name].value : undefined} setValue={(value) => {
+                    setValue({ [variable.name]: { value: value } });
                 }} />
             )}
         </Flex>
@@ -81,7 +88,7 @@ export function VariableForm({ variables, values, setValue }: { variables: Email
 
 function VariableInput({ variable, value, setValue, index }: { variable: EmailVariable, value: any, setValue: (value: any) => void, index: number }) {
     const [inputState, setInputState] = useState<string | null>(null);
-    const disabled = variable.dependsOn.length > 0;
+    const disabled = variable.dependencies.length > 0;
     if (!inputState) {
         setInputState(value !== undefined ? '' : 'empty');
     }
@@ -167,9 +174,10 @@ function VariableInput({ variable, value, setValue, index }: { variable: EmailVa
 
 
 
+function RichTextEditor({ variables, values, setVariables, updateEmail, displayRendered, handleEditorFocus }: { variables: EmailVariable[], values?: EmailVariableValues, setVariables: (variables: EmailVariable[]) => void, updateEmail: (props: any) => void, displayRendered: boolean, handleEditorFocus: () => void }) {
+    const { quill, quillRef, Quill } = useQuill({
 
-function RichTextEditor({ variables, values, setVariables, updateEmail, displayRendered, handleEditorFocus }: { variables: EmailVariable[], values: EmailVariableValues, setVariables: (variables: EmailVariable[]) => void, updateEmail: (props: any) => void, displayRendered: boolean, handleEditorFocus: () => void }) {
-    const { quill, quillRef, Quill } = useQuill({});
+    });
     const { quill: renderedQuill, quillRef: renderedQuillRef, Quill: RenderedQuill } = useQuill({ modules: { toolbar: false } });
 
     // TODO: not do this every render, but useEffect isn't working.
@@ -182,27 +190,28 @@ function RichTextEditor({ variables, values, setVariables, updateEmail, displayR
 
     useEffect(() => {
         if (!quill) return;
+        console.log('Setting up quill');
         // On input, parse variables and update email
         const handleInput = () => {
             console.log('Parsing input');
             if (!quill) return;
-            const newVariables = (parseVariables(quill));
-            updateEmail({ sourceRichText: quill.getContents() });
+            const newVariables = (parseVariables(quill.getText()));
+            updateEmail({ sourceRichText: quill.getContents(), sourcePlainText: quill.getText() });
             console.log('Setting variables', newVariables);
             setVariables(newVariables);
         };
-        quill.once('text-change', () => handleInput());
+        quill.on('text-change', () => handleInput());
         return () => {
             quill.off('text-change', () => handleInput());
         }
-    }, [quill, quill?.getContents()]);
+    }, [quill]);
 
     useEffect(() => {
         if (!renderedQuill || !quill || !variables) return;
         console.log('Rendering variables');
         renderedQuill.setContents(quill.getContents());
-        renderVariables(renderedQuill, variables, values);
-        updateEmail({ renderedRichText: renderedQuill.getContents() });
+        fillVariables(renderedQuill, values);
+        updateEmail({ filledRichText: renderedQuill.getContents(), filledPlainText: renderedQuill.getText() });
         renderedQuill?.disable();
     }, [quill, variables, values]);
 

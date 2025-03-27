@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--inspect' next dev --turbopack",
+    "dev": "env TAILWIND_MODE=watch NODE_ENV=development NODE_OPTIONS='--inspect' next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -21,6 +21,7 @@
     "next": "15.2.1",
     "parchment": "^3.0.0",
     "quill": "^2.0.3",
+    "quill-delta-to-html": "^0.12.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-lz-editor": "^0.12.1",
@@ -35,10 +36,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/validatorjs": "^3.15.5",
+    "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.0.17",
     "typescript": "^5"
   }
 }
