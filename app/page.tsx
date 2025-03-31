@@ -5,7 +5,6 @@ import { Button } from "antd"
 import { ContentHelper } from "./helpers/contentFill";
 import { useState, createContext, useMemo } from "react";
 import { EditorState, Email } from "@/domain/schema";
-import { ProgramSchemaTester } from "./testers/programSchemaTester";
 import { EmailCreator } from "./helpers/emailCreator";
 
 export const EditorContext = createContext<[EditorState, (state: EditorState) => void]>([{ step: 0 }, () => { }]);

@@ -1,5 +1,5 @@
 
-import { getSettingsForTags } from "../parse/parseSettings";
+import { getSettings } from "../parse/parseSettings";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
@@ -12,9 +12,10 @@ import { getSettingsForTags } from "../parse/parseSettings";
 
 // If a value is provided later on here, it will override the value with the same name before.
 // However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
+
 export const PROGRAM_VALUES = {
-    getSettingsForTags: (tags: string[]) => {
-        return getSettingsForTags(PROGRAM_VALUES, tags);
+    getSettings: (tags?: string[]) => {
+        return getSettings(PROGRAM_VALUES, tags);
     },
     settings: { // Provide defaults for all emails here
 

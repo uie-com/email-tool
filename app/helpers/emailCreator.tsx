@@ -5,6 +5,8 @@ import { EditorContext } from "../page";
 import { createProgramForm, createTagsFromForm } from "@/domain/parse/parsePrograms";
 import { PROGRAM_SCHEMA } from "@/domain/settings/programs";
 import { focusOnNext, focusOnPrev } from "@/domain/form";
+import { PROGRAM_VALUES } from "@/domain/settings/emails";
+import { parseVariableName } from "@/domain/parse/parseVariables";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -27,9 +29,9 @@ export function EmailCreator() {
     }
 
     const handleSubmit = () => {
-        console.log('Starting an email with: ', values);
-        const attributes = createTagsFromForm(values);
-        setEditorState({ step: 1, email: { attributes } });
+        const identifiers = createTagsFromForm(values);
+        console.log('Starting an email as ', { identifiers: identifiers, settings: PROGRAM_VALUES.getSettings(identifiers) });
+        setEditorState({ step: 1, email: { identifiers: identifiers, settings: PROGRAM_VALUES.getSettings(identifiers) } });
     }
 
     const handleReset = () => {
@@ -37,8 +39,8 @@ export function EmailCreator() {
     }
 
     return (
-        <Flex align="center" justify="center" direction='column' className="h-full w-full relative" gap={20}>
-            <Flex align="start" justify="center" direction='column' className="rounded-lg p-4 min-w-96 bg-gray-50 border-1 border-gray-200" gap={20}>
+        <Flex align="center" justify="center" direction='column' className="relative w-full h-full" gap={20}>
+            <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg min-w-96 bg-gray-50 border-1" gap={20}>
                 <h1>Create new email</h1>
                 <FormBuilder form={formSchema} values={values} handleValueChange={handleValueChange} />
                 <Flex align="center" justify="center" gap={10}>
@@ -61,6 +63,7 @@ function FormBuilder({ form, values, handleValueChange }: { form: FormSchema, va
                         defaultValue={(form[key].default ?? '')}
                         label={key}
                         data={form[key].options}
+                        index={index}
                         onChange={(value) => {
                             handleValueChange(key, value);
                         }}
@@ -71,7 +74,7 @@ function FormBuilder({ form, values, handleValueChange }: { form: FormSchema, va
     )
 }
 
-function QuickAutocomplete({ defaultValue, label, data, onChange }: { defaultValue: string, label: string, data: string[], onChange: (value: string) => void }) {
+function QuickAutocomplete({ defaultValue, label, data, onChange, index }: { defaultValue: string, label: string, data: string[], onChange: (value: string) => void, index?: number }) {
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
@@ -87,8 +90,16 @@ function QuickAutocomplete({ defaultValue, label, data, onChange }: { defaultVal
     ));
 
     useEffect(() => {
-        // we need to wait for options to render before we can select first one
+        const option = options[0].props.value;
         combobox.selectFirstOption();
+
+        if (option && value.length > 0 && parseVariableName(option ?? '') === parseVariableName(value) && !lostFocus) {
+            setValue(option ?? '');
+            onChange(option ?? '');
+            setLostFocus(true);
+            combobox.closeDropdown();
+            focusOnNext(document);
+        }
     }, [value]);
 
     return (
@@ -107,7 +118,7 @@ function QuickAutocomplete({ defaultValue, label, data, onChange }: { defaultVal
                     label={label}
                     placeholder={label}
                     name={label + '-search'}
-                    id={label}
+                    id={'input' + index}
                     value={value}
                     onChange={(event) => {
                         setValue(event.currentTarget.value);

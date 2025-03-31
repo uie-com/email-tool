@@ -1,14 +1,17 @@
+"use client";
+
 import { createProgramForm } from "@/domain/parse/parsePrograms";
+import { PROGRAM_VALUES } from "@/domain/settings/emails";
 import { PROGRAM_SCHEMA } from "@/domain/settings/programs";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
 
-export function ProgramSchemaTester() {
+export default function ProgramSchema() {
     const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
     const form = createProgramForm(PROGRAM_SCHEMA, attributes);
 
     return (
-        <Flex align="center" justify="center" direction='column' className="h-full w-full" gap={20} style={{ position: 'relative' }}>
+        <Flex align="center" justify="center" direction='column' className="w-full h-full" gap={20} style={{ position: 'relative' }}>
             <h1>Test the dynamic email starter-form.</h1>
             <small>Uses 'PROGRAM_SCHEMA' object and 'createProgramForm' interpreter</small>
             <small>NAME:VALUE ex: Program:TUXS</small>
@@ -27,6 +30,8 @@ export function ProgramSchemaTester() {
             {JSON.stringify(attributes)}
             <h2>Form:</h2>
             {JSON.stringify(form, null, ' ')}
+            <h2>Settings:</h2>
+            {JSON.stringify(PROGRAM_VALUES.getSettings(Object.entries(attributes).map(([key, value]) => value)), null, ' ')}
         </Flex>
     );
 }

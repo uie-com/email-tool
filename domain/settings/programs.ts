@@ -1,6 +1,6 @@
 
 
-// This defines what tags are available for an email.
+// This defines what types of emails are available to create.
 // For each object, 'options' will generate the form fields for the email creator.
 // For each object, 'defaults' will generate the default values for the option.
 // For options that show up based on other options, put them inside the object for the option they depend on.

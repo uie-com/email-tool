@@ -6,13 +6,19 @@
 // Bundle: a one-level object that contains all the settings, before multi-part settings have been merged
 
 import { parseVariableName } from "./parseVariables";
-import { SettingValue } from "../schema";
+import { SettingValue, TestSettingValue } from "../schema";
+import { getAllIdentifiers } from "./parsePrograms";
+import { PROGRAM_VALUES } from "../settings/emails";
+import { PROGRAM_SCHEMA } from "../settings/programs";
 
 
 // Returns a one-level bundle of the final settings for a given set of tags
-export const getSettingsForTags = (settingsObject: any, tags: string[]): { [settingName: string]: any } => {
-    tags = tags.map((tag) => parseVariableName(tag));
-    const bundle = bundleSettings({}, settingsObject, tags);
+export const getSettings = (settingsObject: any, identifiers?: string[]): { [settingName: string]: any } => {
+    if (!identifiers) {
+        return {};
+    }
+    identifiers = identifiers.map((tag) => parseVariableName(tag));
+    const bundle = bundleSettings({}, settingsObject, identifiers);
     return mergeMultiPartSettings(bundle);
 }
 
@@ -62,4 +68,51 @@ function mergeMultiPartSettings(settings: { [settingName: string]: SettingValue[
         }
     });
     return collapsedSettings;
+}
+
+export function testSettings(settingsObject: any, identifiers?: string[]): { [settingName: string]: any } {
+    if (!identifiers) {
+        identifiers = getAllIdentifiers(PROGRAM_SCHEMA)
+    }
+    console.log(identifiers);
+    identifiers = identifiers.map((tag) => parseVariableName(tag));
+    const bundle = testBundleSettings({}, settingsObject, identifiers);
+
+    return bundle;
+}
+
+function testBundleSettings(settingsBundle: { [settingName: string]: TestSettingValue[] }, settingsObject: any, tags: string[]) {
+
+    Object.keys(settingsObject).forEach((key) => {
+        if (tags.includes(parseVariableName(key))) {
+            const tagSettings = settingsObject[key].settings;
+            settingsBundle = addAllSettingsToBundle(settingsBundle, tagSettings);
+            settingsBundle = testBundleSettings(settingsBundle, settingsObject[key], tags);
+        }
+    });
+
+    return settingsBundle;
+}
+
+// Doesn't override settings, for testing
+function addAllSettingsToBundle(bundle: { [settingName: string]: TestSettingValue[] }, settings: { [settingName: string]: TestSettingValue }) {
+    Object.keys(settings).forEach((key) => {
+        if (settings[key].part) {
+            if (bundle[key]) {
+                while (bundle[key].length <= settings[key].part) {
+                    bundle[key].push({ value: [], part: bundle[key].length });
+                }
+                if (!bundle[key][settings[key].part])
+                    bundle[key][settings[key].part] = (settings[key]);
+                else
+                    bundle[key][settings[key].part].value.push(...[settings[key].value].flat());
+            } else {
+                bundle[key] = [settings[key]];
+            }
+
+        } else {
+            bundle[key] = [settings[key]];
+        }
+    });
+    return bundle;
 }

@@ -1,32 +1,32 @@
-export function focusOnNext(document: Document, tryAgain: boolean = true) {
-    setTimeout(() => {
-        const inputs = document.querySelectorAll('input');
-        for (let i = 0; i < inputs.length; i++) {
-            if (inputs[i] === document.activeElement) {
-                if (i + 1 < inputs.length) {
-                    inputs[i + 1].focus();
-                }
-                break;
+
+const DEBUG = false;
+export function focusOnNext(document: Document) {
+    const id = document.activeElement?.id;
+    const index = id?.substring(5);
+    const next = document.getElementById('input' + (parseInt(index ?? '0') + 1));
+    if (DEBUG) console.log('focusOnNext', id, index, next);
+    if (next)
+        next.focus();
+    else
+        setTimeout(() => {
+            const next = document.getElementById('input' + (parseInt(index ?? '0') + 1));
+            if (next) {
+                next.focus();
             }
-        }
-    }, 50);
+        }, 50);
 }
 
 export function focusOnPrev(document: Document) {
-    let foundPrev = false;
-    const inputs = document.querySelectorAll('input');
-    for (let i = 0; i < inputs.length; i++) {
-        if (inputs[i] === document.activeElement) {
-            if (i - 1 >= 0) {
-                inputs[i - 1].focus();
-                foundPrev = true;
-            }
-            break;
-        }
-    }
-    if (!foundPrev) {
+    const id = document.activeElement?.id;
+    const index = id?.substring(5);
+    const prev = document.getElementById('input' + (parseInt(index ?? '0') - 1));
+    if (prev)
+        prev.focus();
+    else
         setTimeout(() => {
-            focusOnPrev(document);
+            const prev = document.getElementById('input' + (parseInt(index ?? '0') - 1));
+            if (prev) {
+                prev.focus();
+            }
         }, 50);
-    }
 }

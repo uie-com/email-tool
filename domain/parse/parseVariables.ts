@@ -1,9 +1,11 @@
-import Quill, { Delta } from "quill";
-import { EmailVariable, EmailVariableValues } from "../schema";
+import Quill, { Delta, Op } from "quill";
+import { EmailVariable, ValueDict } from "../schema";
 import { VARIABLE_TYPES } from "../settings/variables";
 import moment from "moment-timezone";
 import { parse } from "path";
+import { forEachChar } from "./parseRichText";
 
+const DEBUG = false;
 
 export function parseVariableName(variable: string) {
     // Remove all whitespace and make lowercase
@@ -40,10 +42,17 @@ export function isSelfReferencing(name: string, dependencies: EmailVariable[]) {
 }
 
 export function parseVariables(text: string): EmailVariable[] {
-    let index = 0, variables: EmailVariable[] = [];
+    let index = 0, variables: EmailVariable[] = [], isInStyleTag = 0;
 
     while (index < text.length) {
-        if (text[index] === '}') {
+        // Check if we are in a style tag
+        if (text.substring(index, index + 6) === '<style') {
+            isInStyleTag++;
+        } else if (text.substring(index, index + 7) === '</style') {
+            isInStyleTag--;
+        }
+
+        if (isInStyleTag === 0 && text[index] === '}') {
             // console.log('Searching for opening bracket for', index, getDeltaSubstring(body, 0, index));
             let startIndex = index - 1, tempInternalVariableCount = 0, totalInternalVariableCount = 0;
             while ((text[startIndex] !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
@@ -54,6 +63,8 @@ export function parseVariables(text: string): EmailVariable[] {
                 } else if (text[startIndex] === '{' && tempInternalVariableCount > 0) {
                     tempInternalVariableCount--;
                 }
+
+
                 startIndex--;
             }
             if (startIndex < 0) {
@@ -63,15 +74,16 @@ export function parseVariables(text: string): EmailVariable[] {
             }
 
             const variable = text.slice(startIndex + 1, index);
-            variables.push(parseVariable(variable));
+            variables.push(parseVariable(variable, startIndex, index));
 
         }
         index++;
     }
+    if (DEBUG) console.log('Parsed variables', variables);
     return variables;
 }
 
-function parseVariable(variable: string): EmailVariable {
+function parseVariable(variable: string, startIndex: number, endIndex: number): EmailVariable {
     const variableName = parseVariableName(variable);
     const variableType = parseVariableType(variableName);
     const internalVariables = parseVariables(variable);
@@ -84,10 +96,11 @@ function parseVariable(variable: string): EmailVariable {
         type: variableType,
         transforms: variableTransforms,
         dependencies: internalVariables,
+        startIndex: startIndex,
     };
 }
 
-export function parseValuesDependencies(values: EmailVariableValues = {}): EmailVariable[] {
+export function parseValuesDependencies(values: ValueDict = {}): EmailVariable[] {
     let dependencies: EmailVariable[] = [];
     Object.keys(values).forEach(key => {
         if (typeof values[key].value === 'string')
@@ -96,16 +109,23 @@ export function parseValuesDependencies(values: EmailVariableValues = {}): Email
     return dependencies;
 }
 
-export function fillVariables(body: Quill | string, values: EmailVariableValues = {}, used: string[] = []): string {
-    let index = 0;
+export function fillTextVariables(body: string, values: ValueDict = {}, used: string[] = []): string {
+    let index = 0, isInStyleTag = 0, length = body.length;
     console.log('Filling variables with', values);
-    while (index < (typeof body === 'string' ? body.length : body.getLength())) {
-        if ((typeof body === 'string' ? body[index] : body.getText(index, 1)) === '}') {
+    while (index < length) {
+        // Check if we are in a style tag
+        if (body.substring(index, index + 6) === '<style') {
+            isInStyleTag++;
+        } else if (body.substring(index, index + 7) === '</style') {
+            isInStyleTag--;
+        }
+
+        if (isInStyleTag === 0 && (body[index]) === '}') {
             let startIndex = index - 1, tempInternalVariableCount = 0;
-            while (((typeof body === 'string' ? body[startIndex] : body.getText(startIndex, 1)) !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
-                if ((typeof body === 'string' ? body[startIndex] : body.getText(startIndex, 1)) === '}') {
+            while (((body[startIndex]) !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
+                if ((body[startIndex]) === '}') {
                     tempInternalVariableCount++;
-                } else if ((typeof body === 'string' ? body[startIndex] : body.getText(startIndex, 1)) === '{' && tempInternalVariableCount > 0) {
+                } else if ((body[startIndex]) === '{' && tempInternalVariableCount > 0) {
                     tempInternalVariableCount--;
                 }
                 startIndex--;
@@ -115,10 +135,10 @@ export function fillVariables(body: Quill | string, values: EmailVariableValues 
                 index++;
                 continue;
             }
-            const foundVariable = typeof body === 'string' ? body.slice(startIndex + 1, index) : body.getText(startIndex + 1, index - startIndex - 1);
+            const foundVariable = body.slice(startIndex + 1, index);
             const foundName = parseVariableName(foundVariable);
             let value = values[foundName]?.value;
-            console.log('Found variable', foundVariable, 'with value', value);
+            if (DEBUG) console.log('Found variable', foundVariable, 'with value', value);
 
             if (used.includes(foundName)) {
                 console.error('Circular reference detected for', foundName);
@@ -127,28 +147,135 @@ export function fillVariables(body: Quill | string, values: EmailVariableValues 
             }
 
             if (typeof value === 'string' && value.includes('{')) {
-                console.log('Found internal variable in', value);
-                value = fillVariables(value, values, used.concat(foundName));
-                console.log('Filled internal variables to', value);
+                if (DEBUG) console.log('Found internal variable in', value);
+                value = fillTextVariables(value, values, used.concat(foundName));
+                if (DEBUG) console.log('Filled internal variables to', value);
             }
             else
                 value = applyVariableTransforms(value, parseVariableTransforms(foundVariable));
 
             if (typeof value === 'string') {
-                if (typeof body === 'string')
-                    body = body.slice(0, startIndex) + value + body.slice(index + 1);
-                else {
-                    body.deleteText(startIndex, foundVariable.length + 2);
-                    body.insertText(startIndex, value);
-                }
+                body = body.slice(0, startIndex) + value + body.slice(index + 1);
+
 
                 index += value.length - foundVariable.length - 2;
+                length = body.length;
             }
 
         }
         index++;
     }
-    return typeof body === 'string' ? body : '';
+    return body;
+}
+
+export function fillQuillVariables(variables: EmailVariable[], values: ValueDict = {}): Op[] {
+    let totalOffset = 0, workingOps = [] as Op[], lastVariableEndIndex = 0, skipCount = 0;
+    variables = variables.sort((a, b) => a.startIndex - b.startIndex);
+    if (DEBUG) console.log('Filling variables', variables, ' with ', values);
+    variables.forEach(variable => {
+        if (skipCount > 0) {
+            if (DEBUG) console.log('Skipping', variable.written);
+            skipCount--;
+            return;
+        }
+
+        const startIndex = variable.startIndex + totalOffset;
+        const endIndex = variable.startIndex + variable.written.length - 1 + totalOffset;
+        const foundVariable = variable.written;
+        const foundName = variable.name;
+        const valueName = resolveDependencies([variable], values)[0].name;
+        let value = values[valueName]?.value;
+        if (DEBUG) console.log('Found variable', foundVariable, 'with value', value);
+
+        if (typeof value === 'string' && value.includes('{')) {
+            if (DEBUG) console.log('Found internal variable in', value);
+            value = fillTextVariables(value, values, [foundName]);
+            if (DEBUG) console.log('Filled internal variables to', value);
+        }
+        else
+            value = applyVariableTransforms(value, parseVariableTransforms(foundVariable));
+
+        if (typeof value === 'string') {
+            skipCount = foundVariable.split('{').length - 2;
+            if (DEBUG) console.log('Retaining:', startIndex - lastVariableEndIndex, ' deleting:', foundVariable.length, ' inserting:', value);
+            workingOps.push({ retain: startIndex - lastVariableEndIndex });
+            workingOps.push({ delete: foundVariable.length });
+            workingOps.push({ insert: value });
+
+            totalOffset += value.length - foundVariable.length;
+            lastVariableEndIndex = endIndex + value.length - foundVariable.length + 1;
+            if (DEBUG) console.log('length difference between ' + foundVariable + ' and ' + value + ' is ', value.length - foundVariable.length);
+            if (DEBUG) console.log('End of ' + foundVariable + ' is ' + (endIndex + totalOffset + 1));
+        }
+    });
+    return workingOps;
+}
+
+// export function fastFillQuillVariables(body: Quill, values: ValueDict = {}): Quill {
+//     let isInStyleTag = 0, lastTimestamp = Date.now(), totalIncrementTime = 0, totalOpeningTime = 0, totalFillingTime = 0;
+//     forEachChar(body, (char: string, index: number) => {
+//         // Check if we are in a style tag
+//         if (char == '<' && body.getText(index, 6) === '<style') {
+//             isInStyleTag++;
+//         } else if (char == '<' && body.getText(index, 7) === '</style') {
+//             isInStyleTag--;
+//         }
+
+//         totalIncrementTime += debug_addToTime(lastTimestamp);
+//         lastTimestamp = Date.now();
+//         if (isInStyleTag === 0 && char === '}') {
+//             let startIndex = index - 1, tempInternalVariableCount = 0;
+//             while (((body.getText(startIndex, 1)) !== '{' || tempInternalVariableCount > 0) && startIndex >= 0) {
+//                 if ((body.getText(startIndex, 1)) === '}') {
+//                     tempInternalVariableCount++;
+//                 } else if ((body.getText(startIndex, 1)) === '{' && tempInternalVariableCount > 0) {
+//                     tempInternalVariableCount--;
+//                 }
+//                 startIndex--;
+//             }
+//             if (startIndex < 0) {
+//                 console.error('Un-opened closing bracket at', index);
+//                 return 0;
+//             }
+//             totalOpeningTime += debug_addToTime(lastTimestamp);
+//             lastTimestamp = Date.now();
+
+//             const foundVariable = body.getText(startIndex + 1, index - startIndex - 1);
+//             const foundName = parseVariableName(foundVariable);
+//             let value = values[foundName]?.value;
+//             if (DEBUG) console.log('Found variable', foundVariable, 'with value', value);
+
+//             if (typeof value === 'string' && value.includes('{')) {
+//                 if (DEBUG) console.log('Found internal variable in', value);
+//                 value = fillTextVariables(value, values, [foundName]);
+//                 if (DEBUG) console.log('Filled internal variables to', value);
+//             }
+//             else
+//                 value = applyVariableTransforms(value, parseVariableTransforms(foundVariable));
+
+//             if (typeof value === 'string') {
+//                 body.deleteText(startIndex, foundVariable.length + 2);
+//                 body.insertText(startIndex, value);
+
+//                 console.log('length difference is ', value.length - foundVariable.length - 2);
+//                 return value.length - foundVariable.length - 2;
+//             }
+//             totalFillingTime += debug_addToTime(lastTimestamp);
+//         }
+//         lastTimestamp = Date.now();
+//         return 0;
+//     })
+//     console.log('Total increment time', totalIncrementTime);
+//     console.log('Total opening time', totalOpeningTime);
+//     console.log('Total filling time', totalFillingTime);
+//     console.log('Total time', totalIncrementTime + totalOpeningTime + totalFillingTime);
+//     return body;
+// }
+
+function debug_addToTime(lastTimestamp: number) {
+    const currentTimestamp = Date.now();
+    const timeDiff = currentTimestamp - lastTimestamp;
+    return timeDiff;
 }
 
 function applyVariableTransforms(value: any, transforms: string[]): string {
@@ -166,7 +293,7 @@ function applyVariableTransforms(value: any, transforms: string[]): string {
     return value;
 }
 
-export function resolveDependencies(textVariables: EmailVariable[], values: EmailVariableValues = {}) {
+export function resolveDependencies(textVariables: EmailVariable[], values: ValueDict = {}) {
     let variables: EmailVariable[] = [];
     // console.log('Resolving dependencies for', variables, 'with', values);
     for (let i = 0; i < textVariables.length; i++) {
@@ -177,8 +304,8 @@ export function resolveDependencies(textVariables: EmailVariable[], values: Emai
     return variables;
 }
 
-function tryResolveDependencies(inputVariable: EmailVariable, values: EmailVariableValues) {
-    console.log('Resolving ' + inputVariable.dependencies.length + ' dependencies for', inputVariable);
+function tryResolveDependencies(inputVariable: EmailVariable, values: ValueDict) {
+    if (DEBUG) console.log('Resolving ' + inputVariable.dependencies.length + ' dependencies for', inputVariable);
     let variable = { ...inputVariable };
     const dependencies = variable.dependencies;
     variable.dependencies = [];
@@ -191,9 +318,9 @@ function tryResolveDependencies(inputVariable: EmailVariable, values: EmailVaria
         if (dependency.name && values[dependency.name] && values[dependency.name].value) {
             let newValue = applyVariableTransforms(values[dependency.name].value, dependency.transforms);
             if (typeof newValue === 'string' && newValue.includes('{')) {
-                console.log('Found internal variable in', newValue);
-                newValue = fillVariables(newValue, values, [dependency.name]);
-                console.log('Filled internal variables to', newValue);
+                if (DEBUG) console.log('Found internal variable in', newValue);
+                newValue = fillTextVariables(newValue, values, [dependency.name]);
+                if (DEBUG) console.log('Filled internal variables to', newValue);
             }
             variable.name = variable.name.replace('{' + parseVariableName(dependency.name) + '}', parseVariableName(newValue));
             variable.written = variable.written.replace(dependency.written, newValue);

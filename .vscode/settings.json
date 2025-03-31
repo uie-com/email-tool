@@ -1,0 +1,11 @@
+{
+    "css.lint.validProperties": [
+        "mso-table-lspace",
+        "mso-table-rspace",
+        "mso-line-height-rule",
+        "mso-style-priority",
+        "mso-hide",
+        "mso-margin-bottom-alt",
+        "mso-margin-top-alt"
+    ]
+}

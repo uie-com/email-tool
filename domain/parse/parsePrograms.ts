@@ -34,3 +34,22 @@ export function createTagsFromForm(programValues: { [key: string]: string }) {
     });
     return tags;
 }
+
+export function getAllIdentifiers(programSchema: any): string[] {
+    let identifiers: string[] = [];
+    Object.keys(programSchema).forEach((key) => {
+        if (key === 'options') {
+            Object.keys(programSchema[key]).forEach((optionKey) => {
+                identifiers.push(...programSchema[key][optionKey]);
+            });
+        } else if (key != 'defaults') {
+            const childIdentifiers = getAllIdentifiers(programSchema[key]);
+            childIdentifiers.forEach((childIdentifier) => {
+                if (!identifiers.includes(childIdentifier)) {
+                    identifiers.push(childIdentifier);
+                }
+            });
+        }
+    });
+    return identifiers;
+}
