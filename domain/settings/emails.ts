@@ -18,60 +18,63 @@ export const PROGRAM_VALUES = {
         return getSettings(PROGRAM_VALUES, tags);
     },
     settings: { // Provide defaults for all emails here
-
+        'template': { value: '/templates', part: 0 },
+        'banner': { value: '/banners', part: 0 },
     },
     'TUXS': {
         settings: {
-            'banner': { value: '/tuxs-banners', part: 0 },
+            'banner': { value: '/tuxs', part: 1 },
+            'template': { value: '/tuxs', part: 1 },
         },
         // DST override
         'EDT': {
             settings: {
-                'banner': { value: '/tuxs-banners-edt', part: 0 },
+                'banner': { value: '/tuxs-edt', part: 1 },
             },
         },
         // Email type settings
         'Upcoming Topics': {
             settings: {
-                'banner': { value: '/upcomingtopics.png', part: 2 },
+                'banner': { value: '/upcomingtopics.png', part: 3 },
+                'template': { value: '/upcoming-topics.html', part: 2 },
             }
         },
         'Today': {
             settings: {
-                'banner': { value: '/today', part: 1 },
+                'banner': { value: '/today', part: 2 },
             }
 
         },
         'Recording': {
             settings: {
-                'banner': { value: '/recording', part: 1 },
+                'banner': { value: '/recording', part: 2 },
             }
 
         },
         'New Topic': {
             settings: {
-                'banner': { value: '/new-topic', part: 1 },
+                'banner': { value: '/new-topic', part: 2 },
             }
         },
         // Topic settings
         'Job Search': {
             settings: {
-                'banner': { value: '/jobsearch.png', part: 2 },
+                'banner': { value: '/jobsearch.png', part: 3 },
             }
         },
         'Metrics': {
             settings: {
-                'banner': { value: '/metrics.png', part: 2 },
+                'banner': { value: '/metrics.png', part: 3 },
             }
         },
         'Research': {
             settings: {
-                'banner': { value: '/research.png', part: 2 },
+                'banner': { value: '/research.png', part: 3 },
             }
         },
         'Win Influence': {
             settings: {
-                'banner': { value: '/wininfluence.png', part: 2 },
+                'banner': { value: '/wininfluence.png', part: 3 },
             }
         },
     }

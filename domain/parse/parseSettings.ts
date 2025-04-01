@@ -76,7 +76,9 @@ export function testSettings(settingsObject: any, identifiers?: string[]): { [se
     }
     console.log(identifiers);
     identifiers = identifiers.map((tag) => parseVariableName(tag));
-    const bundle = testBundleSettings({}, settingsObject, identifiers);
+    const rootSettings = settingsObject.settings;
+    let bundle = addAllSettingsToBundle({}, rootSettings);
+    bundle = testBundleSettings(bundle, settingsObject, identifiers);
 
     return bundle;
 }
