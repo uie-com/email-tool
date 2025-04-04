@@ -1,21 +1,19 @@
 "use client";
 
-import { createProgramForm } from "@/domain/parse/parsePrograms";
 import { SETTINGS } from "@/domain/settings/settings";
-import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
 import { getSettings } from "@/domain/parse/parseSettings";
+import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
+import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
 
 export default function ProgramSchema() {
     const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
-    const form = createProgramForm(EMAIL_TYPES, attributes);
+    const form = createEmailsFromSession(EMAIL_SCHEDULE, attributes);
 
     return (
         <Flex align="center" justify="center" direction='column' className="w-full h-full" gap={20} style={{ position: 'relative' }}>
-            <h1>Test the dynamic email starter-form.</h1>
-            <small>Uses 'PROGRAM_SCHEMA' object and 'createProgramForm' interpreter</small>
-            <small>NAME:VALUE ex: Program:TUXS</small>
+            <h1>Test the session schedule to email schedule.</h1>
             <Textarea onChange={(event) => {
                 const value = event.currentTarget.value;
                 const lines = value.split('\n');
@@ -27,12 +25,10 @@ export default function ProgramSchema() {
                 }, {});
                 setAttributes(newAttributes);
             }} placeholder="Enter attributes here" autosize />
-            <h2>Values:</h2>
-            {JSON.stringify(attributes)}
-            <h2>Form:</h2>
-            {JSON.stringify(form, null, ' ')}
-            <h2>Settings:</h2>
-            {JSON.stringify(getSettings(SETTINGS, attributes), null, ' ')}
+            <div className="p-4 border-gray-200 rounded-lg min-w-96 border-1">
+                <h2>Parsed Schedule:</h2>
+                <pre>{JSON.stringify(form, null, 2)}</pre>
+            </div>
         </Flex>
     );
 }

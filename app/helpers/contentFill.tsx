@@ -1,6 +1,6 @@
 "use client";
 
-import { parseVariables, fillTextVariables, resolveDependencies, parseValuesDependencies, fillQuillVariables } from "@/domain/parse/parseVariables";
+import { parseVariables, fillTextVariables, resolveDependencies, parseValuesDependencies, fillQuillVariables, parseVariableName } from "@/domain/parse/parseVariables";
 import { Email, EmailVariable, ValueDict } from "@/domain/schema";
 import { useContext, useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
@@ -12,7 +12,7 @@ import { DateInput, TimeInput } from "@mantine/dates";
 import { IconLink, IconLinkOff } from "@tabler/icons-react";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { EditorContext } from "../page";
-import { Delta } from "quill";
+import { Delta } from "quill/core";
 
 
 const DEBUG = true;
@@ -56,10 +56,10 @@ export function ContentHelper() {
 
 export function VariableForm({ variables, values, setValue }: { variables: EmailVariable[], values?: ValueDict, setValue: (values: ValueDict) => void }) {
     const [formVariables, setFormVariables] = useState<EmailVariable[]>([]);
+    const [formValues, setFormValues] = useState<ValueDict>({});
 
     useEffect(() => {
         if (DEBUG) console.log('Parsing variables');
-        const timestamp = new Date().getTime();
         let parsedVariables: EmailVariable[] = [...variables];
         parsedVariables = parsedVariables.concat(parseValuesDependencies(values));
         parsedVariables = resolveDependencies(parsedVariables, values);
@@ -70,24 +70,36 @@ export function VariableForm({ variables, values, setValue }: { variables: Email
             return true;
         });
         setFormVariables(parsedVariables);
+
+        const newValues: ValueDict = {};
+        if (values)
+            Object.keys(values ?? {}).forEach((key) => {
+                newValues[parseVariableName(key)] = values[key];
+            });
+        setFormValues(newValues);
     }, [variables, values])
 
     return (
         <Flex direction="column" align="start" justify="center" className="h-full" gap={20} key={'form'}>
-            {formVariables && formVariables.map((variable, index) =>
-                <VariableInput key={'ve' + index} index={index} variable={variable} value={values && values[variable.name] ? values[variable.name].value : undefined} setValue={(value) => {
+            {formVariables && formVariables.map((variable, index) => {
+                if (DEBUG) console.log('Rendering variable: ', variable);
+                return (<VariableInput key={'ve' + index} index={index} variable={variable} value={formValues && formValues[variable.name] ? formValues[variable.name].value : undefined} setValue={(value) => {
+                    setFormValues({ ...formValues, [variable.name]: { value: value } });
                     setValue({ [variable.name]: { value: value } });
-                }} />
+                }}
+                />)
+            }
             )}
         </Flex>
     );
 }
 
 function VariableInput({ variable, value, setValue, index }: { variable: EmailVariable, value: any, setValue: (value: any) => void, index: number }) {
-    const [inputState, setInputState] = useState<string | null>(null);
+    console.log('Rendering variable input: ', variable);
+    const [inputState, setInputState] = useState<string | null>('empty');
     const disabled = variable.dependencies.length > 0;
-    if (!inputState) {
-        setInputState(value !== undefined ? '' : 'empty');
+    if (inputState === '' && value !== undefined && value !== null) {
+        setInputState('empty');
     }
 
     if (variable.type === 'String') {

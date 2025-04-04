@@ -1,4 +1,7 @@
-export const VARIABLE_TYPES: { [key: string]: { keywords: string[] } } = {
+
+export type VariableType = 'Date' | 'Banner' | 'Image' | 'Link';
+export type VariableSettings = { [type in VariableType]: { keywords: string[] } };
+export const VARIABLE_TYPES: VariableSettings = {
     "Date": {
         keywords: ['day', 'date', 'time', 'month', 'year', 'timestamp']
     },
@@ -10,8 +13,5 @@ export const VARIABLE_TYPES: { [key: string]: { keywords: string[] } } = {
     },
     "Link": {
         keywords: ['link', 'url', 'href', 'anchor']
-    },
-    "Body": {
-        keywords: ['body', 'content', 'text', 'copy', 'description', 'message']
     }
 };

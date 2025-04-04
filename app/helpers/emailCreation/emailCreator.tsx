@@ -1,12 +1,13 @@
 import { FormSchema } from "@/domain/schema";
 import { Autocomplete, Button, Combobox, Flex, TextInput, useCombobox } from "@mantine/core";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { EditorContext } from "../page";
-import { createProgramForm, createTagsFromForm } from "@/domain/parse/parsePrograms";
-import { PROGRAM_SCHEMA } from "@/domain/settings/programs";
+import { EditorContext } from "../../page";
+import { createProgramForm, createIdentifiersFromForm } from "@/domain/parse/parsePrograms";
+import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { focusOnNext, focusOnPrev } from "@/domain/form";
-import { PROGRAM_VALUES } from "@/domain/settings/emails";
-import { parseVariableName } from "@/domain/parse/parseVariables";
+import { SETTINGS } from "@/domain/settings/settings";
+import { createValueDictFromDict, parseVariableName } from "@/domain/parse/parseVariables";
+import { getSettings } from "@/domain/parse/parseSettings";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -14,7 +15,7 @@ export function EmailCreator() {
 
 
     const formSchema = useMemo(() => {
-        return createProgramForm(PROGRAM_SCHEMA, values);
+        return createProgramForm(EMAIL_TYPES, values);
     }, [values]);
 
     const handleValueChange = (key: string, value: string) => {
@@ -28,10 +29,10 @@ export function EmailCreator() {
         setValues({ ...newValues, [key]: value });
     }
 
-    const handleSubmit = () => {
-        const identifiers = createTagsFromForm(values);
-        console.log('Starting an email as ', { identifiers: identifiers, settings: PROGRAM_VALUES.getSettings(identifiers) });
-        setEditorState({ step: 1, email: { identifiers: identifiers, settings: PROGRAM_VALUES.getSettings(identifiers) } });
+    const handleSubmit = async () => {
+        const identifiers = createIdentifiersFromForm(values);
+        console.log('Starting an email as ', { identifiers: identifiers, settings: getSettings(SETTINGS, createValueDictFromDict(values)) });
+        setEditorState({ step: 1, email: { identifiers: identifiers, settings: getSettings(SETTINGS, createValueDictFromDict(values)) } });
     }
 
     const handleReset = () => {
@@ -39,14 +40,12 @@ export function EmailCreator() {
     }
 
     return (
-        <Flex align="center" justify="center" direction='column' className="relative w-full h-full" gap={20}>
-            <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg min-w-96 bg-gray-50 border-1" gap={20}>
-                <h1>Create new email</h1>
-                <FormBuilder form={formSchema} values={values} handleValueChange={handleValueChange} />
-                <Flex align="center" justify="center" gap={10}>
-                    <Button variant="light" color="gray" onClick={handleReset}>Reset</Button>
-                    <Button variant="filled" onClick={handleSubmit}>Create</Button>
-                </Flex>
+        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-96 bg-gray-50 border-1" gap={20}>
+            <h1>Create new email</h1>
+            <FormBuilder form={formSchema} values={values} handleValueChange={handleValueChange} />
+            <Flex align="center" justify="center" gap={10}>
+                <Button variant="light" color="gray" onClick={handleReset}>Reset</Button>
+                <Button variant="filled" onClick={handleSubmit}>Create</Button>
             </Flex>
         </Flex>
     )
@@ -90,6 +89,7 @@ function QuickAutocomplete({ defaultValue, label, data, onChange, index }: { def
     ));
 
     useEffect(() => {
+        if (!options[0]) return;
         const option = options[0].props.value;
         combobox.selectFirstOption();
 

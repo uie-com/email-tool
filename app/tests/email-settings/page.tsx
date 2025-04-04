@@ -2,15 +2,15 @@
 
 import { getAllIdentifiers } from "@/domain/parse/parsePrograms";
 import { testSettings } from "@/domain/parse/parseSettings";
-import { SettingValue, TestSettingValue } from "@/domain/schema";
-import { PROGRAM_VALUES } from "@/domain/settings/emails";
-import { PROGRAM_SCHEMA } from "@/domain/settings/programs";
+import { TestSettingValue } from "@/domain/schema";
+import { SETTINGS } from "@/domain/settings/settings";
+import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Table, TableData, Textarea } from "@mantine/core";
 import { useState } from "react";
 
 export default function Page() {
-    const [identifiers, setIdentifiers] = useState<string[]>(getAllIdentifiers(PROGRAM_SCHEMA));
-    const settings = testSettings(PROGRAM_VALUES, identifiers.length > 0 ? identifiers : undefined);
+    const [identifiers, setIdentifiers] = useState<string[]>(getAllIdentifiers(EMAIL_TYPES));
+    const settings = testSettings(SETTINGS, identifiers.length > 0 ? identifiers : undefined);
 
     const tableData: TableData = {
         head: ['Variable', ...Array.from({

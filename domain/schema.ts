@@ -1,5 +1,5 @@
 import Quill, { Delta } from "quill";
-import { PROGRAM_VALUES } from "./settings/emails";
+import { SETTINGS } from "./settings/settings";
 
 export type EditorState = {
     email?: Email;
@@ -18,15 +18,12 @@ export type EmailVariable = {
 
 export type ValueDict = {
     [key: string]: {
-        value: String | Number | Date | null;
+        value: Value | Promise<Value>;
         // uses?: EmailVariable[];
     }
 };
 
-export type SettingValue = {
-    value: string;
-    part?: number;
-};
+export type Value = string | number | Date | null;
 
 export type TestSettingValue = {
     value: string[];
@@ -44,6 +41,7 @@ export class Email {
     identifiers?: string[]; // Tags that are used to identify the email
     settings?: ValueDict; // Setting values, based on tags, that are used to fill the email
     values?: ValueDict; // Values, from user, that are used to fill the email
+    html?: string; // HTML content of the email
     content?: {
         sourceRichText: Delta;
         sourcePlainText: string;

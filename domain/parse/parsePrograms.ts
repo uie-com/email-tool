@@ -1,4 +1,4 @@
-import { FormSchema } from "../schema";
+import { FormSchema, ValueDict } from "../schema";
 import { parseVariableName } from "./parseVariables";
 
 
@@ -27,7 +27,16 @@ export function createProgramForm(programSchema: any, programValues: { [key: str
     return form;
 }
 
-export function createTagsFromForm(programValues: { [key: string]: string }) {
+export function parseValuesFromForm(programValues: { [key: string]: string }): ValueDict {
+    let values: ValueDict = {};
+    Object.keys(programValues).forEach((key) => {
+        const parsedKey = key;
+        values[parsedKey] = { value: programValues[key] };
+    });
+    return values;
+}
+
+export function createIdentifiersFromForm(programValues: { [key: string]: string }) {
     let tags: string[] = [];
     Object.keys(programValues).forEach((key) => {
         tags.push(`${programValues[key]}`);

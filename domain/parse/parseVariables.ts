@@ -1,11 +1,11 @@
 import Quill, { Delta, Op } from "quill";
 import { EmailVariable, ValueDict } from "../schema";
-import { VARIABLE_TYPES } from "../settings/variables";
+import { VARIABLE_TYPES, VariableType } from "../settings/variables";
 import moment from "moment-timezone";
 import { parse } from "path";
 import { forEachChar } from "./parseRichText";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export function parseVariableName(variable: string) {
     // Remove all whitespace and make lowercase
@@ -26,7 +26,7 @@ export function parseVariableTransforms(variable: string) {
 export function parseVariableType(name: string) {
     let result = 'String';
     Object.keys(VARIABLE_TYPES).forEach(type => {
-        if (VARIABLE_TYPES[type].keywords.find(keyword => name.includes(keyword)) !== undefined) {
+        if (VARIABLE_TYPES[type as VariableType].keywords.find(keyword => name.includes(keyword)) !== undefined) {
             result = type;
         }
     });
@@ -41,7 +41,7 @@ export function isSelfReferencing(name: string, dependencies: EmailVariable[]) {
     return dependencies.find(dependency => dependency.name === name) !== undefined;
 }
 
-export function parseVariables(text: string): EmailVariable[] {
+export function parseVariables(text: string, initialValues?: ValueDict): EmailVariable[] {
     let index = 0, variables: EmailVariable[] = [], isInStyleTag = 0;
 
     while (index < text.length) {
@@ -64,7 +64,6 @@ export function parseVariables(text: string): EmailVariable[] {
                     tempInternalVariableCount--;
                 }
 
-
                 startIndex--;
             }
             if (startIndex < 0) {
@@ -80,6 +79,15 @@ export function parseVariables(text: string): EmailVariable[] {
         index++;
     }
     if (DEBUG) console.log('Parsed variables', variables);
+
+    // if (initialValues) {
+    //     Object.keys(initialValues).forEach(key => {
+    //         if (typeof initialValues[key].value === 'string' && variables.find(variable => variable.name === parseVariableName(initialValues[key].value as string)) === undefined) {
+    //             variables.push(parseVariable(initialValues[key].value, -1, -1));
+    //         }
+    //     });
+    // }
+
     return variables;
 }
 
@@ -111,7 +119,9 @@ export function parseValuesDependencies(values: ValueDict = {}): EmailVariable[]
 
 export function fillTextVariables(body: string, values: ValueDict = {}, used: string[] = []): string {
     let index = 0, isInStyleTag = 0, length = body.length;
-    console.log('Filling variables with', values);
+    let valueDict = sanitizeValueDict(values);
+    if (DEBUG) console.log('Filling text variables with', valueDict);
+    used = used.map(variable => parseVariableName(variable));
     while (index < length) {
         // Check if we are in a style tag
         if (body.substring(index, index + 6) === '<style') {
@@ -137,8 +147,8 @@ export function fillTextVariables(body: string, values: ValueDict = {}, used: st
             }
             const foundVariable = body.slice(startIndex + 1, index);
             const foundName = parseVariableName(foundVariable);
-            let value = values[foundName]?.value;
-            if (DEBUG) console.log('Found variable', foundVariable, 'with value', value);
+            let value = valueDict[foundName]?.value;
+            if (DEBUG) console.log('Found variable', foundVariable, 'with value[' + foundName + ']', value);
 
             if (used.includes(foundName)) {
                 console.error('Circular reference detected for', foundName);
@@ -148,17 +158,19 @@ export function fillTextVariables(body: string, values: ValueDict = {}, used: st
 
             if (typeof value === 'string' && value.includes('{')) {
                 if (DEBUG) console.log('Found internal variable in', value);
-                value = fillTextVariables(value, values, used.concat(foundName));
+                value = fillTextVariables(value, valueDict, used.concat(foundName));
                 if (DEBUG) console.log('Filled internal variables to', value);
             }
-            else
-                value = applyVariableTransforms(value, parseVariableTransforms(foundVariable));
+            value = applyVariableTransforms(value, parseVariableTransforms(foundVariable));
 
-            if (typeof value === 'string') {
+            if (typeof value === 'string' || typeof value === 'number') {
                 body = body.slice(0, startIndex) + value + body.slice(index + 1);
 
-
                 index += value.length - foundVariable.length - 2;
+                length = body.length;
+            } else if ((value as any) instanceof Date) {
+                body = body.slice(0, startIndex) + (value as string) + body.slice(index + 1);
+                index += (value as string).length - foundVariable.length - 2;
                 length = body.length;
             }
 
@@ -283,7 +295,19 @@ function applyVariableTransforms(value: any, transforms: string[]): string {
         if (value instanceof Date || value instanceof moment) {
             try {
                 if (moment.tz.zone(transform.replace('GMT', 'Africa/Abidjan')) !== null) {
-                    value = moment(value).tz("America/New_York", true).clone().tz(transform.replace('GMT', 'Africa/Abidjan'));
+                    value = moment(value).tz("America/New_York", true).clone().tz(transform.replace('GMT', 'Africa/Abidjan')).toDate();
+                } else if (transform.substring(0, 1) === '+') {
+                    if (transform.substring(transform.length - 1, transform.length) === 'd') {
+                        value = moment(value).add(parseInt(transform.substring(1, transform.length - 1)), 'days').toDate();
+                    } else if (transform.substring(transform.length - 1, transform.length) === 'h') {
+                        value = moment(value).add(parseInt(transform.substring(1, transform.length - 1)), 'hours').toDate();
+                    }
+                } else if (transform.substring(0, 1) === '-') {
+                    if (transform.substring(transform.length - 1, transform.length) === 'd') {
+                        value = moment(value).add(-1 * parseInt(transform.substring(1, transform.length - 1)), 'days').toDate();
+                    } else if (transform.substring(transform.length - 1, transform.length) === 'h') {
+                        value = moment(value).add(-1 * parseInt(transform.substring(1, transform.length - 1)), 'hours').toDate();
+                    }
                 } else {
                     value = moment(value).format(transform);
                 }
@@ -331,4 +355,23 @@ function tryResolveDependencies(inputVariable: EmailVariable, values: ValueDict)
     }
     // console.log('Done', variable);
     return variable;
+}
+
+export function createValueDictFromDict(values: { [key: string]: any }): ValueDict {
+    const valueDict: ValueDict = {};
+    Object.keys(values).forEach(key => {
+        valueDict[key] = {
+            value: values[key],
+            // uses: parseVariables(values[key])
+        };
+    });
+    return valueDict;
+}
+
+export function sanitizeValueDict(values: ValueDict): ValueDict {
+    const sanitizedValues: ValueDict = {};
+    Object.keys(values).forEach(key => {
+        sanitizedValues[parseVariableName(key)] = values[key];
+    });
+    return sanitizedValues;
 }

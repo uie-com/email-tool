@@ -1,81 +1,167 @@
 
-import { getSettings } from "../parse/parseSettings";
 
-// Has values for each tag/attribute of an email.
-// These will be used to fill in variables in the email templates.
+// This defines what types of emails are available to create.
+// For each object, 'options' will generate the form fields for the email creator.
+// For each object, 'defaults' will generate the default values for the option.
+// For options that show up based on other options, put them inside the object for the option they depend on.
 
-// Use the tags from above as keys for objects.
-// Inside each object, create a settings dictionary with the name of each setting as the key,
-// and a SettingValue object as the value.
-// The SettingValue object should have a value attribute, which is the value of the setting.
-// If the setting needs to be added together, add a part attribute with the part number.
-
-// If a value is provided later on here, it will override the value with the same name before.
-// However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
-
-export const PROGRAM_VALUES = {
-    getSettings: (tags?: string[]) => {
-        return getSettings(PROGRAM_VALUES, tags);
-    },
-    settings: { // Provide defaults for all emails here
-        'template': { value: '/templates', part: 0 },
-        'banner': { value: '/banners', part: 0 },
+export const EMAIL_TYPES = {
+    options: {
+        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions']
     },
     'TUXS': {
-        settings: {
-            'banner': { value: '/tuxs', part: 1 },
-            'template': { value: '/tuxs', part: 1 },
-        },
-        // DST override
-        'EDT': {
-            settings: {
-                'banner': { value: '/tuxs-edt', part: 1 },
-            },
-        },
-        // Email type settings
-        'Upcoming Topics': {
-            settings: {
-                'banner': { value: '/upcomingtopics.png', part: 3 },
-                'template': { value: '/upcoming-topics.html', part: 2 },
-            }
+        options: {
+            'Email Type': ['Upcoming Topics', 'Today', 'Recording', 'New Topic'],
         },
         'Today': {
-            settings: {
-                'banner': { value: '/today', part: 2 },
-            }
-
+            options: {
+                'Session Date': generateDateOptions(),
+            },
         },
         'Recording': {
-            settings: {
-                'banner': { value: '/recording', part: 2 },
-            }
-
+            options: {
+                'Session Date': generateDateOptions(),
+            },
         },
         'New Topic': {
-            settings: {
-                'banner': { value: '/new-topic', part: 2 },
+            options: {
+                'Session Date': generateDateOptions(),
+            },
+        },
+        'Upcoming Topics': {
+            options: {
+                'First Session Date': generateDateOptions(),
+                'Second Session Date': generateDateOptions(),
+                'Third Session Date': generateDateOptions(),
+            },
+        },
+    },
+    'Metrics': {
+        options: {
+            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+        },
+        'Today\'s Topic': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+                'Topic': generateNumberedOptions('Topic', 8),
             }
         },
-        // Topic settings
-        'Job Search': {
-            settings: {
-                'banner': { value: '/jobsearch.png', part: 3 },
+        'Before Week': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+                'Week': generateNumberedOptions('Week', 4),
+                'First Topic': generateNumberedOptions('Topic', 8),
+                'Second Topic': generateNumberedOptions('Topic', 8),
+            },
+            ...generateWeeklyDefaultTopics(),
+        },
+    },
+    'Research': {
+        options: {
+            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+        },
+        'Today\'s Topic': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort'),
+                'Topic': generateNumberedOptions('Topic', 8),
             }
         },
-        'Metrics': {
-            settings: {
-                'banner': { value: '/metrics.png', part: 3 },
+        'Before Week': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort'),
+                'Week': generateNumberedOptions('Week', 4),
+                'First Topic': generateNumberedOptions('Topic', 8),
+                'Second Topic': generateNumberedOptions('Topic', 8),
+            },
+            ...generateWeeklyDefaultTopics(),
+        },
+    },
+    'Visions': {
+        options: {
+            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+        },
+        'Today\'s Topic': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort'),
+                'Topic': generateNumberedOptions('Topic', 8),
             }
         },
-        'Research': {
-            settings: {
-                'banner': { value: '/research.png', part: 3 },
+        'Before Week': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort'),
+                'Week': generateNumberedOptions('Week', 4),
+                'First Topic': generateNumberedOptions('Topic', 8),
+                'Second Topic': generateNumberedOptions('Topic', 8),
+            },
+            ...generateWeeklyDefaultTopics(),
+        },
+    },
+    'Win': {
+        options: {
+            'Email Type': ['Homework', 'Vessel'],
+        },
+        'Homework': {
+            options: {
+                'Cohort': generateMonthOptions(),
+                'Pillar': generateNumberedOptions('Pillar', 8),
+                'Level': generateNumberedOptions('Level', 2),
+            },
+        }
+    },
+    'Stand Out': {
+        options: {
+            'Email Type': ['Today\'s Session', 'Events of the Week'],
+        },
+        'Today\'s Session': {
+            options: {
+                'Session Type': ['Friday Session', 'Materials Critique'],
             }
         },
-        'Win Influence': {
-            settings: {
-                'banner': { value: '/wininfluence.png', part: 3 },
-            }
-        },
+        'Events of the Week': {
+        }
+    },
+}
+
+function generateNumberedOptions(prefix: string = '', limit: number = 12) {
+    let options = [];
+    for (let i = 1; i <= limit; i++) {
+        options.push(prefix + (prefix.length > 0 ? ' ' : '') + i);
     }
-};
+    return options;
+}
+
+function generateWeeklyDefaultTopics(limit: number = 6) {
+    let weeks: {
+        [key: string]: {
+            defaults: { [key: string]: string }
+        }
+    } = {};
+    for (let i = 1; i <= limit; i++) {
+        weeks['Week ' + i] = {
+            defaults: {
+                'First Topic': 'Topic ' + (i * 2 - 1),
+                'Second Topic': 'Topic ' + (i * 2),
+            }
+        };
+    }
+    return weeks;
+}
+
+import moment from "moment";
+function generateMonthOptions() {
+    let options = [], currentYear = moment().year();
+    for (let year = currentYear - 2; year < currentYear + 1; year++) {
+        for (let month = 0; month < 12; month++) {
+            options.push(moment().month(month).year(year).format('MMMM yyyy'));
+        }
+    }
+    return options;
+}
+
+function generateDateOptions(start: number = 365, limit: number = 365) {
+    let options = [];
+    for (let i = 0; i < limit + start; i++) {
+        options.push(moment().add(start * -1, 'days').add(i, 'days').format('YYYY-MM-DD'));
+    }
+    return options;
+}
