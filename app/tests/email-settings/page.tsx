@@ -1,31 +1,35 @@
 "use client";
 
 import { getAllIdentifiers } from "@/domain/parse/parsePrograms";
-import { testSettings } from "@/domain/parse/parseSettings";
-import { TestSettingValue } from "@/domain/schema";
+import { getSettings } from "@/domain/parse/parseSettings";
+import { TestSettingValue, Value } from "@/domain/schema";
 import { SETTINGS } from "@/domain/settings/settings";
 import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Table, TableData, Textarea } from "@mantine/core";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Values } from "@/domain/schema/variables";
 
 export default function Page() {
     const [identifiers, setIdentifiers] = useState<string[]>(getAllIdentifiers(EMAIL_TYPES));
-    const settings = testSettings(SETTINGS, identifiers.length > 0 ? identifiers : undefined);
+    const values = useMemo(() => {
+        const values = new Values();
+        values._addArray(identifiers, 'email');
+        return values;
+    }, [identifiers]);
+    const settings = useMemo(() => {
+        return getSettings(SETTINGS, values);
+    }, [values]);
+    console.log(settings.source('settings'));
+    console.log(Object.keys(settings.source('settings').asDict()).map((key) => settings.source('settings').getAllValues(key)));
 
     const tableData: TableData = {
         head: ['Variable', ...Array.from({
-            length: (
-                parseInt(Object.keys(settings).reduce<string>((acc, key) =>
-                    Math.max(parseInt(acc), settings[key].length) + '', '0'
-                ))
-            )
+            length: settings.maxParts()
         }, (_, i) => `Part ${i}`)],
-        body: Object.keys(settings).map((key) => {
+        body: Object.keys(settings.source('settings').asDict()).map((key) => {
             return [
                 key,
-                ...(typeof settings[key] === 'string' ? [settings[key]] : settings[key].map((setting: TestSettingValue) => {
-                    return typeof setting.value === 'string' ? setting.value : setting.value.join('\n')
-                }))
+                ...(settings.source('settings').getAllValues(key)?.map((a: any[]) => a.join('\n')) ?? [])
             ]
         }),
     }

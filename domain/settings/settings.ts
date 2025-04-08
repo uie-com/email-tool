@@ -1,5 +1,6 @@
 
 import { getSettings } from "../parse/parseSettings";
+import { Settings, ValuePart, ValueSource } from "../schema/variables";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
@@ -13,17 +14,9 @@ import { getSettings } from "../parse/parseSettings";
 // If a value is provided later on here, it will override the value with the same name before.
 // However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
 
-export type SettingsDefinition = {
-    [identifier: string]: SettingsDefinition | { [key: string]: SettingValue }
-}
 
-export type SettingValue = {
-    value: string | Date | number;
-    part?: number;
-    fetch?: undefined | 'airtable';
-};
 
-export const SETTINGS: SettingsDefinition = {
+export const SETTINGS: Settings = {
     settings: { // Provide defaults for all emails here
         'Template': { value: './templates', part: 0 },
         'Banner': { value: './banners', part: 0 },
