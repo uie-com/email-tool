@@ -5,17 +5,18 @@
 // Settings: a simple collection of settings that are applied to an email, ie. "font-size": "12px", "font-family": "Arial"
 // Bundle: a one-level object that contains all the settings, before multi-part settings have been merged
 
-import { SettingDict, Settings, Values } from "../schema/variables";
+import { SettingDict, Settings } from "../schema/settingsCollection";
+import { ValuePart, Values } from "../schema/valueCollection";
 
 const DEBUG = false;
 // Returns a one-level bundle of the final settings for a given set of tags
-export const getSettings = (settingsObject: Settings, values?: Values): Values => {
+export const getSettings = (settingsObject: Settings<ValuePart<any>>, values?: Values): Values => {
     console.log('Getting settings for', values);
     values = new Values(values?.initialValues);
 
     if (!values) values = new Values();
-    if (settingsObject.settings as SettingDict)
-        values = saveSettings(settingsObject.settings as SettingDict, values);
+    if (settingsObject.settings as SettingDict<ValuePart<any>>)
+        values = saveSettings(settingsObject.settings as SettingDict<ValuePart<any>>, values);
     values = findSettings(settingsObject, values);
     return values;
 
@@ -49,22 +50,22 @@ export const getSettings = (settingsObject: Settings, values?: Values): Values =
 // Adds to/overrides settings in a bundle
 // Saves all instances of values with the 'part' setting 
 // Returns new bundle
-function saveSettings(settings: SettingDict, values: Values) {
+function saveSettings(settings: SettingDict<ValuePart<any>>, values: Values) {
     if (DEBUG) console.log('Adding settings: ', settings);
     Object.keys(settings).forEach((key) => values.addValue(key, { ...settings[key], source: 'settings' }));
     if (DEBUG) console.log('To : ', values);
     return values;
 }
 
-function findSettings(settings: Settings, values: Values) {
+function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
     if (DEBUG) console.log('Searching for relevant dictionaries at', settings);
     Object.keys(settings).forEach((key) => {
         if (!values.source('email').hasValueFor(key)) return;
         if (DEBUG) console.log('Found settings for', key);
-        if ((settings[key].settings as SettingDict))
-            values = saveSettings(settings[key].settings as SettingDict, values);
-        if ((settings[key] as Settings))
-            values = findSettings(settings[key] as Settings, values);
+        if ((settings[key].settings as SettingDict<ValuePart<any>>))
+            values = saveSettings(settings[key].settings as SettingDict<ValuePart<any>>, values);
+        if ((settings[key] as Settings<ValuePart<any>>))
+            values = findSettings(settings[key] as Settings<ValuePart<any>>, values);
     });
     return values;
 }

@@ -2,7 +2,6 @@ import { EditorContext } from "@/app/page";
 import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { getSettings } from "@/domain/parse/parseSettings";
-import { fillTextVariables, sanitizeValueDict } from "@/domain/parse/parseVariables";
 import { Email } from "@/domain/schema";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
 import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";

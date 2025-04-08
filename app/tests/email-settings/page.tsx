@@ -7,7 +7,7 @@ import { SETTINGS } from "@/domain/settings/settings";
 import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Table, TableData, Textarea } from "@mantine/core";
 import { useMemo, useState } from "react";
-import { Values } from "@/domain/schema/variables";
+import { Values } from "@/domain/schema/valueCollection";
 
 export default function Page() {
     const [identifiers, setIdentifiers] = useState<string[]>(getAllIdentifiers(EMAIL_TYPES));

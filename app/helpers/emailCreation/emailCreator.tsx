@@ -6,8 +6,8 @@ import { createProgramForm, createIdentifiersFromForm } from "@/domain/parse/par
 import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { focusOnNext, focusOnPrev } from "@/domain/form";
 import { SETTINGS } from "@/domain/settings/settings";
-import { createValueDictFromDict, parseVariableName } from "@/domain/parse/parseVariables";
 import { getSettings } from "@/domain/parse/parseSettings";
+import { parseVariableName } from "@/domain/parse/parse";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);

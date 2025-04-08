@@ -1,5 +1,5 @@
 
-export const PROGRAM_COLORS: { [key: string]: string } = {
+export const PROGRAM_COLORS = {
     'Metrics': '#056368',
     'Research': '#652450',
     'Win': '#8c9b28',

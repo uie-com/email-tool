@@ -1,6 +1,7 @@
 
 import { getSettings } from "../parse/parseSettings";
-import { Settings, ValuePart, ValueSource } from "../schema/variables";
+import { Settings } from "../schema/settingsCollection";
+import { ValuePart, ValueSource } from "../schema/valueCollection";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
@@ -14,9 +15,7 @@ import { Settings, ValuePart, ValueSource } from "../schema/variables";
 // If a value is provided later on here, it will override the value with the same name before.
 // However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
 
-
-
-export const SETTINGS: Settings = {
+export const SETTINGS: Settings<ValuePart<any>> = {
     settings: { // Provide defaults for all emails here
         'Template': { value: './templates', part: 0 },
         'Banner': { value: './banners', part: 0 },

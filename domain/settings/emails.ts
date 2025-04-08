@@ -5,7 +5,7 @@
 // For each object, 'defaults' will generate the default values for the option.
 // For options that show up based on other options, put them inside the object for the option they depend on.
 
-export const EMAIL_TYPES = {
+export const EMAIL_TYPES: Settings<string[]> = {
     options: {
         'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions']
     },
@@ -148,6 +148,7 @@ function generateWeeklyDefaultTopics(limit: number = 6) {
 }
 
 import moment from "moment";
+import { Settings } from "../schema/settingsCollection";
 function generateMonthOptions() {
     let options = [], currentYear = moment().year();
     for (let year = currentYear - 2; year < currentYear + 1; year++) {

@@ -1,8 +1,6 @@
 import moment from "moment-timezone";
 import { Email } from "../schema";
 import { getGlobalIdentifiers } from "../settings/globalIdentifiers";
-import { createValueDictFromDict } from "./parseVariables";
-import { EmailScheduleDict } from "../settings/schedule";
 
 
 /**

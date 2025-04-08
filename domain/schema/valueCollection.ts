@@ -1,46 +1,52 @@
-import { fillTextVariables, parseVariableName } from "../parse/parseVariables";
+import { parseVariableName } from "../parse/parse";
+import { Variable, Variables } from "./variableCollection";
 
-
-export type Settings = {
-    [identifier: string]: Settings | SettingDict;
-}
-export type SettingDict = { [key: string]: ValuePart<any> };
-
+const DEBUG = false;
 export class Values {
     initialValues: Value<any>[] = [];
 
     addValue(key: string, value: ValuePart<any>) {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         const loc = this.initialValues.find((v) => v.key === key)
         if (loc) loc.addValue(value);
         else this.initialValues.push(new Value(key, value));
     }
 
     setValue(key: string, value: ValuePart<any>) {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         const loc = this.initialValues.find((v) => v.key === key)
+        if (DEBUG) console.log('Setting value', key, value, loc ? 'for another time' : 'for the first time');
         if (loc) loc.setValue(value.value, value.source ?? 'user');
         else this.initialValues.push(new Value(key, value));
     }
 
     getInitialValue(key: string): Value<any> | undefined {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key);
     }
 
     getLocalValue(key: string): any | undefined {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key)?.localValue;
     }
 
     getAllValues(key: string): any | undefined {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key)?.getAllValues();
     }
 
-    getFinalValue(key: string): any | undefined {
-        key = parseVariableName(key);
-        return this.initialValues.find((v) => v.key === key)?.finalValue;
+    getFinalValue(key: string | Variable): any | undefined {
+        if (typeof key === 'string') {
+            key = this._resolveKey(key);
+            return this.initialValues.find((v) => v.key === key)?.finalValue;
+        } else {
+            const variable = key;
+            key = this._resolveKey(variable.name);
+            let value = this.initialValues.find((v) => v.key === key)?.finalValue;
+            if (typeof value === 'string')
+                value = new Variables(value).resolveWith(this, [variable.name]);
+            return variable.resolveTransforms(value);
+        }
     }
 
     asArray(source?: string): string[] {
@@ -57,12 +63,12 @@ export class Values {
     }
 
     hasValueFor(key: string): boolean {
-        key = parseVariableName(key);
+        key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key)?.getLocalValue() !== undefined;
     }
 
     hasValueOf(value: any): boolean {
-        value = parseVariableName(value);
+        value = this._resolveKey(value);
         return this.initialValues.find((v) => parseVariableName(v.getLocalValue()) === value) !== undefined;
     }
 
@@ -91,6 +97,11 @@ export class Values {
             }, 0);
             return Math.max(acc, maxPart);
         }, 0);
+    }
+
+    _resolveKey(key: string) {
+        key = parseVariableName(key);
+        return parseVariableName(new Variables(key).resolveWith(this, [key]));
     }
 
     constructor(initalValues?: Value<any>[]) {
@@ -130,6 +141,7 @@ export class Value<T> {
             this.initialValues = this.initialValues.filter((part) => part.source !== source);
             this.sortValues();
         } else {
+            this.initialValues = this.initialValues.filter((part) => part.source !== source);
             this.initialValues.push({
                 value: value,
                 source: source
@@ -204,14 +216,6 @@ export class Value<T> {
         return this.getLocalValue();
     }
 
-    fillValue(values?: Values): T | string | undefined {
-        const localValue = this.localValue;
-        if (!values) return localValue;
-        if (typeof localValue === 'string' && localValue.includes('{'))
-            return fillTextVariables(localValue, values.asDict(), [this.key]);
-        return localValue;
-    }
-
     get isRemote(): boolean {
         return (
             (!this.isSetOfPartialValues()
@@ -222,11 +226,11 @@ export class Value<T> {
     }
 
     get finalValue(): T | string | undefined | Promise<any> {
-        const filledValue = this.fillValue();
-        if (filledValue === undefined) return undefined;
-        if (this.isRemote && typeof filledValue === 'string')
-            return this._fetchRemoteValue(filledValue);
-        return filledValue;
+        const localValue = this.localValue;
+        if (localValue === undefined) return undefined;
+        if (this.isRemote && typeof localValue === 'string')
+            return this._fetchRemoteValue(localValue);
+        return localValue;
     }
 
     sortValues() {
@@ -251,13 +255,3 @@ export class Value<T> {
 
 }
 
-export class Variables {
-
-}
-
-export class Variable {
-    // writtenAs: string;
-    // index: number;
-
-
-}

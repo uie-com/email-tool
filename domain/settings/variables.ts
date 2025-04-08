@@ -1,7 +1,7 @@
+import { Settings } from "../schema/settingsCollection";
 
 export type VariableType = 'Date' | 'Banner' | 'Image' | 'Link';
-export type VariableSettings = { [type in VariableType]: { keywords: string[] } };
-export const VARIABLE_TYPES: VariableSettings = {
+export const VARIABLE_TYPES: Settings<string[]> = {
     "Date": {
         keywords: ['day', 'date', 'time', 'month', 'year', 'timestamp']
     },

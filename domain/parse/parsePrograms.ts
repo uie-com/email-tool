@@ -1,5 +1,5 @@
 import { FormSchema, ValueDict } from "../schema";
-import { parseVariableName } from "./parseVariables";
+import { parseVariableName } from "./parse";
 
 
 export function createProgramForm(programSchema: any, programValues: { [key: string]: string }) {

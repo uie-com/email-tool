@@ -3,7 +3,6 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext } from "../page";
 import { EmailVariable, ValueDict } from "@/domain/schema";
 import { VariableForm } from "./contentFill";
-import { fillTextVariables, parseVariables, sanitizeValueDict } from "@/domain/parse/parseVariables";
 
 const DEBUG = true;
 export function TemplateFill() {

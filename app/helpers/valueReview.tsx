@@ -3,9 +3,7 @@
 import { Button, Flex, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../page";
-import { SettingValue } from "@/domain/settings/settings";
 import { ValueDict } from "@/domain/schema";
-import { fillTextVariables } from "@/domain/parse/parseVariables";
 import moment from "moment-timezone";
 
 
