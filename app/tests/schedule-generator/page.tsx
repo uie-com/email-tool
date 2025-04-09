@@ -1,15 +1,15 @@
 "use client";
 
-import { SETTINGS } from "@/domain/settings/settings";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
-import { getSettings } from "@/domain/parse/parseSettings";
+import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
+import { Session } from "@/domain/data/airtableSessions";
 
 export default function ProgramSchema() {
     const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
-    const form = createEmailsFromSession(EMAIL_SCHEDULE, attributes);
+    const form = createEmailsFromSession(attributes as Session);
 
     return (
         <Flex align="center" justify="center" direction='column' className="w-full h-full" gap={20} style={{ position: 'relative' }}>

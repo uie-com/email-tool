@@ -1,24 +1,30 @@
-import { FormSchema, ValueDict } from "../schema";
+import { Settings } from "../schema/settingsCollection";
+import { EMAIL_TYPES } from "../settings/emails";
 import { parseVariableName } from "./parse";
 
-
-export function createProgramForm(programSchema: any, programValues: { [key: string]: string }) {
-    let form: FormSchema = {};
+export type Form = {
+    [key: string]: {
+        options: string[];
+        default?: string;
+    }
+};
+export function createProgramForm(programValues: { [key: string]: string }, programSchema: Settings<string[] | string> = EMAIL_TYPES) {
+    let form: Form = {};
     Object.keys(programSchema).forEach((key) => {
 
         if (key === 'options') {
             Object.keys(programSchema[key]).forEach((optionKey) => {
-                form[optionKey] = { options: programSchema[key][optionKey] };
+                form[optionKey] = { options: programSchema[key][optionKey] as string[] };
             });
         } else if (key === 'defaults') {
             Object.keys(programSchema[key]).forEach((defaultKey) => {
-                form[defaultKey] = { ...form[defaultKey], default: programSchema[key][defaultKey] };
+                form[defaultKey] = { ...form[defaultKey], default: programSchema[key][defaultKey] as string };
             });
         } else if (Object.keys(programValues).find((valueKey) => parseVariableName(programValues[valueKey]).includes(parseVariableName(key))) !== undefined) {
-            const childForm = createProgramForm(programSchema[key], programValues);
+            const childForm = createProgramForm(programValues, programSchema[key] as Settings<string[] | string>);
             Object.keys(childForm).forEach((childKey) => {
                 if (form[childKey])
-                    childForm[childKey] = { ...form[childKey], ...childForm[childKey] };
+                    childForm[childKey] = { ...(form[childKey]), ...(childForm[childKey]) };
             });
             form = { ...form, ...childForm };
         }
@@ -27,22 +33,6 @@ export function createProgramForm(programSchema: any, programValues: { [key: str
     return form;
 }
 
-export function parseValuesFromForm(programValues: { [key: string]: string }): ValueDict {
-    let values: ValueDict = {};
-    Object.keys(programValues).forEach((key) => {
-        const parsedKey = key;
-        values[parsedKey] = { value: programValues[key] };
-    });
-    return values;
-}
-
-export function createIdentifiersFromForm(programValues: { [key: string]: string }) {
-    let tags: string[] = [];
-    Object.keys(programValues).forEach((key) => {
-        tags.push(`${programValues[key]}`);
-    });
-    return tags;
-}
 
 export function getAllIdentifiers(programSchema: any): string[] {
     let identifiers: string[] = [];

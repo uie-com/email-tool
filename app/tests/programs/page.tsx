@@ -5,7 +5,7 @@ import { SETTINGS } from "@/domain/settings/settings";
 import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
-import { getSettings } from "@/domain/parse/parseSettings";
+import { initializeSettings } from "@/domain/parse/parseSettings";
 
 export default function ProgramSchema() {
     const [attributes, setAttributes] = useState<{ [key: string]: string }>({});
@@ -32,7 +32,7 @@ export default function ProgramSchema() {
             <h2>Form:</h2>
             {JSON.stringify(form, null, ' ')}
             <h2>Settings:</h2>
-            {JSON.stringify(getSettings(SETTINGS, attributes), null, ' ')}
+            {JSON.stringify(initializeSettings(SETTINGS, attributes), null, ' ')}
         </Flex>
     );
 }

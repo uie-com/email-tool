@@ -1,8 +1,7 @@
 
 "use client";
 
-import { ContentHelper } from "@/app/helpers/contentFill";
-import { Variables } from "@/domain/schema/variableCollection";
+import { ContentHelper } from "@/app/helpers/emailEditing/contentFill";
 import { Flex } from "@mantine/core";
 
 export default function Page() {

@@ -1,6 +1,9 @@
 import moment from "moment-timezone";
 import { Email } from "../schema";
-import { getGlobalIdentifiers } from "../settings/globalIdentifiers";
+import { SettingDict, Settings } from "../schema/settingsCollection";
+import { Session } from "../data/airtableSessions";
+import { Values } from "../schema/valueCollection";
+import { EMAIL_SCHEDULE } from "../settings/schedule";
 
 
 /**
@@ -9,31 +12,32 @@ import { getGlobalIdentifiers } from "../settings/globalIdentifiers";
  * @param sessionValues - The session values dictionary.
  * @returns A dictionary of emails with their identifiers and settings.
  */
-export function createEmailsFromSession(schedule: EmailScheduleDict, sessionValues: { [key: string]: string | Date }): { [emailType: string]: Email } {
-    let emailDict: { [emailType: string]: Email } = {};
-    const sessionIdentifiers = Object.keys(sessionValues).map((key) => `${sessionValues[key]}`);
-    const globalIdentifiers = getGlobalIdentifiers(moment(sessionValues["Session Date"]));
-    const identifiers = [...sessionIdentifiers, ...globalIdentifiers];
-
+export function createEmailsFromSession(session: Session, schedule: Settings<string> = EMAIL_SCHEDULE): { [emailType: string]: Email } {
+    let emails: { [emailType: string]: Email } = {};
+    const sessionValues = new Values();
+    sessionValues.addDict(session, 'email');
 
     Object.keys(schedule).forEach((key) => {
         if (key === 'emails') {
             const foundEmails = schedule[key];
-            if (foundEmails as { [emailType: string]: { [key: string]: string } } === undefined) return;
+            if (foundEmails as SettingDict<string> === undefined) return;
             Object.keys(foundEmails).forEach((emailType) => {
-                const foundEmail = foundEmails[emailType];
+                const emailValues = new Values(sessionValues.initialValues);
+                emailValues.addDict(foundEmails[emailType] as SettingDict<string>, 'email');
 
-                emailDict[emailType] = {
-                    identifiers: [...identifiers, emailType],
-                    settings: { ...createValueDictFromDict(sessionValues), ...createValueDictFromDict(foundEmail), "Email Type": { value: emailType } },
-                }
+                emailValues.addValue('Email Type', {
+                    value: emailType,
+                    source: 'email',
+                });
+
+                emails[emailType] = new Email(emailValues);
             });
 
-        } else if (identifiers.includes(key) && schedule[key] as EmailScheduleDict !== undefined) {
-            const childSchedule = createEmailsFromSession(schedule[key] as EmailScheduleDict, sessionValues);
-            emailDict = { ...emailDict, ...childSchedule };
+        } else if (sessionValues.hasValueOf(key) && schedule[key] as Settings<string> !== undefined) {
+            const childSchedule = createEmailsFromSession(session, schedule[key] as Settings<string>);
+            emails = { ...emails, ...childSchedule };
         }
     });
 
-    return emailDict;
+    return emails;
 }

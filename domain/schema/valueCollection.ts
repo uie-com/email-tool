@@ -1,3 +1,4 @@
+import { fetchAirtableData } from "../data/airtable";
 import { parseVariableName } from "../parse/parse";
 import { Variable, Variables } from "./variableCollection";
 
@@ -20,37 +21,60 @@ export class Values {
         else this.initialValues.push(new Value(key, value));
     }
 
-    getInitialValue(key: string): Value<any> | undefined {
+    getValueObj(key: string): Value<any> | undefined {
         key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key);
     }
 
-    getLocalValue(key: string): any | undefined {
+    getCurrentValue(key: string): any | undefined {
         key = this._resolveKey(key);
-        return this.initialValues.find((v) => v.key === key)?.localValue;
+        return this.initialValues.find((v) => v.key === key)?.currentValue;
     }
 
-    getAllValues(key: string): any | undefined {
+    getAllValuesForTesting(key: string): any | undefined {
         key = this._resolveKey(key);
         return this.initialValues.find((v) => v.key === key)?.getAllValues();
     }
 
-    getFinalValue(key: string | Variable): any | undefined {
+    finalValue(key: string): any | undefined {
+        key = this._resolveKey(key);
+        return this.initialValues.find((v) => v.key === key)?.resolveWith(this);
+    }
+
+    resolveValue(key: Variable | string): any | undefined {
         if (typeof key === 'string') {
             key = this._resolveKey(key);
-            return this.initialValues.find((v) => v.key === key)?.finalValue;
-        } else {
-            const variable = key;
-            key = this._resolveKey(variable.name);
-            let value = this.initialValues.find((v) => v.key === key)?.finalValue;
-            if (typeof value === 'string')
-                value = new Variables(value).resolveWith(this, [variable.name]);
-            return variable.resolveTransforms(value);
+            key = new Variable('{' + key + '}', 0);
         }
+        let value = this.finalValue(key.name);
+        if (typeof value === 'string')
+            value = new Variables(value).resolveWith(this, [key.name]);
+        return key.resolveTransforms(value);
+    }
+
+    remoteType(key: string): string | undefined {
+        key = this._resolveKey(key);
+        return this.initialValues.find((v) => v.key === key)?.remoteType;
+    }
+
+    addDict(dict: { [key: string]: any }, source: string) {
+        Object.keys(dict).forEach((key) => {
+            const value = dict[key];
+            if (value !== undefined) {
+                this.addValue(key, {
+                    value: value,
+                    source: (source) as ValueSource,
+                });
+            }
+        });
+    }
+
+    get keys(): string[] {
+        return this.initialValues.map((v) => v.key);
     }
 
     asArray(source?: string): string[] {
-        return this.initialValues.map((v) => v.getLocalValue()).filter((v) => v !== undefined) as string[];
+        return this.initialValues.map((v) => v.getCurrentValue()).filter((v) => v !== undefined) as string[];
     }
 
     _addArray(strings: string[], source?: string) {
@@ -62,14 +86,18 @@ export class Values {
         });
     }
 
+    async populateRemote() {
+        await Promise.all(this.initialValues.map((v) => v.populateRemote(this)));
+    }
+
     hasValueFor(key: string): boolean {
         key = this._resolveKey(key);
-        return this.initialValues.find((v) => v.key === key)?.getLocalValue() !== undefined;
+        return this.initialValues.find((v) => v.key === key)?.getCurrentValue() !== undefined;
     }
 
     hasValueOf(value: any): boolean {
         value = this._resolveKey(value);
-        return this.initialValues.find((v) => parseVariableName(v.getLocalValue()) === value) !== undefined;
+        return this.initialValues.find((a) => a.initialValues.find((v) => parseVariableName(v.value) === value)) !== undefined;
     }
 
     source(source: string): Values {
@@ -111,17 +139,18 @@ export class Values {
     }
 }
 
-export type ValueSource = 'email' | 'settings' | 'user';
-export const VALUE_SOURCE_ORDER: ValueSource[] = ['email', 'settings', 'user'];
+export type ValueSource = 'email' | 'settings' | 'remote' | 'user';
+export const VALUE_SOURCE_ORDER: ValueSource[] = ['email', 'settings', 'remote', 'user'];
 export type ValuePart<T> = {
     value: T;
     part?: number;
-    fetch?: undefined | 'airtable';
-    source?: ValueSource
+    fetch?: undefined | 'text' | 'airtable';
+    source?: ValueSource;
+    message?: string;
 }
 
 export class Value<T> {
-    initialValues: ValuePart<T>[] = [];
+    initialValues: ValuePart<T | string>[] = [];
     name: string;
     key: string;
 
@@ -131,12 +160,12 @@ export class Value<T> {
         this.key = parseVariableName(name);
     }
 
-    addValue(value: ValuePart<T>) {
+    addValue(value: ValuePart<T | string>) {
         this.initialValues.push(value);
         this.sortValues();
     }
 
-    setValue(value: T | undefined, source: ValueSource) {
+    setValue(value: T | string | undefined, source: ValueSource) {
         if (value === undefined) {
             this.initialValues = this.initialValues.filter((part) => part.source !== source);
             this.sortValues();
@@ -150,41 +179,28 @@ export class Value<T> {
         }
     }
 
-    isSetOfPartialValues(values?: ValuePart<T>[]): boolean {
+    partialValueSource(values?: ValuePart<T | string>[]): string | undefined {
         if (!values) values = this.initialValues;
-        return values.length > 1 && values.find((part) => part.part === undefined) === undefined;
+        this.sortValues();
+        const currentSource = values[values.length - 1].source;
+        return values.length > 1 && values.find((part) => part.part === undefined && part.source === currentSource) === undefined ? currentSource : undefined;
     }
 
-    source(source: string): Value<T> {
+    source(source: string): Value<T | string> {
         const values = this.initialValues.filter((part) => part.source === source);
         if (values.length === 0) return new Value(this.name);
         return new Value(this.name, ...values);
     }
 
-    get allInitialValues(): (T | undefined)[] {
-        return this.initialValues.reduce((acc, part) => {
-            if (part.part === undefined) {
-                acc[0] = part.value;
-            } else {
-                while (acc.length <= part.part) {
-                    acc.push(undefined);
-                }
-                acc[part.part] = part.value;
-            }
-            return acc;
-        }, [] as (T | undefined)[]);
-    }
-
-    getLocalValue(): T | string | undefined {
+    getCurrentValue(): T | string | undefined {
         if (this.initialValues.length === 0) return undefined;
         else if (this.initialValues.length === 1) return this.initialValues[0].value;
-        let searchedValues = structuredClone(this.initialValues);
+        if (!this.partialValueSource(this.initialValues))
+            return this.initialValues[this.initialValues.length - 1].value;
 
-        if (!this.isSetOfPartialValues(searchedValues))
-            return searchedValues[searchedValues.length - 1].value;
-
-        searchedValues.sort((a, b) => (a.part ?? 0) - (b.part ?? 0));
-        return searchedValues.map((part) => part.value).join('');
+        const currentSource = this.initialValues[this.initialValues.length - 1].source;
+        this.initialValues.filter((v) => v.source === currentSource).sort((a, b) => (a.part ?? 0) - (b.part ?? 0));
+        return this.initialValues.map((part) => part.value).join('');
     }
 
     getAllValues(): any[][] | undefined {
@@ -192,7 +208,7 @@ export class Value<T> {
         else if (this.initialValues.length === 1) return [[this.initialValues[0].value]];
         let searchedValues = structuredClone(this.initialValues);
 
-        if (!this.isSetOfPartialValues(searchedValues))
+        if (!this.partialValueSource(searchedValues))
             return [[searchedValues[searchedValues.length - 1].value]];
 
         const array = searchedValues.reduce((acc, part) => {
@@ -205,32 +221,45 @@ export class Value<T> {
                 acc[part.part].push(part.value);
             }
             return acc;
-        }, [] as (T | undefined)[][]);
-
-        console.log('Array', array);
+        }, [] as (T | string | undefined)[][]);
 
         return array;
     }
 
-    get localValue(): T | string | undefined {
-        return this.getLocalValue();
+    get currentValue(): T | string | undefined {
+        return this.getCurrentValue();
     }
 
-    get isRemote(): boolean {
-        return (
-            (!this.isSetOfPartialValues()
-                && this.initialValues[this.initialValues.length - 1].fetch !== undefined)
-            || (this.isSetOfPartialValues()
-                && this.initialValues.find((part) => part.fetch) !== undefined)
-        );
+    get remoteType(): string | undefined {
+        const source = this.partialValueSource();
+        if (source === undefined)
+            return this.initialValues[this.initialValues.length - 1].fetch;
+        else
+            return this.initialValues.find((part) => part.fetch && part.source === source)?.fetch;
     }
 
-    get finalValue(): T | string | undefined | Promise<any> {
-        const localValue = this.localValue;
-        if (localValue === undefined) return undefined;
-        if (this.isRemote && typeof localValue === 'string')
-            return this._fetchRemoteValue(localValue);
-        return localValue;
+    resolveWith(values: Values) {
+        let resolvedValue = this.getCurrentValue();
+        if (typeof resolvedValue === 'string')
+            resolvedValue = new Variables(resolvedValue).resolveWith(values, [this.key]);
+        return resolvedValue;
+    }
+
+    async populateRemote(values: Values) {
+        let resolvedValue = this.resolveWith(values), promise = undefined;
+        if (this.remoteType && typeof resolvedValue === 'string')
+            promise = await this._fetchRemoteValue(resolvedValue);
+        if (promise)
+            this.addValue({
+                value: promise,
+                source: 'remote'
+            });
+        else if (this.remoteType)
+            this.addValue({
+                value: '',
+                message: 'Couldn\'t fetch ' + this.remoteType,
+                source: 'remote'
+            });
     }
 
     sortValues() {
@@ -239,15 +268,27 @@ export class Value<T> {
             (VALUE_SOURCE_ORDER.indexOf(b.source ?? 'user') ?? 0) - (a.part ?? 0 * 0.001));
     }
 
+
+
     async _fetchRemoteValue(url: string) {
-        const fetch = this.initialValues.reverse().find((part) => part.fetch);
-        if (fetch && fetch.fetch === 'airtable') {
-            console.log('[Airtable] Fetching setting', this.name, 'with url', fetch.value);
+        const fetchDef = this.initialValues.reverse().find((part) => part.fetch);
+        this.initialValues.reverse();
+        if (fetchDef && fetchDef.fetch === 'airtable') {
+            console.log('[Airtable] Fetching setting', this.name, 'with url', url);
             const response = await fetchAirtableData(url);
             console.log('[Airtable] Fetched data', this.name, response);
             if (response && response.records && response.records.length > 0) {
                 const fieldName = Object.keys(response.records[0].fields)[0];
                 return response.records[0].fields[fieldName];
+            }
+        } else if (fetchDef && fetchDef.fetch === 'text') {
+            console.log('[Text] Fetching setting', this.name, 'with url', url);
+            const response = await fetch(url);
+            if (response.ok) {
+                const text = await response.text();
+                return text;
+            } else {
+                throw new Error('Failed to fetch text');
             }
         }
         return undefined;

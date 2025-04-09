@@ -1,5 +1,5 @@
 
-import { getSettings } from "../parse/parseSettings";
+import { initializeSettings } from "../parse/parseSettings";
 import { Settings } from "../schema/settingsCollection";
 import { ValuePart, ValueSource } from "../schema/valueCollection";
 

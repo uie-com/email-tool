@@ -1,41 +1,40 @@
 "use client";
 
-import { Button, Flex, Table, TableData } from "@mantine/core";
+import { Button, Flex, Loader, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../page";
-import { ValueDict } from "@/domain/schema";
 import moment from "moment-timezone";
+import { isValidHttpUrl } from "@/domain/parse/parseUtility";
+import { Values } from "@/domain/schema/valueCollection";
 
 
 export function ValueReview() {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [settings, setSettings] = useState(editorState.email?.settings);
+    const [values, setValues] = useState<Values | null>(editorState.email?.values ?? null);
+    const [hasResolvedRemote, setHasResolvedRemote] = useState(false);
 
-    if (!settings) {
+    if (!values) {
         return <></>;
     }
-
-    const hasPromises = Object.keys(settings).some((key) => {
-        return settings[key].value instanceof Promise;
-    });
-
     const tableData: TableData = {
         head: ['Variable', 'Value'],
-        body: Object.keys(settings).map((key) => {
-            let displayValue;
-            if (!settings[key].value) return [key, undefined];
+        body: values.keys.map((key) => {
+            let displayValue, value = values.resolveValue(key);
+            if (!value) return [key, undefined];
             if (key === 'id') return [];
 
-            if (settings[key].value instanceof Promise)
-                displayValue = 'Loading...';
-            else if (typeof settings[key].value === 'string')
-                displayValue = fillTextVariables(settings[key].value + '', settings, [key]);
-            else if (settings[key].value instanceof Date)
-                displayValue = moment(settings[key].value).format('dddd, MMMM Do YYYY [at] h:mm A z');
-            else if (typeof settings[key].value === 'object')
-                displayValue = JSON.stringify(settings[key].value);
+            if (values.remoteType(key))
+                displayValue = (<Loader color="black" type="dots" opacity={0.1} />);
+            else if (typeof value === 'string' && (isValidHttpUrl(value) || value.startsWith('./')))
+                displayValue = (<a href={value}>{value}</a>);
+            else if (typeof value === 'string')
+                displayValue = value;
+            else if (value instanceof Date)
+                displayValue = moment(value).format('dddd, MMMM Do YYYY [at] h:mm A z');
+            else if (typeof value === 'object')
+                displayValue = JSON.stringify(value);
             else
-                displayValue = settings[key].value;
+                displayValue = value;
 
             return [
                 key,
@@ -45,19 +44,13 @@ export function ValueReview() {
     }
 
     useEffect(() => {
-        const resolvePromises = async (settings: ValueDict) => {
-            if (hasPromises) {
-                const newSettings = { ...settings };
-                await Promise.all(Object.keys(newSettings).map(async (key) => {
-                    if (newSettings[key].value instanceof Promise) {
-                        newSettings[key].value = await newSettings[key].value;
-                    }
-                }));
-                setSettings(newSettings);
-            }
+        const resolvePromises = async () => {
+            await values.populateRemote();
+            setValues(values);
+            setHasResolvedRemote(true);
         }
-        resolvePromises(settings);
-    }, [settings]);
+        resolvePromises();
+    }, []);
 
     const handleBack = () => {
         setEditorState({ ...editorState, step: 0 });
@@ -65,8 +58,8 @@ export function ValueReview() {
     }
 
     const handleSubmit = async () => {
-        setEditorState({ ...editorState, step: 2, email: { ...editorState.email, settings: settings } });
-        console.log('Approved values. Editor state: ', { ...editorState, step: 2, email: { ...editorState.email, settings: settings } });
+        setEditorState({ ...editorState, step: 2 });
+        console.log('Approved values. Editor state: ', { ...editorState, step: 2 });
     }
 
 
@@ -76,7 +69,7 @@ export function ValueReview() {
                 <Table data={tableData} />
                 <Flex className="w-full" align="center" justify="space-between" gap={10}>
                     <Button variant="light" color="gray" onClick={handleBack}>Back</Button>
-                    <Button variant="filled" onClick={handleSubmit} disabled={hasPromises}>Approve</Button>
+                    <Button variant="filled" onClick={handleSubmit} disabled={!hasResolvedRemote}>Approve</Button>
                 </Flex>
             </Flex>
         </Flex>);

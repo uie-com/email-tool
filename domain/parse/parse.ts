@@ -1,5 +1,6 @@
 
-export function parseVariableName(variable: string) {
+export function parseVariableName(variable?: string) {
+    if (!variable || typeof variable !== 'string') return '';
     // Remove all whitespace and make lowercase
     let name = '';
     if (variable.includes('(')) {

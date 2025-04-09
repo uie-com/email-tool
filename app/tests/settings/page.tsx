@@ -1,8 +1,7 @@
 "use client";
 
 import { getAllIdentifiers } from "@/domain/parse/parsePrograms";
-import { getSettings } from "@/domain/parse/parseSettings";
-import { TestSettingValue, Value } from "@/domain/schema";
+import { initializeSettings } from "@/domain/parse/parseSettings";
 import { SETTINGS } from "@/domain/settings/settings";
 import { EMAIL_TYPES } from "@/domain/settings/emails";
 import { Flex, Table, TableData, Textarea } from "@mantine/core";
@@ -17,10 +16,10 @@ export default function Page() {
         return values;
     }, [identifiers]);
     const settings = useMemo(() => {
-        return getSettings(SETTINGS, values);
+        return initializeSettings(values);
     }, [values]);
     console.log(settings.source('settings'));
-    console.log(Object.keys(settings.source('settings').asDict()).map((key) => settings.source('settings').getAllValues(key)));
+    console.log(Object.keys(settings.source('settings').asDict()).map((key) => settings.source('settings').getAllValuesForTesting(key)));
 
     const tableData: TableData = {
         head: ['Variable', ...Array.from({
@@ -29,7 +28,7 @@ export default function Page() {
         body: Object.keys(settings.source('settings').asDict()).map((key) => {
             return [
                 key,
-                ...(settings.source('settings').getAllValues(key)?.map((a: any[]) => a.join('\n')) ?? [])
+                ...(settings.source('settings').getAllValuesForTesting(key)?.map((a: any[]) => a.join('\n')) ?? [])
             ]
         }),
     }

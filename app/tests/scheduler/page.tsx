@@ -3,7 +3,7 @@
 import { SETTINGS } from "@/domain/settings/settings";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
-import { getSettings } from "@/domain/parse/parseSettings";
+import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
 import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";

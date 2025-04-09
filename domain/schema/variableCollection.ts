@@ -69,13 +69,13 @@ export class Variables {
                 return text;
             }
 
-            let value = values.getFinalValue(variable);
+            let value = values.resolveValue(variable);
             if (DEBUG) console.log('Found variable', variable.writtenAs, 'with value[' + variable.name + ']' + value);
 
-            if ((typeof value === 'string' || value as string) && value.length > 0) {
+            if ((typeof value === 'string' && value.length > 0) || (typeof value !== 'string' && value !== undefined)) {
                 value = value as string;
                 text = text.slice(0, startIndex) + value + text.slice(endIndex + 1);
-                console.log('Replaced', variable.writtenAs, 'with', value, 'offset', value.length - variable.writtenAs.length);
+                if (DEBUG) console.log('Replaced', variable.writtenAs, 'with', value, 'offset', value.length - variable.writtenAs.length);
                 return text;
             }
 
@@ -194,7 +194,7 @@ export class Variable {
         return new Variable('{' + new Variables(this.writtenNoBraces).resolveWith(values, [this.name]) + '}', this.index);
     }
 
-    resolveTransforms(value: any): string {
+    resolveTransforms(value: any): any {
         this.transforms.forEach(transform => {
             if (value instanceof Date || value instanceof moment) {
                 try {

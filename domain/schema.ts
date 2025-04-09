@@ -1,5 +1,5 @@
-import Quill, { Delta } from "quill";
-import { SETTINGS } from "./settings/settings";
+
+import { initializeSettings } from "./parse/parseSettings";
 import { Values } from "./schema/valueCollection";
 
 export type EditorState = {
@@ -7,21 +7,11 @@ export type EditorState = {
     step: number;
 }
 
-export type FormSchema = {
-    [key: string]: {
-        options: string[];
-        default?: string;
-    };
-};
-
 export class Email {
-    identifiers?: string[]; // Tags that are used to identify the email
-    values?: Values;
+    values: Values;
     html?: string; // HTML content of the email
-    content?: {
-        sourceRichText: Delta;
-        sourcePlainText: string;
-        filledRichText: Delta;
-        filledPlainText: string;
-    };
+
+    constructor(values: Values) {
+        this.values = initializeSettings(values);
+    }
 }

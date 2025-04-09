@@ -1,11 +1,11 @@
 "use client";
 
-import { ContentHelper } from "./helpers/contentFill";
+import { ContentHelper } from "./helpers/emailEditing/contentFill";
 import { useState, createContext, useMemo } from "react";
 import { EditorState, Email } from "@/domain/schema";
 import { EmailCreator } from "./helpers/emailCreation/emailCreator";
 import { ValueReview } from "./helpers/valueReview";
-import { TemplateFill } from "./helpers/templateFill";
+import { TemplateFill } from "./helpers/emailEditing/templateFill";
 import { EmailSelector } from "./helpers/emailCreation/emailSelector";
 
 export const EditorContext = createContext<[EditorState, (state: EditorState) => void]>([{ step: 0 }, () => { }]);

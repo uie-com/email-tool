@@ -1,4 +1,5 @@
 import moment from "moment-timezone";
+import { Moment } from "moment-timezone";
 import { MIN_DAYS_IN_BREAK, SESSION_BASE, SESSION_TABLE } from "../settings/schedule";
 
 export type AirtableSessionRecord = {
@@ -12,15 +13,17 @@ export type AirtableSessionRecord = {
 }
 
 export type Session = {
-    id: string;
+    "id": string;
     "Session Date": Date;
-    Program: string;
-    Topic?: string;
+    "Program": string;
+    "Topic"?: string;
     "Session Type"?: string;
-    Cohort?: string;
+    "Cohort"?: string;
     "Is Transition"?: string;
     "Is Before Break"?: string;
     "Is After Break"?: string;
+
+    [key: string]: any;
 }
 
 async function fetchRecords(): Promise<AirtableSessionRecord[]> {
@@ -88,6 +91,7 @@ export async function getSessionSchedule() {
 
     sessions = markTransitions(sessions);
     sessions = markBreaks(sessions);
+    sessions = addSessionDateValues(sessions);
 
     return sessions;
 }
@@ -128,6 +132,7 @@ function markBreaks(sessions: Session[]): Session[] {
     });
     return sessions;
 }
+
 function markBreaksForProgram(sessions: Session[], program: string): Session[] {
     let lastSession: Session | null = null;
     sessions.forEach((session, index) => {
@@ -146,4 +151,34 @@ function markBreaksForProgram(sessions: Session[], program: string): Session[] {
     }
     );
     return sessions;
+}
+
+function addSessionDateValues(sessions: Session[]): Session[] {
+    sessions.map((session) => {
+        return { ...session, ...getSessionDateValues(moment(session["Session Date"])) };
+    });
+    return sessions;
+}
+
+
+/**
+ * Generates contextual, time-based identifiers for emails based on the provided date.
+ * @param date - The date to generate identifiers for.
+ * @returns An array of global identifiers.
+ */
+export function getSessionDateValues(date: Moment): { [key: string]: string } {
+    const globalIdentifiers: { [key: string]: string } = {};
+
+    if (date.isDST()) {
+        globalIdentifiers['Session DST'] = ('EDT');
+    }
+
+    const dayOfWeek = date.format('dddd');
+    globalIdentifiers['Session Day of Week'] = (dayOfWeek);
+
+    const weekOfYear = date.format('w');
+    const isOddWeek = parseInt(weekOfYear) % 2 === 1;
+    globalIdentifiers['Session Week Type'] = (isOddWeek ? 'Odd Week' : 'Even Week');
+
+    return globalIdentifiers;
 }

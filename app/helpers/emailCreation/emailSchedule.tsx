@@ -1,11 +1,8 @@
 import { EditorContext } from "@/app/page";
 import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
-import { getSettings } from "@/domain/parse/parseSettings";
 import { Email } from "@/domain/schema";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
-import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
-import { SETTINGS } from "@/domain/settings/settings";
 import { Button, Center, Flex, Loader, Pill, ScrollArea, Text, Title } from "@mantine/core";
 import { IconCalendar, IconCalendarFilled, IconCalendarWeekFilled, IconMail, IconMailFilled } from "@tabler/icons-react";
 import moment from "moment-timezone";
@@ -40,10 +37,13 @@ export function EmailSchedule() {
 }
 
 function SessionEntry({ session }: { session: Session }) {
-    const colorMain = PROGRAM_COLORS[session.Program] + '44';
-    const colorPill = PROGRAM_COLORS[session.Program] + 'ff';
+    const colorMain = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + '44';
+    const colorPill = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + 'ff';
 
-    const emails = useMemo(() => createEmailsFromSession(EMAIL_SCHEDULE, session), [EMAIL_SCHEDULE, session]);
+
+    const emails = useMemo(() => createEmailsFromSession(session), [session]);
+    if (Object.keys(emails).length > 0)
+        console.log(emails);
 
     if (!emails || Object.keys(emails).length === 0) return null;
 
@@ -72,26 +72,19 @@ function SessionEntry({ session }: { session: Session }) {
 function EmailEntry({ email, session }: { email: Email, session: Session }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
-    const colorMain = PROGRAM_COLORS[session.Program] + '22';
-    const colorPill = PROGRAM_COLORS[session.Program] + 'ff';
+    const colorMain = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + '22';
+    const colorPill = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + 'ff';
 
-    const settings = email.settings ?? {};
-    if (!settings) return null;
-    const type = settings["Email Type"].value && typeof settings["Email Type"].value === 'string' ? settings["Email Type"].value : 'Unknown';
-    const sendDate = fillTextVariables(settings["Send Date"].value as string, settings, ["Send Date"]);
+    const type = email.values.getCurrentValue('Email Type');
+    const sendDate = email.values.resolveValue('Send Date');
 
     const sendDateMessage = sendDate ? moment(sendDate).format('dddd, MMMM D') : null;
     const daysAway = sendDate ? moment(sendDate).diff(moment(), 'days') : null;
     const daysAwayMessage = daysAway ? (daysAway > 0 ? `in ${daysAway} days` : `${-daysAway} days ago`) : null;
 
     const handleSubmit = async () => {
-        const identifiers = email.identifiers;
-        const emailData = {
-            identifiers: identifiers,
-            settings: { ...email.settings, ...getSettings(SETTINGS, email.settings) },
-        }
-        console.log('Starting an email as ', emailData);
-        setEditorState({ step: 1, email: emailData });
+        console.log('Starting an email as ', email);
+        setEditorState({ step: 1, email: email });
     };
 
 

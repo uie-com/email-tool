@@ -1,5 +1,5 @@
 
-function fetchAirtableData(url: string): Promise<any> {
+export function fetchAirtableData(url: string): Promise<any> {
 
     return new Promise((resolve, reject) => {
         fetch(url, {

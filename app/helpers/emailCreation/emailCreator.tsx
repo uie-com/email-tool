@@ -1,21 +1,18 @@
-import { FormSchema } from "@/domain/schema";
-import { Autocomplete, Button, Combobox, Flex, TextInput, useCombobox } from "@mantine/core";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Button, Combobox, Flex, TextInput, useCombobox } from "@mantine/core";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext } from "../../page";
-import { createProgramForm, createIdentifiersFromForm } from "@/domain/parse/parsePrograms";
-import { EMAIL_TYPES } from "@/domain/settings/emails";
+import { createProgramForm, Form } from "@/domain/parse/parsePrograms";
 import { focusOnNext, focusOnPrev } from "@/domain/form";
-import { SETTINGS } from "@/domain/settings/settings";
-import { getSettings } from "@/domain/parse/parseSettings";
 import { parseVariableName } from "@/domain/parse/parse";
+import { Values } from "@/domain/schema/valueCollection";
+import { Email } from "@/domain/schema";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [values, setValues] = useState<{ [key: string]: string }>({});
 
-
     const formSchema = useMemo(() => {
-        return createProgramForm(EMAIL_TYPES, values);
+        return createProgramForm(values);
     }, [values]);
 
     const handleValueChange = (key: string, value: string) => {
@@ -30,9 +27,12 @@ export function EmailCreator() {
     }
 
     const handleSubmit = async () => {
-        const identifiers = createIdentifiersFromForm(values);
-        console.log('Starting an email as ', { identifiers: identifiers, settings: getSettings(SETTINGS, createValueDictFromDict(values)) });
-        setEditorState({ step: 1, email: { identifiers: identifiers, settings: getSettings(SETTINGS, createValueDictFromDict(values)) } });
+        const emailValues = new Values();
+        emailValues.addDict(values, 'email');
+        const email = new Email(emailValues);
+
+        console.log('Starting an email as ', email);
+        setEditorState({ step: 1, email: email });
     }
 
     const handleReset = () => {
@@ -51,7 +51,7 @@ export function EmailCreator() {
     )
 }
 
-function FormBuilder({ form, values, handleValueChange }: { form: FormSchema, values: { [key: string]: string }, handleValueChange: (key: string, value: string) => void }) {
+function FormBuilder({ form, values, handleValueChange }: { form: Form, values: { [key: string]: string }, handleValueChange: (key: string, value: string) => void }) {
 
     return (
         <>
