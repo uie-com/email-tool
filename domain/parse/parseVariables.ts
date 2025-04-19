@@ -20,13 +20,13 @@ export function fillQuillVariables(variables: Variables, values: Values): Op[] {
         const startIndex = variable.index + totalOffset;
         const endIndex = variable.index + variable.writtenAs.length + 1 + totalOffset;
         const foundVariable = variable.writtenAs;
-        const foundName = variable.name;
-        let value = values.finalValue(variable.name);
+        const foundName = variable.key;
+        let value = values.finalValue(variable.key);
         if (DEBUG) console.log('Found variable', foundVariable, 'with value', value);
 
         if (typeof value === 'string' && value.includes('{')) {
             if (DEBUG) console.log('Found internal variable in', value);
-            value = new Variables(value)._fillVariables(value, values, [foundName]);
+            value = new Variables(value, [foundName])._fillVariables(value, values);
             if (DEBUG) console.log('Filled internal variables to', value);
         }
         value = variable.resolveTransforms(value);

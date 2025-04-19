@@ -1,6 +1,6 @@
 import moment from "moment-timezone";
 import { Moment } from "moment-timezone";
-import { MIN_DAYS_IN_BREAK, SESSION_BASE, SESSION_TABLE } from "../settings/schedule";
+import { fetchRecords } from "./airtable";
 
 export type AirtableSessionRecord = {
     id: string;
@@ -19,31 +19,37 @@ export type Session = {
     "Topic"?: string;
     "Session Type"?: string;
     "Cohort"?: string;
+
+    "Is First Session Of Week"?: string;
+    "Is Last Session Of Week"?: string;
+
+    "Is First Session Of Program"?: string;
+    "Is Last Session Of Program"?: string;
+
     "Is Transition"?: string;
     "Is Before Break"?: string;
     "Is After Break"?: string;
 
+    'Is Combined Workshop Session'?: string;
+    "Lecture Date"?: Date;
+    "Lecture Time"?: string;
+    "Coaching Date"?: Date;
+    "Coaching Time"?: string;
+
+    "Is Combined Options Session"?: string;
+    "First Option Date"?: Date;
+    "First Time"?: string;
+    "Second Option Date"?: Date;
+    "Second Time"?: string;
+
+    'Is DST'?: string;
+    'Session Day of Week'?: string;
+    'Session Week Type'?: string;
+
     [key: string]: any;
 }
 
-async function fetchRecords(): Promise<AirtableSessionRecord[]> {
-    let records: AirtableSessionRecord[] = [];
-    let offset: string | undefined = '';
 
-    while (offset !== undefined) {
-        const response: Response = await fetch(`https://api.airtable.com/v0/${SESSION_BASE}/${SESSION_TABLE}${offset ? '?offset=' + offset : ''}`, {
-            headers: {
-                Authorization: `Bearer ${process.env.AIRTABLE_READ_API_KEY}`,
-            },
-        });
-        const data = await response.json()
-        if (data.records) {
-            records = records.concat(data.records);
-        }
-        offset = data.offset ?? undefined;
-    }
-    return records;
-}
 
 export async function getSessionSchedule() {
     let sessions: Session[] = [];
@@ -60,6 +66,7 @@ export async function getSessionSchedule() {
 
             if (program === 'TUXS') {
                 [topic, sessionType] = [sessionType, topic];
+                sessionType = sessionType + ' Topic';
             }
 
             if (cohorts && cohorts.length >= 1)
@@ -89,10 +96,102 @@ export async function getSessionSchedule() {
 
     sessions = sortSessionsByDate(sessions);
 
+    sessions = combineWorkshopSessions(sessions);
+    sessions = combineOptionsSessions(sessions);
+
+    sessions = addSessionWeekContext(sessions);
     sessions = markTransitions(sessions);
     sessions = markBreaks(sessions);
-    sessions = addSessionDateValues(sessions);
 
+    sessions = addSessionDateValues(sessions);
+    sessions = addSessionProgramContext(sessions);
+
+    sessions = addNextWeekSessions(sessions);
+
+    console.log('Sessions: ', sessions);
+    return sessions;
+}
+
+function addNextWeekSessions(sessions: Session[]): Session[] {
+    sessions.forEach((session) => {
+        const sessionDate = moment(session["Session Date"]);
+        let nextWeekSessions = sessions.filter((s) => (
+            s.id !== session.id
+            && s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionDate.isoWeek() + 1
+            && moment(s["Session Date"]).isAfter(sessionDate)
+        ));
+        if (!nextWeekSessions || nextWeekSessions.length === 0)
+            return;
+        nextWeekSessions = sortSessionsByDate(nextWeekSessions);
+
+        nextWeekSessions.forEach((nextSession, i) => {
+            let prefix = 'Next Session #' + (i + 1) + ' ';
+            prefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+            Object.keys(nextSession).forEach((key) => {
+                if (key === "id") return;
+                if (key === "Program") return;
+                key = key.replace('Session', '');
+                session[prefix + key] = nextSession[key];
+            });
+        });
+
+    });
+
+    return sessions;
+}
+
+function addSessionProgramContext(sessions: Session[]): Session[] {
+    sessions.forEach((session, index) => {
+        const sessionBeforeInProgram = sessions.find((s) => (
+            s.id !== session.id
+            && s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isBefore(session["Session Date"])
+        ));
+        const sessionAfterInProgram = sessions.find((s) => (
+            s.id !== session.id
+            && s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isAfter(session["Session Date"])
+        ));
+
+        if (!sessionAfterInProgram)
+            session["Is Last Session Of Program"] = 'Is Last Session Of Program';
+        if (!sessionBeforeInProgram)
+            session["Is First Session Of Program"] = 'Is First Session Of Program';
+    });
+    return sessions;
+}
+
+function addSessionWeekContext(sessions: Session[]): Session[] {
+    sessions.forEach((session, index) => {
+        const sessionDate = moment(session["Session Date"]);
+        const sessionWeek = sessionDate.isoWeek();
+
+        const sessionBeforeInWeek = sessions.find((s) => (
+            s.id !== session.id
+            && s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionWeek
+            && moment(s["Session Date"]).isBefore(sessionDate)
+        ));
+
+        const sessionAfterInWeek = sessions.find((s) => (
+            s.id !== session.id
+            && s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionWeek
+            && moment(s["Session Date"]).isAfter(sessionDate)
+        ));
+
+        if (!sessionAfterInWeek)
+            session["Is Last Session Of Week"] = 'Is Last Session Of Week';
+        if (!sessionBeforeInWeek)
+            session["Is First Session Of Week"] = 'Is First Session Of Week';
+
+    })
     return sessions;
 }
 
@@ -120,7 +219,7 @@ function markTransitions(sessions: Session[]): Session[] {
         const lastSessionTopicNumber = parseInt(lastSession.Topic.split(" ")[1]);
         const currentSessionTopicNumber = parseInt(session.Topic.split(" ")[1]);
         const isTransition = lastSessionTopicNumber + 1 !== currentSessionTopicNumber;
-        session["Is Transition"] = 'Transition';
+        session["Is Transition"] = 'Is Transition';
     });
     return sessions;
 }
@@ -141,10 +240,12 @@ function markBreaksForProgram(sessions: Session[], program: string): Session[] {
         if (lastSession && session.Cohort === lastSession.Cohort) {
             const lastSessionDate = moment(lastSession["Session Date"]);
             const currentSessionDate = moment(session["Session Date"]);
-            const diffInDays = currentSessionDate.diff(lastSessionDate, 'days');
-            if (diffInDays > MIN_DAYS_IN_BREAK) {
-                lastSession["Is Before Break"] = "Before Break";
-                session["Is After Break"] = "After Break";
+            const lastSessionWeek = moment(lastSessionDate).isoWeek();
+            const currentSessionWeek = moment(currentSessionDate).isoWeek();
+
+            if (currentSessionWeek - lastSessionWeek > 1) {
+                lastSession["Is Before Break"] = "Is Before Break";
+                session["Is After Break"] = "Is After Break";
             }
         }
         lastSession = session;
@@ -153,11 +254,84 @@ function markBreaksForProgram(sessions: Session[], program: string): Session[] {
     return sessions;
 }
 
+function combineWorkshopSessions(sessions: Session[]): Session[] {
+    let combinedSessions: Session[] = [], skip: Session[] = [];
+    sessions.forEach((session, index) => {
+        if (skip.includes(session)) return;
+        const firstSession = session;
+        const secondSession = sessions.find((secondSession) => (
+            secondSession
+            && firstSession !== secondSession
+            && firstSession.Cohort === secondSession.Cohort
+            && firstSession.Topic === secondSession.Topic
+            && firstSession.Program === secondSession.Program
+            && firstSession["Session Type"] === "Lecture"
+            && secondSession["Session Type"] === "Coaching"
+            && moment(firstSession["Session Date"]).format('YYYY-MM-DD') === moment(secondSession["Session Date"]).format('YYYY-MM-DD')
+        ));
+
+        if (secondSession) {
+            const combinedSession: Session = {
+                ...firstSession,
+                "Is Combined Workshop Session": "Is Combined Workshop Session",
+                "Lecture Date": firstSession["Session Date"],
+                "Coaching Date": secondSession["Session Date"],
+                "Session Type": '',
+            };
+            combinedSessions.push(combinedSession);
+            skip.push(secondSession);
+        } else {
+            combinedSessions.push(session);
+        }
+    });
+    return combinedSessions;
+}
+
+function combineOptionsSessions(sessions: Session[]): Session[] {
+    let combinedSessions: Session[] = [], skip: Session[] = [];
+    sessions.forEach((session, index) => {
+        if (skip.includes(session)) return;
+
+        const firstSession = session;
+        const secondSession = sessions.find((secondSession) => (
+            secondSession
+            && firstSession !== secondSession
+            && firstSession.Cohort === secondSession.Cohort
+            && firstSession.Topic === secondSession.Topic
+            && firstSession.Program === secondSession.Program
+            && firstSession["Session Type"] === secondSession["Session Type"]
+            && moment(firstSession["Session Date"]).format('YYYY-MM-DD') === moment(secondSession["Session Date"]).format('YYYY-MM-DD')
+        ));
+
+        if (secondSession) {
+            const combinedSession: Session = {
+                ...firstSession,
+                "Is Combined Options Session": "Is Combined Options Session",
+                "First Session Date": firstSession["Session Date"],
+                "Second Session Date": secondSession["Session Date"],
+            };
+            combinedSessions.push(combinedSession);
+            skip.push(secondSession);
+        } else {
+            combinedSessions.push(session);
+        }
+    });
+    return combinedSessions;
+}
+
 function addSessionDateValues(sessions: Session[]): Session[] {
     sessions.map((session) => {
         return { ...session, ...getSessionDateValues(moment(session["Session Date"])) };
     });
     return sessions;
+}
+
+const special = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'];
+const deca = ['twent', 'thirt', 'fort', 'fift', 'sixt', 'sevent', 'eight', 'ninet'];
+function stringifyNumber(n: number) {
+    if (n < 20) return special[n];
+    if (n % 10 === 0) return deca[Math.floor(n / 10) - 2] + 'ieth';
+    return ((deca[Math.floor(n / 10) - 2] + 'y-' + special[n % 10]) as string);
 }
 
 
@@ -170,7 +344,7 @@ export function getSessionDateValues(date: Moment): { [key: string]: string } {
     const globalIdentifiers: { [key: string]: string } = {};
 
     if (date.isDST()) {
-        globalIdentifiers['Session DST'] = ('EDT');
+        globalIdentifiers['Is DST'] = ('Is DST');
     }
 
     const dayOfWeek = date.format('dddd');

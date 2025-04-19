@@ -4,6 +4,6 @@ export const PROGRAM_COLORS = {
     'Research': '#652450',
     'Win': '#8c9b28',
     'Stand Out': '#e26730',
-    'Visions': '#e26730',
-    'TUXS': '#00a5b7',
+    'Visions': '#00a5b7',
+    'TUXS': '#00a3b4',
 }

@@ -30,3 +30,12 @@ body {
   font-size: 13px !important;
   /* padding-bottom: 0.25rem !important; */
 }
+
+::placeholder {
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+
+input {
+  text-decoration: none !important;
+}

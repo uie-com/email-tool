@@ -4,7 +4,7 @@ import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
 import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
-import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
+import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
 import { Session } from "@/domain/data/airtableSessions";
 
 export default function ProgramSchema() {

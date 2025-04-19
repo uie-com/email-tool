@@ -9,15 +9,17 @@ import { useMemo, useState } from "react";
 import { Values } from "@/domain/schema/valueCollection";
 
 export default function Page() {
-    const [identifiers, setIdentifiers] = useState<string[]>(getAllIdentifiers(EMAIL_TYPES));
+    const [identifiers, setIdentifiers] = useState<string[]>([]);
     const values = useMemo(() => {
         const values = new Values();
-        values._addArray(identifiers, 'email');
+        values._addArray(identifiers.length === 0 ? getAllIdentifiers(EMAIL_TYPES) : identifiers, 'email');
         return values;
     }, [identifiers]);
+
     const settings = useMemo(() => {
         return initializeSettings(values);
     }, [values]);
+
     console.log(settings.source('settings'));
     console.log(Object.keys(settings.source('settings').asDict()).map((key) => settings.source('settings').getAllValuesForTesting(key)));
 

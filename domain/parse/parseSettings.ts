@@ -13,12 +13,13 @@ const DEBUG = false;
 // Returns a one-level bundle of the final settings for a given set of tags
 export const initializeSettings = (values?: Values): Values => {
     values = new Values(values?.initialValues);
-    console.log('Initializing settings with values: ', new Values(values.initialValues));
+    if (DEBUG) console.log('Initializing settings with values: ', new Values(values.initialValues));
 
     if (!values) values = new Values();
     if (SETTINGS.settings as SettingDict<ValuePart<any>>)
         values = saveSettings(SETTINGS.settings as SettingDict<ValuePart<any>>, values);
     values = findSettings(SETTINGS, values);
+    if (DEBUG) console.log('Final settings: ', values);
     return values;
 }
 
@@ -32,7 +33,13 @@ function saveSettings(settings: SettingDict<ValuePart<any>>, values: Values) {
 function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
     if (DEBUG) console.log('Searching for relevant dictionaries at', settings);
     Object.keys(settings).forEach((key) => {
-        if (!values.source('email').hasValueOf(key)) return;
+        let [keyName, keyValue] = key.split(':');
+        if (keyName.startsWith('Is'))
+            keyValue = keyName;
+        else if (!keyName || !keyValue && key !== 'settings')
+            console.warn('Invalid settings filter key: "' + key + '". This should be in the form of "key:value"');
+
+        if (!values.source('email').hasValueForOf(keyName, keyValue) && !values.source('schedule').hasValueForOf(keyName, keyValue)) return;
         if (DEBUG) console.log('Found settings for', key);
         if ((settings[key].settings as SettingDict<ValuePart<any>>))
             values = saveSettings(settings[key].settings as SettingDict<ValuePart<any>>, values);

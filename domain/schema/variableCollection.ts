@@ -1,27 +1,31 @@
 import moment from "moment-timezone";
 import { parseVariableName } from "../parse/parse";
-import { VARIABLE_TYPES, VariableType } from "../settings/variables";
+import { VARIABLE_OVERRIDES, VARIABLE_TYPES, VariableType } from "../settings/variables";
 import { Value, Values } from "./valueCollection";
+import { resolveTransforms } from "../parse/transforms";
+import { PRE_APPROVED_VALUES } from "../settings/settings";
 
 const DEBUG = false;
 export class Variables {
     variables: Variable[] = [];
+    parentKeys: string[] = [];
     source: string;
 
-    constructor(text: string) {
+    constructor(text: string, parentKeys: string[] = []) {
         if (DEBUG) console.log('Parsing variable collection for', text);
-        this._parseVariables(text);
+        this.parentKeys = parentKeys;
+        this._parseVariables(text, this.parentKeys);
         this.source = text;
     }
 
     addVariable(writtenAs: string, at: number) {
-        const variable = new Variable(writtenAs, at);
+        const variable = new Variable(writtenAs, at, this.parentKeys);
         this.variables.push(variable);
         this.sortVariables();
     }
 
-    resolveWith(values: Values, used: string[]): string {
-        return this._fillVariables(this.source, values, used);
+    resolveWith(values: Values): string {
+        return this._fillVariables(this.source, values);
     }
 
     sortVariables() {
@@ -31,7 +35,7 @@ export class Variables {
     getUniqueVariables(variables: Variable[] = this.variables): Variable[] {
         const uniqueVariables: Variable[] = [];
         variables.forEach(variable => {
-            if (uniqueVariables.find(v => v.name === variable.name) === undefined) {
+            if (uniqueVariables.find(v => v.key === variable.key) === undefined) {
                 uniqueVariables.push(variable);
             }
         }
@@ -40,7 +44,7 @@ export class Variables {
     }
 
     getDisplayVariables(values?: Values): Variable[] {
-        const sum = [
+        let sum = [
             ...this.variables.map(variable => {
                 if (values === undefined) return variable;
                 return variable.resolveDependencies(values);
@@ -49,28 +53,29 @@ export class Variables {
                 return variable.resolveDependencies(values);
             }) : [])
         ]
+        sum = sum.filter(variable => PRE_APPROVED_VALUES.includes(variable.name) === false);
         return this.getUniqueVariables(sum);
     }
 
     getValueVariables(values: Values): Variable[] {
-        return new Variables(values.asArray().join(',')).variables;
+        return new Variables(values.asArray().join(','), this.parentKeys).variables;
     }
 
-    _fillVariables(text: string, values: Values, used: string[]): string {
-        if (DEBUG) console.log('Filling variables in', text);
+    _fillVariables(text: string, values: Values): string {
+        // console.warn('Filling variables inside of', this.parentKeys.join(', '));
         if (DEBUG) console.log('- Using', values);
-        if (DEBUG) console.log('- Variable Stack', used);
+        if (DEBUG) console.log('- Variable Stack', this.parentKeys);
 
-        this._parseVariables(text, (variable, startIndex, endIndex) => {
+        this._parseVariables(text, this.parentKeys, (variable, startIndex, endIndex) => {
             if (DEBUG) console.log('Filling variable', variable.writtenAs, 'at', startIndex, endIndex);
 
-            if (used.find(v => v === variable.name) !== undefined) {
+            if (this.parentKeys.find(v => v === variable.key) !== undefined) {
                 console.error('Circular reference detected for', variable);
                 return text;
             }
 
             let value = values.resolveValue(variable);
-            if (DEBUG) console.log('Found variable', variable.writtenAs, 'with value[' + variable.name + ']' + value);
+            if (DEBUG) console.log('Found variable', variable.writtenAs, 'with value[' + variable.key + ']' + value);
 
             if ((typeof value === 'string' && value.length > 0) || (typeof value !== 'string' && value !== undefined)) {
                 value = value as string;
@@ -85,7 +90,7 @@ export class Variables {
         return text;
     }
 
-    _parseVariables(text: string, callback?: (variable: Variable, startIndex: number, endIndex: number) => string) {
+    _parseVariables(text: string, used: string[], callback?: (variable: Variable, startIndex: number, endIndex: number) => string) {
         let index = 0, isInStyleTag = 0;
         while (index < text.length) {
             if (text.substring(index, index + 6) === '<style') isInStyleTag++;
@@ -110,8 +115,13 @@ export class Variables {
             }
 
             const writtenAs = text.substring(startIndex, index + 1);
-            const variable = new Variable(writtenAs, startIndex);
+            const variable = new Variable(writtenAs, startIndex, [...this.parentKeys, ...used]);
             let newText = text;
+
+            if (used.find(v => v === variable.key) !== undefined) {
+                console.error('Circular reference detected for', variable);
+                return text;
+            }
 
             if (!callback)
                 this.variables.push(variable);
@@ -128,10 +138,26 @@ export class Variables {
 export class Variable {
     writtenAs: string;
     index: number;
+    parentKeys: string[] = [];
 
-    constructor(writtenAs: string, at: number) {
+    constructor(writtenAs: string, at: number, parentKeys: string[] = []) {
+        this.parentKeys = parentKeys;
         this.writtenAs = writtenAs;
         this.index = at;
+        this.replaceOverrides();
+    }
+
+    replaceOverrides() {
+        const replaceAll = (str: string, strReplace: string, strWith: string) => {
+            // See http://stackoverflow.com/a/3561711/556609
+            var esc = strReplace.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            var reg = new RegExp(esc, 'ig');
+            return str.replace(reg, strWith);
+        };
+        Object.keys(VARIABLE_OVERRIDES).forEach(override => {
+            this.writtenAs = replaceAll(this.writtenAs, ' ' + override, ' ' + VARIABLE_OVERRIDES[override]);
+            this.writtenAs = replaceAll(this.writtenAs, override + ' ', VARIABLE_OVERRIDES[override] + ' ');
+        });
     }
 
     get writtenNoBraces(): string {
@@ -149,7 +175,7 @@ export class Variable {
         return tokens?.map(token => token.substring(1, token.length - 1)) ?? [];
     }
 
-    get writtenName(): string {
+    get name(): string {
         const lastInternalEndIndex = this.writtenNoBraces.lastIndexOf('}');
 
         let nameArea;
@@ -168,14 +194,14 @@ export class Variable {
         return nameArea.trim();
     }
 
-    get name() {
-        return parseVariableName(this.writtenName);
+    get key() {
+        return parseVariableName(this.name);
     }
 
     get type() {
         let result = 'String';
         Object.keys(VARIABLE_TYPES).forEach(type => {
-            if ((VARIABLE_TYPES[type as VariableType].keywords as string[]).find(keyword => this.name.includes(keyword)) !== undefined) {
+            if ((VARIABLE_TYPES[type as VariableType].keywords as string[]).find(keyword => this.key.includes(keyword)) !== undefined) {
                 result = type;
             }
         });
@@ -187,38 +213,15 @@ export class Variable {
     }
 
     get parents(): Variables {
-        return new Variables(this.writtenNoBraces);
+        return new Variables(this.writtenNoBraces, [this.key, ...this.parentKeys]);
     }
 
     resolveDependencies(values: Values): Variable {
-        return new Variable('{' + new Variables(this.writtenNoBraces).resolveWith(values, [this.name]) + '}', this.index);
+        return new Variable('{' + new Variables(this.writtenNoBraces, [this.key, ...this.parentKeys]).resolveWith(values) + '}', this.index, [this.key, ...this.parentKeys]);
     }
 
     resolveTransforms(value: any): any {
-        this.transforms.forEach(transform => {
-            if (value instanceof Date || value instanceof moment) {
-                try {
-                    if (moment.tz.zone(transform.replace('GMT', 'Africa/Abidjan')) !== null) {
-                        value = moment(value).tz("America/New_York", true).clone().tz(transform.replace('GMT', 'Africa/Abidjan')).toDate();
-                    } else if (transform.substring(0, 1) === '+') {
-                        if (transform.substring(transform.length - 1, transform.length) === 'd') {
-                            value = moment(value).add(parseInt(transform.substring(1, transform.length - 1)), 'days').toDate();
-                        } else if (transform.substring(transform.length - 1, transform.length) === 'h') {
-                            value = moment(value).add(parseInt(transform.substring(1, transform.length - 1)), 'hours').toDate();
-                        }
-                    } else if (transform.substring(0, 1) === '-') {
-                        if (transform.substring(transform.length - 1, transform.length) === 'd') {
-                            value = moment(value).add(-1 * parseInt(transform.substring(1, transform.length - 1)), 'days').toDate();
-                        } else if (transform.substring(transform.length - 1, transform.length) === 'h') {
-                            value = moment(value).add(-1 * parseInt(transform.substring(1, transform.length - 1)), 'hours').toDate();
-                        }
-                    } else {
-                        value = moment(value).format(transform);
-                    }
-                } catch { }
-            }
-        });
-        return value;
+        return resolveTransforms(this.transforms, value);
     }
 
 }

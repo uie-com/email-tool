@@ -33,6 +33,27 @@ export function createProgramForm(programValues: { [key: string]: string }, prog
     return form;
 }
 
+export function getAllPossibleEmailTypes(programSchema: any = EMAIL_TYPES): { [label: string]: string[] } {
+    let emailTypes: { [label: string]: string[] } = {};
+    Object.keys(programSchema).forEach((key) => {
+        if (key === 'options') {
+            Object.keys(programSchema[key]).forEach((optionKey) => {
+                emailTypes[optionKey] = programSchema[key][optionKey];
+            });
+        } else if (key != 'defaults') {
+            const childEmailTypes = getAllPossibleEmailTypes(programSchema[key]);
+            Object.keys(childEmailTypes).forEach((childKey) => {
+                if (!emailTypes[childKey]) {
+                    emailTypes[childKey] = childEmailTypes[childKey];
+                } else {
+                    emailTypes[childKey].push(...childEmailTypes[childKey]);
+                }
+            });
+        }
+    });
+    return emailTypes;
+}
+
 
 export function getAllIdentifiers(programSchema: any): string[] {
     let identifiers: string[] = [];
@@ -51,4 +72,16 @@ export function getAllIdentifiers(programSchema: any): string[] {
         }
     });
     return identifiers;
+}
+
+export function shortenIdentifier(id: string) {
+    return id.replaceAll('Pillar ', 'P')
+        .replaceAll('Cohort ', 'C')
+        .replaceAll('Topic ', 'T')
+        .replaceAll('Live Lab ', 'L')
+        .replaceAll('Lab ', 'L')
+        .replaceAll('Level ', 'L')
+        .replaceAll('Before Week ', 'BW')
+        .replaceAll('Session ', 'S')
+        .replaceAll('Week ', 'W')
 }

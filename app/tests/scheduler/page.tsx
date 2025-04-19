@@ -5,7 +5,7 @@ import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
 import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
-import { EMAIL_SCHEDULE } from "@/domain/settings/schedule";
+import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
 import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";
 
 export default function ProgramSchema() {
@@ -17,7 +17,7 @@ export default function ProgramSchema() {
             setResults(data);
         });
     }
-    const emails = results ? results.map((result: Session) => createEmailsFromSession(EMAIL_SCHEDULE, result)).flat() : '';
+    const emails = results ? results.map((result: Session) => createEmailsFromSession(result, EMAILS_PER_SESSION)).flat() : '';
 
 
     return (

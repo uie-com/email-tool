@@ -15,78 +15,133 @@ import { ValuePart, ValueSource } from "../schema/valueCollection";
 // If a value is provided later on here, it will override the value with the same name before.
 // However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
 
+// The program will NOT make a user review these values. This is for values that stay the same over time.
+export const PRE_APPROVED_VALUES = ['Is Last Session Of Week', 'Is First Session Of Week', 'Is First Session Of Program', 'Is Last Session Of Program', 'Is Combined Options Session', 'Program', 'Email Type', 'Is After Break', 'Is Before Break'];
+const hide = true; // You can also hide values from the user by adding this flag to the setting.
+
+// The program will require these be set, before publishing to Active Campaign.
+export const REQUIRED_SEND_VALUES = ['Send Date', 'Subject', 'Send Type', 'From Name', 'From Email', 'Reply To'];
+
 export const SETTINGS: Settings<ValuePart<any>> = {
     settings: { // Provide defaults for all emails here
-        'Template': { value: './templates', part: 0 },
+        'Template': { value: './templates', part: 0, fetch: 'text' },
         'Banner': { value: './banners', part: 0 },
-        'Base ID': { value: 'appHcZTzlfXAJpL7I' },
+        'Base ID': { value: 'appHcZTzlfXAJpL7I', hide },
+        'Airtable URL': { value: 'https://api.airtable.com/v0/{Base ID}', hide },
+        'Airtable Session Query': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"', hide },
 
-        'Airtable URL': { value: 'https://api.airtable.com/v0/{Base ID}' },
+        'From Name': { value: 'Jared Spool', hide },
+        'From Email': { value: 'jared.m.spool@centercentre.com', hide },
+        'Reply To': { value: 'jared.m.spool@centercentre.com', hide },
+
+        'Test Email': { value: 'ayang@centercentre.com', hide },
+
+        'Email Name': { value: '{Program} ', part: 0, hide },
+        'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
+        'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
+        'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
+
+        'LoA ID': { value: '97', hide },
+        'LoA Segment ID': { value: '1258', hide },
+        'BL ID': { value: '108', hide },
+        'BL Segment ID': { value: '0', hide },
     },
-    'TUXS': {
+    'Program:TUXS': {
         settings: {
+            'Send Type': { value: 'CAMPAIGN', hide },
+            'Email Name': { value: '{Email Type}', part: 1 },
+
             'Banner': { value: '/tuxs', part: 1 },
             'Template': { value: '/tuxs', part: 1 },
 
-            'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz' },
-            'Session Title': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"&fields[]=Title', fetch: 'airtable' },
-            'Preview': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"&fields[]=Preview', fetch: 'airtable' },
-            'Session Description': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"&fields[]=Description', fetch: 'airtable' },
-            'Session Type': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"&fields[]=Topic Type', fetch: 'airtable' },
+            'List ID': { value: '{LoA ID}', hide },
+            'Segment ID': { value: '{LoA Segment ID}', hide },
+
+            'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz', hide },
+            'Session Title': { value: '{Airtable Session Query}&fields[]=Title', fetch: 'airtable' },
+            'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable' },
+            'Session Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
+            'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
         },
         // DST override
-        'EDT': {
+        'Is DST': {
             settings: {
-                'Banner': { value: '/tuxs-edt', part: 1 },
+                'Banner': { value: '/tuxs-dst', part: 1 },
             },
         },
-        // Email type settings
-        'Upcoming Topics': {
+        'Email Type:Upcoming Topics': {
             settings: {
                 'Banner': { value: '/upcomingtopics.png', part: 3 },
                 'Template': { value: '/upcoming-topics.html', part: 2 },
+                'Subject': { value: 'Upcoming: {Next Session #1 Title}, {Next Session #2 Title}, {Next Session #3 Title}' },
             }
         },
-        'Today': {
+        'Email Type:Today': {
             settings: {
                 'Banner': { value: '/today', part: 2 },
                 'Template': { value: '/today.html', part: 2 },
+                'Subject': { value: 'Today: {Session Title}' },
             }
 
         },
-        'Recording': {
+        'Email Type:Recording': {
             settings: {
                 'Banner': { value: '/recording', part: 2 },
                 'Template': { value: '/recording.html', part: 2 },
+                'Subject': { value: 'Recording: {Session Title}' },
             }
 
         },
-        'New Topic': {
+        'Email Type:New Topic': {
             settings: {
                 'Banner': { value: '/new-topic', part: 2 },
                 'Template': { value: '/new-topic.html', part: 2 },
+                'Subject': { value: 'This Monday: {Session Title}' },
             }
         },
         // Topic settings
-        'Job Search': {
+        'Session Type:Job Search Topic': {
             settings: {
                 'Banner': { value: '/jobsearch.png', part: 3 },
             }
         },
-        'Metrics': {
+        'Session Type:Metrics Topic': {
             settings: {
                 'Banner': { value: '/metrics.png', part: 3 },
             }
         },
-        'Research': {
+        'Session Type:Research Topic': {
             settings: {
                 'Banner': { value: '/research.png', part: 3 },
             }
         },
-        'Win Influence': {
+        'Session Type:Win Topic': {
             settings: {
                 'Banner': { value: '/wininfluence.png', part: 3 },
             }
         },
+    },
+    'Program:Stand Out': {
+        settings: {
+            'Send Type': { value: 'AUTOMATION', hide },
+            'Email Name': { value: '{Email Type}', part: 1 },
+            'Template': { value: '/standout', part: 1 },
+            'Banner': { value: '' },
+
+            'Automation ID': { value: '226', hide },
+
+            'Calendar Table ID': { value: 'tbly8jzaHpb0hGfbj', hide },
+            'Session Type': { value: '{Airtable Session Query}&fields[]=Session Type', fetch: 'airtable' },
+            'Event Link': { value: '{Airtable Session Query}&fields[]=Event Link', fetch: 'airtable' },
+            'Session Notes Link': { value: '{Airtable Session Query}&fields[]=Collab Notes Link', fetch: 'airtable' },
+        },
+        'Email Type:Today\'s Session': {
+            'Session Type:Live Discussion': {
+                settings: {
+                    'Template': { value: '/today-live-discussion.html', part: 2 },
+                    'Subject': { value: 'Today’s Stand Out Community Session' },
+                }
+            }
+        }
     }
 };

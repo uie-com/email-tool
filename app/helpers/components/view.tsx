@@ -1,48 +1,87 @@
-import { Values } from "@/domain/schema/valueCollection";
+import { EditorContext } from "@/domain/schema";
+import { Value, Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
-import { Textarea } from "@mantine/core";
-import { useState, useMemo, useEffect } from "react";
+import { Loader, Textarea } from "@mantine/core";
+import { Editor } from "@monaco-editor/react";
+import { useState, useMemo, useEffect, useContext } from "react";
 
 const DEBUG = false;
 
-export function TemplateView({ setVariables, values }: { setVariables: (v: Variables) => void, values: Values }) {
-    const [originalTemplate, setOriginalTemplate] = useState<string | undefined>();
+export function TemplateView({ setVariables, className }: { setVariables: (v: Variables) => void, className?: string }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+    const [filledTemplate, setFilledTemplate] = useState<string>('');
+    const values = editorState.email?.values ?? new Values();
 
     useEffect(() => {
-        const fetchTemplate = async () =>
-            values.finalValue('template').then(setOriginalTemplate);
+        const fetchTemplate = async () => {
+            const templateObject = values.getValueObj('template');
+            if (!templateObject) return;
+            const templateValue = templateObject.source('user', 'settings');
+            if (DEBUG) console.log('Fetching template', templateValue);
+            if (!templateValue) return;
+            try {
+                await templateValue?.populateRemote(values);
+                if (DEBUG) console.log('Fetched template', templateValue);
+                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } });
+            } catch {
+                console.error('Error fetching template', templateValue);
+                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: templateObject.source('user', 'settings').currentValue } });
+            }
+        }
 
-        if (!originalTemplate && values.getCurrentValue('template')) {
+        if (values && values.getCurrentValue('template') && values.getValueObj('template')?.source('user', 'settings').currentValue !== editorState.email?.template) {
             fetchTemplate();
         }
-    }, [values.getCurrentValue('template')]);
+    }, [values, values.getValueObj('template')]);
 
     useEffect(() => {
-        if (DEBUG) console.log('Template changed: ', originalTemplate);
-        setOriginalTemplate(originalTemplate);
-        setVariables(new Variables(originalTemplate ?? ''));
-    }, [originalTemplate]);
-
-    const filledTemplate = useMemo(() => {
-        if (!originalTemplate) return '';
-        const variables = new Variables(originalTemplate);
-        const filled = variables.resolveWith(values, []);
+        const templateHTML = editorState.email?.templateHTML;
+        if (!templateHTML) return;
+        const variables = new Variables(templateHTML);
+        setVariables(new Variables(templateHTML ?? ''));
+        const filled = variables.resolveWith(values);
         if (DEBUG) console.log('Filled template', filled);
-        return filled;
-    }, [originalTemplate, values]);
+        setFilledTemplate(filled);
+    }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
+
+    if (filledTemplate.length < 100)
+        return (
+            <div className="flex items-center justify-center h-full border-[1px] border-gray-200 rounded-lg">
+                <Loader></Loader>
+            </div>
+        )
     return (
         <iframe
+            className={className}
             style={{
-                minHeight: "100%",
                 border: "1px solid #e5e7eb",
                 borderRadius: "0.5rem",
-                minWidth: "48rem",
             }}
             srcDoc={filledTemplate}>
         </iframe>
     )
+}
 
+export function TemplateEditor({ className }: { className?: string }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const handleChange = (value: string | undefined) => {
+        if (DEBUG) console.log('Template changed: ', value);
+        setEditorState((prev) => ({ ...prev, email: { ...prev.email, templateHTML: value } }));
+    }
+
+
+    if (!editorState.email?.templateHTML || editorState.email?.templateHTML.length < 100)
+        return (
+            <div className="flex items-center justify-center h-full border-[1px] border-gray-200 rounded-lg">
+                <Loader></Loader>
+            </div>
+        )
+
+    return (
+        <Editor height="100%" defaultLanguage="html" defaultValue={editorState.email.templateHTML} onChange={handleChange} className={"rounded-lg overflow-hidden " + className} theme="vs-dark" />
+    )
 }
 
 
@@ -59,7 +98,7 @@ export function PlainTextEditor({ variables, values, setVariables, displayRender
     const filledContent = useMemo(() => {
         if (!values) return content;
         if (DEBUG) console.log('Filling variables');
-        const filled = variables.resolveWith(values, []);
+        const filled = variables.resolveWith(values);
         if (DEBUG) console.log('Filled variables', filled);
         return filled;
     }, [variables, values]);

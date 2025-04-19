@@ -1,16 +1,21 @@
 "use client";
 
-import { Button, Flex, Loader, Table, TableData } from "@mantine/core";
+import { Anchor, Button, Flex, Loader, ScrollArea, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useState } from "react";
-import { EditorContext } from "../page";
+import { EditorContext } from "@/domain/schema";
 import moment from "moment-timezone";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
+import { Variable } from "@/domain/schema/variableCollection";
+import { VariableInput } from "./components/form";
+import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
+import { EMAIL_EDIT_VALUES, EmailEditCard } from "./components/email";
+import { EditorState } from "@/domain/schema";
 
 
 export function ValueReview() {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [values, setValues] = useState<Values | null>(editorState.email?.values ?? null);
+    const values = editorState.email?.values;
     const [hasResolvedRemote, setHasResolvedRemote] = useState(false);
 
     if (!values) {
@@ -18,26 +23,25 @@ export function ValueReview() {
     }
     const tableData: TableData = {
         head: ['Variable', 'Value'],
-        body: values.keys.map((key) => {
-            let displayValue, value = values.resolveValue(key);
-            if (!value) return [key, undefined];
-            if (key === 'id') return [];
+        body: values.names.map((name, i) => {
+            let displayValue, value = values.resolveValue(name, true, true);
+            if (name === 'id') return [];
+            if (values.isHidden(name) || PRE_APPROVED_VALUES.includes(name) || EMAIL_EDIT_VALUES.includes(name))
+                return [];
 
-            if (values.remoteType(key))
+
+            const setValue = (value: any) => {
+                values.setValue(name, { value: value, source: 'user' });
+                setEditorState({ ...editorState, email: { ...editorState.email, values: new Values(values.initialValues) } });
+            }
+
+            if (values.isFetching(name))
                 displayValue = (<Loader color="black" type="dots" opacity={0.1} />);
-            else if (typeof value === 'string' && (isValidHttpUrl(value) || value.startsWith('./')))
-                displayValue = (<a href={value}>{value}</a>);
-            else if (typeof value === 'string')
-                displayValue = value;
-            else if (value instanceof Date)
-                displayValue = moment(value).format('dddd, MMMM Do YYYY [at] h:mm A z');
-            else if (typeof value === 'object')
-                displayValue = JSON.stringify(value);
             else
-                displayValue = value;
+                displayValue = (<VariableInput variableName={name} value={value} index={i} setValue={setValue} variant="unstyled" />)
 
             return [
-                key,
+                name,
                 displayValue
             ]
         }),
@@ -46,7 +50,7 @@ export function ValueReview() {
     useEffect(() => {
         const resolvePromises = async () => {
             await values.populateRemote();
-            setValues(values);
+            setEditorState((prev) => ({ ...prev, email: { ...prev.email, values: values } }));
             setHasResolvedRemote(true);
         }
         resolvePromises();
@@ -58,19 +62,26 @@ export function ValueReview() {
     }
 
     const handleSubmit = async () => {
-        setEditorState({ ...editorState, step: 2 });
+        console.log('Submitting values: ', values);
+        await values.populateRemote();
+        setEditorState({ ...editorState, step: 2, email: { ...editorState.email, values: values } });
         console.log('Approved values. Editor state: ', { ...editorState, step: 2 });
     }
 
-
     return (
-        <Flex align="center" justify="center" direction='column' className="w-full h-full p-20" gap={20} style={{ position: 'relative' }}>
-            <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[36rem] border-1" gap={20}>
-                <Table data={tableData} />
-                <Flex className="w-full" align="center" justify="space-between" gap={10}>
-                    <Button variant="light" color="gray" onClick={handleBack}>Back</Button>
-                    <Button variant="filled" onClick={handleSubmit} disabled={!hasResolvedRemote}>Approve</Button>
+        <Flex align="center" justify="center" direction='column' className=" w-full h-full" gap={20}>
+            <ScrollArea type="always" className="p-20" >
+                <Flex align="center" justify="center" direction='column' className="" gap={20} style={{ position: 'relative' }}>
+                    <EmailEditCard />
+                    <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1" gap={20}>
+                        <Table data={tableData} />
+                        <Flex className="w-full" align="center" justify="space-between" gap={10}>
+                            <Button variant="light" color="gray.7" c='gray.8' onClick={handleBack}>Back</Button>
+                            <Button variant="filled" onClick={handleSubmit} disabled={!hasResolvedRemote}>Approve</Button>
+                        </Flex>
+                    </Flex>
                 </Flex>
-            </Flex>
-        </Flex>);
+            </ScrollArea>
+        </Flex>
+    );
 }

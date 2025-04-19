@@ -5,7 +5,9 @@ const nextConfig: NextConfig = {
     removeConsole: false,
   },
   env: {
-    AIRTABLE_READ_API_KEY: process.env.AIRTABLE_READ_API_KEY
+    AIRTABLE_READ_API_KEY: process.env.AIRTABLE_READ_API_KEY,
+    ACTIVECAMPAIGN_API_KEY: process.env.ACTIVECAMPAIGN_API_KEY,
+    ACTIVECAMPAIGN_TOKEN: process.env.ACTIVECAMPAIGN_TOKEN,
   }
 };
 

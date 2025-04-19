@@ -1,6 +1,6 @@
 import { Settings } from "../schema/settingsCollection";
 
-export type VariableType = 'Date' | 'Banner' | 'Image' | 'Link';
+export type VariableType = keyof typeof VARIABLE_TYPES;
 export const VARIABLE_TYPES: Settings<string[]> = {
     "Date": {
         keywords: ['day', 'date', 'time', 'month', 'year', 'timestamp']
@@ -15,3 +15,8 @@ export const VARIABLE_TYPES: Settings<string[]> = {
         keywords: ['link', 'url', 'href', 'anchor']
     }
 };
+
+
+export const VARIABLE_OVERRIDES: { [key: string]: string } = {
+    'Time': 'Date', // Since date objects contain time, we need 'Time' variables to point to their date equivalents. 'Session Time' -> 'Session Date'
+}

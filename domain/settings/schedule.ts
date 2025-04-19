@@ -1,37 +1,159 @@
 
-
-// This dictionary gives 'emails' per session, based on the session identifiers
-// Can reference session identifiers from airtable: Program, Topic, Session Type, and Session Date as selectors and as variables
-// Can also reference global identifiers: Odd/Even Week, Day of Week, and DST
-
 import { Settings } from "../schema/settingsCollection";
 
 
-// Emails of the same emailType will override earlier emails of that type
+// Emails of the same type will override previously resolved emails of that type
 export const SESSION_BASE = 'appHcZTzlfXAJpL7I';
 export const SESSION_TABLE = 'tblnfXd0SIViOkj6z';
 
-export const MIN_DAYS_IN_BREAK = 9;
-
-export const EMAIL_SCHEDULE: Settings<string> = {
-    'TUXS': {
+export const EMAILS_PER_SESSION: Settings<string> = {
+    'Program:TUXS': {
         emails: {
             'New Topic': {
-                'Send Date': '{Session Date(-5d)}',
+                'Send Date': '{Session Date(-5d)(10:00am)}',
             },
             'Today': {
-                'Send Date': '{Session Date}',
+                'Send Date': '{Session Date(8:00am)}',
             },
             'Recording': {
-                'Send Date': '{Session Date(+1d)}',
+                'Send Date': '{Session Date(+1d)(12:00pm)}',
             },
         },
         'Odd Week': {
             emails: {
                 'Upcoming Topics': {
-                    'Send Date': '{Session Date(+6d)}',
+                    'Send Date': '{Session Date(+6d)(10:00am)}',
                 },
             },
         },
-    }
+    },
+    'Program:Stand Out': {
+        emails: {
+            'Today\'s Session': {
+                'Send Date': '{Session Date(8:00am)}',
+            },
+        },
+        'Is First Session Of Week': {
+            emails: {
+                'Events of Week': {
+                    'Send Date': '{Session Date(Monday Before)(10:00am)}',
+                }
+            }
+        }
+    },
+    'Program:Visions': {
+        emails: {
+            'Today\'s Session': {
+                'Send Date': '{Session Date(8:00am)}',
+            }
+        },
+        'Is Last Session Of Week': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(+1d)(2:00pm)}',
+                }
+            }
+        },
+        'Is Last Session Of Program': {
+            emails: {
+                'Before Week': {},
+                'Certificate': {
+                    'Send Date': '{Session Date(+1d)(10:00am)}',
+                }
+            }
+        }
+    },
+    'Program:Metrics': {
+        emails: {
+            'Today\'s Session': {
+                'Send Date': '{Session Date(8:00am)}',
+            }
+        },
+        'Is Last Session Of Week': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(+1d)(2:00pm)}',
+                }
+            }
+        },
+        'Is Last Session Of Program': {
+            emails: {
+                'Before Week': {},
+                'Certificate': {
+                    'Send Date': '{Session Date(+1d)(10:00am)}',
+                }
+            }
+        }
+    },
+    'Program:Research': {
+        emails: {
+            'Today\'s Session': {
+                'Send Date': '{Session Date(8:00am)}',
+            }
+        },
+        'Is Last Session Of Week': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(+1d)(2:00pm)}',
+                }
+            }
+        },
+        'Is Last Session Of Program': {
+            emails: {
+                'Before Week': {},
+                'Certificate': {
+                    'Send Date': '{Session Date(+1d)(10:00am)}',
+                }
+            }
+        }
+    },
+    'Program:Win': {
+        emails: {
+            'Homework': {
+                'Send Date': '{Session Date (Friday Before)(2:00pm)}',
+            }
+        },
+        'Is Before Break': {
+            emails: {
+                'Before Break': {
+                    'Send Date': '{Session Date(Friday After)(2:00pm)}',
+                }
+            }
+        },
+        'Is After Break': {
+            emails: {
+                'Homework': {}, // Deletes the previous email
+                'Returning From Break': {
+                    'Send Date': '{Session Date (Friday Before)(2:00pm)}',
+                }
+            }
+        },
+        'Is First Session Of Program': {
+            'Topic:Pillar 1': {
+                emails: {
+                    'First Lab Reminder': {
+                        'Send Date': '{Session Date(-1d)(10:00am)}',
+                    },
+                    'Onboarding': {
+                        'Send Date': '{Session Date(-12d)(12:00pm)}',
+                    }
+                }
+            },
+        },
+        'Session Type:Wrap Up': {
+            emails: {
+                'Homework': {},
+                'Certificate': {
+                    'Send Date': '{Session Date(+1d)(10:00am)}',
+                },
+                'Extension Details': {
+                    'Send Date': '{Session Date(+2d)(10:00am)}',
+                },
+                'Welcome': {
+                    'Send Date': '{Session Date(+1d)(10:00am)}',
+                    'Cohort': '{Cohort(Next Cohort)}',
+                }
+            }
+        }
+    },
 }
