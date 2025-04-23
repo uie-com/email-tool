@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Flex, ScrollArea } from "@mantine/core";
+import { Box, Button, Flex, ScrollArea } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext } from "@/domain/schema";
-import { TemplateEditor, TemplateView } from "../components/view";
+import { TemplateEditor, TemplateView } from "../components/template";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
 import { VariableForm } from "../components/form";
@@ -37,30 +37,39 @@ export function TemplateFill() {
     }
 
     return (
-        <Flex align="center" justify="center" direction='row' className=" h-full  p-20" gap={20}>
-            {
-                editorMode === 'code' ?
-                    <TemplateEditor className=" h-full " />
-                    : null
-            }
-            <Flex direction='column' className="h-full" gap={20}>
+        <Flex align="center" justify="center" className={" h-full p-20 " + (editorMode === 'code' ? "flex-col 2xl:flex-row" : 'flex-row')} gap={20}>
+
+            <Flex direction='column' className={"h-full w-full " + (editorMode === 'code' ? "2xl:w-1/2" : '')} gap={20}>
                 {
                     editorMode === 'code' ?
-                        <Button variant="light" color="green" className=" min-h-10" onClick={switchEditorMode}>Return to Variables</Button>
+                        <Button variant="light" color="green" className=" min-h-10 max-w-48 ml-auto" onClick={switchEditorMode}>Return to Variables</Button>
                         : null
                 }
-                <TemplateView setVariables={setVariables} className={" !min-w-[48rem]  shrink h-full"} />
+                <TemplateView setVariables={setVariables} className={" w-full !min-w-[28rem] h-[calc(100vh-160px)] "} />
             </Flex>
             {
                 editorMode === 'variables' ?
-                    <Flex direction='column' className="" gap={20}>
-                        <Button variant="light" color="green" onClick={switchEditorMode}>Edit HTML</Button>
-                        <VariableForm variables={variables} values={editorState.email?.values} setValue={handleValueInput} />
-                        <Flex className="w-full" align="center" justify="space-between" gap={10}>
-                            <Button variant="light" color="gray" onClick={handleBack}>Back</Button>
-                            <Button variant="filled" onClick={handleSubmit}>Approve</Button>
+                    <Box className=" py-10 pr-2 w-1/2 overflow-y-scroll max-h-[calc(100vh-10rem)] ">
+                        <Flex direction='column' className=" w-full h-full" gap={20}>
+                            <Flex className="w-full" align="center" justify="space-between" gap={10}>
+                                <Button variant="light" color="gray" miw='6rem' onClick={handleBack}>Back</Button>
+                                <Button variant="light" color="green" w='100%' onClick={switchEditorMode}>Edit HTML</Button>
+                            </Flex>
+                            <VariableForm variables={variables} values={editorState.email?.values} setValue={handleValueInput} />
+                            <Flex className="w-full" align="center" justify="space-between" gap={10}>
+                                <Button variant="light" color="gray" onClick={handleBack}>Back</Button>
+                                <Button variant="filled" onClick={handleSubmit}>Approve</Button>
+                            </Flex>
                         </Flex>
-                    </Flex>
+                    </Box>
+                    : null
+            }
+            {
+                editorMode === 'code' ?
+                    <Box className=" relative h-full w-full">
+                        <TemplateEditor className=" absolute top-0 bottom-0 right-0 left-0" />
+                    </Box>
+
                     : null
             }
         </Flex>

@@ -1,5 +1,5 @@
 import { EditorContext } from "@/domain/schema";
-import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";
+import { getSessionSchedule, Session } from "@/domain/data/sessions";
 import { parseVariableName } from "@/domain/parse/parse";
 import { shortenIdentifier } from "@/domain/parse/parsePrograms";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
@@ -26,7 +26,7 @@ export function EmailSchedule() {
 
 
     return (
-        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] bg-gray-50 border-1 max-h-full" gap={20} pr={15}>
+        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] bg-gray-50 border-1" gap={20} pr={15}>
             <Flex direction='row' align='center' justify='space-between' w="100%" gap={10}>
                 <Title order={5}>Email Schedule</Title>
                 <TextInput variant="unstyled" placeholder="Search" bg='gray.1' pl="sm" pr="5" className=" rounded-md overflow-hidden" rightSection={<IconSearch stroke={2} opacity={0.6} />} onChange={(e) => setSearchQuery(e.target.value)} />
@@ -117,7 +117,7 @@ function SessionEntry({ session, filter }: { session: Session, filter?: string }
                     {
                         moment(session["Session Date"]).format('dddd, MMMM D • h:mma') +
                         (session["Is Combined Workshop Session"] !== undefined ? (' • ' + moment(session["Coaching Date"]).format('h:mma')) : '') +
-                        (session["Is Combined Options Session"] !== undefined ? (' • ' + moment(session["Second Option Date"]).format('h:mma')) : '')
+                        (session["Is Combined Options Session"] !== undefined ? (' • ' + moment(session["Second Date"]).format('h:mma')) : '')
                     }
                 </Text>
             </Flex>

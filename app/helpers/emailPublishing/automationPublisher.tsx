@@ -5,7 +5,7 @@ import { ActionIcon, Anchor, Button, Flex, Group, HoverCard, Loader, Stack, Text
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
-import { IconAlertCircle, IconChecklist, IconCopy, IconExternalLink, IconFileExport, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconProgressX, IconRefresh, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
+import { IconAlertCircle, IconChecklist, IconCopy, IconExternalLink, IconFileExport, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMessageCheck, IconMessageSearch, IconMessageX, IconProgressX, IconRefresh, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { delCampaign, delTemplate, getCampaign, getMessage, getTemplate, populateCampaignMessageWithTemplate, postCampaign, postCampaignMessage, postTemplate, putCampaign, putCampaignInternal, putMessage, testCampaign } from "@/domain/data/activeCampaignActions";
 import { createCampaignLink, createTemplateLink } from "@/domain/data/activeCampaign";
 import { HadIssue, RemoteStep, StateContent } from "../components/remote";
@@ -34,6 +34,8 @@ export function AutomationPublisher() {
                 <CreateTemplate shouldAutoStart={false} />
                 {/* <CreateAutomation shouldAutoStart={false} /> */}
                 <TestTemplate shouldAutoStart={false} />
+                <MarkReviewed shouldAutoStart={false} />
+
             </Flex>
         </HadIssue.Provider>
     );
@@ -162,6 +164,7 @@ function CreateTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             isDone={isDone}
             tryAction={tryAction}
             tryUndo={deleteTemplate}
+            allowsUndo
         />
     )
 }
@@ -333,6 +336,7 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             isDone={isDone}
             tryAction={tryAction}
             tryUndo={deleteCampaign}
+            allowsUndo
         />
     )
 }
@@ -394,7 +398,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const isDone = () => {
-        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === true;
+        return editorState.email?.hasSentTest !== undefined && editorState.email?.hasSentTest === true;
 
     }
 
@@ -419,7 +423,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             return setMessage('A value that is required for publishing wasn\'t found.');
 
         const postCampaignResponse = await postCampaign({
-            name: "TEST: " + emailName + " (Delete Me)",
+            name: "TEST CAMPAIGN: " + emailName + " (Delete Me)",
         }); // Create an empty campaign object
         console.log("Created empty campaign", postCampaignResponse);
         const campaignId = postCampaignResponse['id'];
@@ -468,7 +472,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             ...prev,
             email: {
                 ...prev.email,
-                sentTest: true,
+                hasSentTest: true,
             }
         }));
 
@@ -482,7 +486,120 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 ...prev.email,
                 campaignId: undefined,
                 messageId: undefined,
-                sentTest: true,
+                hasSentTest: true,
+            }
+        }));
+
+        return true;
+    }
+
+    const deleteCampaign = async () => {
+        const campaignId = editorState.email?.campaignId;
+        if (!campaignId) return true;
+
+        console.log("Deleting campaign", campaignId);
+        const res = await delCampaign(campaignId);
+        console.log("Deleted campaign", res);
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                campaignId: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryUndo={deleteCampaign}
+            tryAction={tryAction}
+            allowsRedo
+            allowsUndo={false}
+        />
+    )
+}
+
+
+
+function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Email',
+            subtitle: '',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Email',
+            subtitle: '',
+            rightContent: '',
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Email',
+            subtitle: '',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark Reviewed</Button>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Email',
+            subtitle: '',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconMessageX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Mark Reviewed',
+            subtitle: '',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark Reviewed</Button>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconMessageCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Email Reviewed',
+            subtitle: '',
+            rightContent: null
+        }
+    };
+
+    const isReady = () => {
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
+            && editorState.email?.hasSentTest !== undefined && editorState.email?.hasSentTest === true;
+    }
+
+    const isDone = () => {
+        return editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
+    }
+
+    const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isReviewed: false,
+                isSentOrScheduled: false,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isReviewed: true,
+                isSentOrScheduled: true,
             }
         }));
 
@@ -496,7 +613,8 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             isReady={isReady}
             isDone={isDone}
             tryAction={tryAction}
-            offerRedo
+            tryUndo={tryUndo}
+            allowsUndo={true}
         />
     )
 }

@@ -8,8 +8,8 @@ export function EmailSelector() {
     const [page, setPage] = useState('Schedule');
 
     return (
-        <Flex align="center" justify="center" direction='column' className="relative w-full h-full max-h-screen" gap={20}>
-            <Flex align="start" direction='column' justify="center" className="max-h-screen" gap={20}>
+        <Flex align="center" justify="center" direction='column' className="relative w-full h-full p-20" gap={20}>
+            <Flex align="start" direction='column' justify="center" className="" gap={20}>
                 <SegmentedControl data={['Schedule', 'Manual']} value={page} onChange={setPage} />
 
                 {(page === 'Schedule') ? (<EmailSchedule />) : (<EmailCreator />)}

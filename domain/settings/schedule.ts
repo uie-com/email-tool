@@ -3,8 +3,8 @@ import { Settings } from "../schema/settingsCollection";
 
 
 // Emails of the same type will override previously resolved emails of that type
-export const SESSION_BASE = 'appHcZTzlfXAJpL7I';
-export const SESSION_TABLE = 'tblnfXd0SIViOkj6z';
+export const SESSION_BASE = 'applHtcejl4tEXatp';
+export const SESSION_TABLE = 'tbl73qUZ2BTDEeBV9';
 
 export const EMAILS_PER_SESSION: Settings<string> = {
     'Program:TUXS': {
@@ -47,6 +47,13 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 'Send Date': '{Session Date(8:00am)}',
             }
         },
+        'Is First Session Of Program': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(-5d)(2:00pm)}',
+                }
+            }
+        },
         'Is Last Session Of Week': {
             emails: {
                 'Before Week': {
@@ -69,6 +76,13 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 'Send Date': '{Session Date(8:00am)}',
             }
         },
+        'Is First Session Of Program': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(-5d)(2:00pm)}',
+                }
+            }
+        },
         'Is Last Session Of Week': {
             emails: {
                 'Before Week': {
@@ -89,6 +103,13 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         emails: {
             'Today\'s Session': {
                 'Send Date': '{Session Date(8:00am)}',
+            }
+        },
+        'Is First Session Of Program': {
+            emails: {
+                'Before Week': {
+                    'Send Date': '{Session Date(-5d)(2:00pm)}',
+                }
             }
         },
         'Is Last Session Of Week': {

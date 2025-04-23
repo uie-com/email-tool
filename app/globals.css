@@ -39,3 +39,7 @@ body {
 input {
   text-decoration: none !important;
 }
+
+.classNameToDetectSelfFetch {
+  display: block;
+}

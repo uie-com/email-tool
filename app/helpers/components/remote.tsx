@@ -20,7 +20,7 @@ export type StateContent = {
 };
 
 export function RemoteStep(
-    { shouldAutoStart, stateContent, isReady, tryAction, tryUndo, isDone, offerRedo }:
+    { shouldAutoStart, stateContent, isReady, tryAction, tryUndo, isDone, allowsRedo, allowsUndo }:
         {
             shouldAutoStart: boolean,
             stateContent: StateContent,
@@ -28,7 +28,8 @@ export function RemoteStep(
             isDone: () => boolean,
             tryAction: (setMessage: (m: React.ReactNode) => void) => Promise<boolean | void>,
             tryUndo?: (setMessage: (m: React.ReactNode) => void) => Promise<boolean | void>,
-            offerRedo?: boolean
+            allowsRedo?: boolean,
+            allowsUndo?: boolean
         }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [hadIssue, setHadIssue] = useContext(HadIssue);
@@ -81,13 +82,13 @@ export function RemoteStep(
         } catch (error) {
             setStepState('failed');
             setHadIssue(true);
-            setMessage('Failed to create template. Please try again. \n' + error);
+            setMessage('Failed take action. Please try again. \n' + error);
         }
     }
 
     const handleRedo = async () => {
-        handleUndo();
-        handleStart();
+        await handleUndo();
+        await handleStart();
     }
 
     const handleUndo = async () => {
@@ -119,11 +120,11 @@ export function RemoteStep(
             subtitle={currentStateContent.subtitle}
             rightContent={
                 <Flex gap={10} onMouseEnter={() => setShowSecondaryAction(true)} onMouseLeave={() => setShowSecondaryAction(false)}>
-                    {stepState === 'succeeded' && tryUndo ?
+                    {stepState === 'succeeded' && tryUndo && allowsUndo ?
                         <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={handleUndo} opacity={showSecondaryAction ? 0.99 : 0} className="transition-opacity"><IconArrowBackUp /></ActionIcon>
                         : null}
-                    {stepState === 'failed' || (stepState === 'succeeded' && offerRedo) ?
-                        <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={handleRedo} opacity={showSecondaryAction || offerRedo ? 0.99 : 0} className="transition-opacity"><IconRefresh /></ActionIcon>
+                    {stepState === 'failed' || (stepState === 'succeeded' && allowsRedo) ?
+                        <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={handleRedo} opacity={showSecondaryAction || allowsRedo ? 0.99 : 0} className="transition-opacity"><IconRefresh /></ActionIcon>
                         : null}
                     <div onClick={handleStart} className="cursor-pointer">
                         {currentStateContent.rightContent}

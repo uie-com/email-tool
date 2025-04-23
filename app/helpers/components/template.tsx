@@ -1,26 +1,38 @@
+import { resolveTemplateRemotely } from "@/domain/parse/remoteParse";
 import { EditorContext } from "@/domain/schema";
 import { Value, Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
-import { Loader, Textarea } from "@mantine/core";
+import { Flex, Loader, Text, Textarea } from "@mantine/core";
+import { useForceUpdate } from "@mantine/hooks";
 import { Editor } from "@monaco-editor/react";
-import { useState, useMemo, useEffect, useContext } from "react";
+import { IconFileUnknown } from "@tabler/icons-react";
+import React, { useState, useMemo, useEffect, useContext, useRef } from "react";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export function TemplateView({ setVariables, className }: { setVariables: (v: Variables) => void, className?: string }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [filledTemplate, setFilledTemplate] = useState<string>('');
     const values = editorState.email?.values ?? new Values();
 
+    const currentFilled = useRef<string>('');
+    const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
+    const forceUpdate = useForceUpdate();
+
+    const noTemplateFound = useMemo(() => {
+        return !editorState.email?.templateHTML || editorState.email?.templateHTML.length < 100
+    }, [editorState.email?.templateHTML]);
+
     useEffect(() => {
         const fetchTemplate = async () => {
             const templateObject = values.getValueObj('template');
-            if (!templateObject) return;
+            if (!templateObject) return console.log('No template object found', values);
             const templateValue = templateObject.source('user', 'settings');
             if (DEBUG) console.log('Fetching template', templateValue);
-            if (!templateValue) return;
+            if (!templateValue) return console.log('No template value found', templateObject);
             try {
                 await templateValue?.populateRemote(values);
+
                 if (DEBUG) console.log('Fetched template', templateValue);
                 setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } });
             } catch {
@@ -29,37 +41,74 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
             }
         }
 
-        if (values && values.getCurrentValue('template') && values.getValueObj('template')?.source('user', 'settings').currentValue !== editorState.email?.template) {
+        if (values && values.getCurrentValue('template')
+            && values.getValueObj('template')?.source('user', 'settings').currentValue !== editorState.email?.template
+        ) {
+            setFilledTemplate('');
             fetchTemplate();
         }
-    }, [values, values.getValueObj('template')]);
+    }, [JSON.stringify(values.getValueObj('template'))]);
 
     useEffect(() => {
         const templateHTML = editorState.email?.templateHTML;
         if (!templateHTML) return;
+        if (templateHTML.includes('data-mantine-color-scheme')) {
+            return setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: '' } });
+        }
         const variables = new Variables(templateHTML);
-        setVariables(new Variables(templateHTML ?? ''));
+        setVariables(variables);
+        if (DEBUG) console.log('Filling template', templateHTML);
         const filled = variables.resolveWith(values);
         if (DEBUG) console.log('Filled template', filled);
-        setFilledTemplate(filled);
+        currentFilled.current = (filled);
+
+        if (waitingTimeout.current)
+            clearTimeout(waitingTimeout.current);
+
+        waitingTimeout.current = setTimeout(() => {
+            if (DEBUG) console.log('Waited for template to be filled');
+            waitingTimeout.current = null;
+            if (currentFilled.current !== filledTemplate)
+                setFilledTemplate(currentFilled.current);
+            else
+                forceUpdate();
+        }, 600);
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
 
-    if (filledTemplate.length < 100)
-        return (
-            <div className="flex items-center justify-center h-full border-[1px] border-gray-200 rounded-lg">
-                <Loader></Loader>
-            </div>
-        )
     return (
-        <iframe
-            className={className}
-            style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "0.5rem",
-            }}
-            srcDoc={filledTemplate}>
-        </iframe>
+        <div className={className + ' relative'} >
+            <Flex
+                className={"absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm transition-opacity delay-100 overflow-hidden pointer-events-none " + ((waitingTimeout.current || noTemplateFound) ? 'opacity-100' : 'opacity-0') + (noTemplateFound ? ' bg-gray-50 ' : '')}
+                align={"center"}
+                justify="center"
+                gap={30}
+                direction='column'
+            >
+                {
+                    noTemplateFound ?
+                        <>
+                            <IconFileUnknown
+                                size={200}
+                                color="gray"
+                                className="opacity-50"
+                                stroke={2}
+                            />
+                            <Text className="opacity-80 scale-[280%]" size="xl" fw={900} c='gray'>Couldn't find</Text>
+                            <Text className="opacity-80 scale-[280%]" size="xl" fw={900} c='gray'>Template</Text>
+                        </>
+                        : <Loader size="xl" color="blue" variant="lines" className="" />
+                }
+            </Flex>
+            <iframe
+                className="w-full h-full"
+                style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "0.5rem",
+                }}
+                srcDoc={filledTemplate} >
+            </iframe>
+        </div>
     )
 }
 
@@ -80,7 +129,9 @@ export function TemplateEditor({ className }: { className?: string }) {
         )
 
     return (
-        <Editor height="100%" defaultLanguage="html" defaultValue={editorState.email.templateHTML} onChange={handleChange} className={"rounded-lg overflow-hidden " + className} theme="vs-dark" />
+        <Editor height="100%" defaultLanguage="html" defaultValue={editorState.email.templateHTML} onChange={handleChange} className={"rounded-lg overflow-hidden " + className} theme="vs-dark" options={{
+            wordWrap: "on",
+        }} />
     )
 }
 

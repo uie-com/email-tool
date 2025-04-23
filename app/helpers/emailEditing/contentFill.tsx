@@ -13,7 +13,7 @@ import { EditorContext } from "@/domain/schema";
 import { Variable, Variables } from "@/domain/schema/variableCollection";
 import { Values } from "@/domain/schema/valueCollection";
 import { VariableForm } from "../components/form";
-import { PlainTextEditor } from "../components/view";
+import { PlainTextEditor } from "../components/template";
 
 
 const DEBUG = false;

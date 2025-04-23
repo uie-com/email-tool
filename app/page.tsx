@@ -9,7 +9,7 @@ import { TemplateFill } from "./helpers/emailEditing/templateFill";
 import { EmailSelector } from "./helpers/emailCreation/emailSelector";
 import { EmailPublisher } from "./helpers/emailPublishing/emailPublisher";
 import { SaveContext } from "./helpers/contexts/saveContext";
-import { Flex } from "@mantine/core";
+import { Flex, ScrollArea } from "@mantine/core";
 import { EmailMenuWrapper } from "./helpers/emailMenu";
 
 
@@ -24,10 +24,11 @@ export default function Home() {
     <EditorContext.Provider value={[editorState, setEditorState]}>
       <SaveContext>
         <div className="font-[family-name:var(--font-dm-sans)]">
-          <main className="h-screen max-h-screen overflow-scroll">
-            <EmailMenuWrapper>
+          <main className="h-screen max-h-screen">
+            <EmailMenuWrapper />
+            <ScrollArea className=" h-full max-h-screen w-full" type='hover'>
               {currentHelper}
-            </EmailMenuWrapper>
+            </ScrollArea>
           </main>
         </div>
       </SaveContext>

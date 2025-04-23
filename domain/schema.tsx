@@ -7,21 +7,20 @@ import { Dispatch, SetStateAction, createContext } from "react";
 import { IconBrandTelegram, IconCalendarCheck, IconEdit, IconMailCheck, IconMessageQuestion } from "@tabler/icons-react";
 
 
-export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>]>([{ step: 0 }, () => { }]);
-
-
 export type EditorState = {
     email?: Email;
     step: number;
 }
 
-export type EmailStates = {
-    [id: string]: EditorState;
-}
+export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>]>([{ step: 0 }, () => { }]);
+
+
+export type Saves = EditorState[];
+
 
 export class Email {
     airtableId?: string; // Airtable ID once uploaded
-    id?: string; // unique name of the email
+    name?: string; // unique name of the email
 
     values?: Values;
 
@@ -34,22 +33,32 @@ export class Email {
     // (Messages are an internal Active Campaign object that hold email content for campaigns)
     campaignId?: string; // Campaign ID in Active Campaign
 
-    sentTest?: boolean; // Whether the test email has been sent
-    reviewed?: boolean; // Whether the email has been reviewed
-    done?: boolean; // Whether the email has been marked done
+    hasSentTest?: boolean; // Whether the test email has been sent
+    isReviewed?: boolean; // Whether the email has been reviewed
+    isSentOrScheduled?: boolean; // Whether the email has been marked done
 
-    constructor(values: Values) {
-        this.values = initializeSettings(values);
-        this.id = this.values.resolveValue('Email ID', true);
+    constructor(values?: Values, email?: Email) {
+        Object.assign(this, email);
+
+        if (values)
+            this.values = initializeSettings(values);
+        else if (email)
+            this.values = new Values(email.values?.initialValues ?? []);
+
+        if (!this.values)
+            this.values = new Values();
+
+        if (!this.name)
+            this.name = this.values.resolveValue('Email ID', true);
     }
 }
 
 export type EmailStatus = 'Editing' | 'Review' | 'Ready' | 'Scheduled' | 'Sent';
 export function getStateFromEmail(email?: Email): EmailStatus | undefined {
     if (!email) return undefined;
-    if (!email.sentTest) return 'Editing';
-    if (!email.reviewed) return 'Review';
-    if (!email.done) return 'Ready';
+    if (!email.hasSentTest) return 'Editing';
+    if (!email.isReviewed) return 'Review';
+    if (!email.isSentOrScheduled) return 'Ready';
     const isPast = moment(email.values?.resolveValue('Send Date', true)).isBefore(moment());
     if (isPast) return 'Sent';
     return 'Scheduled';

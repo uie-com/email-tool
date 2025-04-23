@@ -6,7 +6,7 @@ import { useState } from "react";
 import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
-import { getSessionSchedule, Session } from "@/domain/data/airtableSessions";
+import { getSessionSchedule, Session } from "@/domain/data/sessions";
 
 export default function ProgramSchema() {
 

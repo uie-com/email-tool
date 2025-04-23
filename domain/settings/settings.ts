@@ -34,7 +34,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'From Email': { value: 'jared.m.spool@centercentre.com', hide },
         'Reply To': { value: 'jared.m.spool@centercentre.com', hide },
 
-        'Test Email': { value: 'ayang@centercentre.com', hide },
+        'Test Email': { value: 'accounts@centercentre.com', hide },
 
         'Email Name': { value: '{Program} ', part: 0, hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -143,5 +143,87 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 }
             }
         }
+    },
+    'Program:Metrics': {
+        settings: {
+            'Send Type': { value: 'AUTOMATION', hide },
+            'Template': { value: '/metrics', part: 1 },
+            'Email Name': { value: '{Cohort} ', part: 1 },
+
+            'Banner': { value: '' },
+
+            'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
+        },
+        'Email Type:Today\'s Session': {
+            settings: {
+                'Email Name': { value: '{Topic}', part: 2 },
+
+                'Template': { value: '/today.html', part: 2 },
+                'Subject': { value: 'Outcome-Driven UX Metrics: {Next Week}: {Topic}: ​​{Title}' },
+            }
+        },
+        'Email Type:Before Week': {
+            settings: {
+                'Email Name': { value: 'Before {Next Week}', part: 2 },
+
+                'Template': { value: '/before-week-x.html', part: 2 },
+                'Subject': { value: 'Outcome-Driven UX Metrics: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
+            },
+            'Next Week:Week 2': {
+                settings: {
+                    'Template': { value: '/before-week-2.html', part: 2 },
+                }
+            },
+            'Is First Session Of Program': {
+                'Week:Week 1': {
+                    settings: {
+                        'Email Name': { value: 'Before {Week}', part: 2 },
+                        'Subject': { value: 'Outcome-Driven UX Metrics: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
+                        'Template': { value: '/before-week-1.html', part: 2 },
+                    }
+                },
+            },
+        },
+    },
+    'Program:Visions': {
+        settings: {
+            'Send Type': { value: 'AUTOMATION', hide },
+            'Template': { value: '/visions', part: 1 },
+            'Email Name': { value: '{Cohort} ', part: 1 },
+
+            'Banner': { value: '' },
+
+            'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
+        },
+        'Email Type:Today\'s Session': {
+            settings: {
+                'Email Name': { value: '{Topic}', part: 2 },
+
+                'Template': { value: '/today.html', part: 2 },
+                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Next Week}: {Topic}: ​​{Title}' },
+            }
+        },
+        'Email Type:Before Week': {
+            settings: {
+                'Email Name': { value: 'Before {Next Week}', part: 2 },
+
+                'Template': { value: '/before-week-x.html', part: 2 },
+                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
+            },
+            'Next Week:Week 2': {
+                settings: {
+                    'Template': { value: '/before-week-2.html', part: 2 },
+                }
+            },
+            'Is First Session Of Program': {
+                'Week:Week 1': {
+                    settings: {
+                        'Email Name': { value: 'Before {Week}', part: 2 },
+                        'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
+                        'Template': { value: '/before-week-1.html', part: 2 },
+                    }
+                },
+            },
+        },
     }
 };

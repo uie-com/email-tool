@@ -1,7 +1,7 @@
 import moment from "moment-timezone";
 import { Email } from "../schema";
 import { SettingDict, Settings } from "../schema/settingsCollection";
-import { Session } from "../data/airtableSessions";
+import { Session } from "../data/sessions";
 import { Values } from "../schema/valueCollection";
 import { EMAILS_PER_SESSION } from "../settings/schedule";
 

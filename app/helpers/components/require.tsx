@@ -53,7 +53,7 @@ export function RequireValues({ requiredValues, handleReturn }: { requiredValues
     }
 
     return (
-        <Modal key={'rv' + requiredValues} opened={opened} onClose={handleClose} centered withCloseButton={false}>
+        <Modal opened={opened} onClose={handleClose} centered withCloseButton={false}>
             <Flex gap={20} direction='column' align='start' justify='center' className="h-full" p={10}>
                 <Title order={3} fw={600}>The following values are required <br></br> for this step:</Title>
                 <ul>
@@ -65,6 +65,7 @@ export function RequireValues({ requiredValues, handleReturn }: { requiredValues
                             setValue={(v) => setValue(value, v)}
                             className=""
                             size="sm"
+                            key={value + 'MissingForm'}
                         />
                     ))}
                 </ul>

@@ -1,94 +1,109 @@
 "use client";
 
-import { EditorContext } from "@/domain/schema";
-import { deleteEmailStateRecord, loadEmailStatesRemotely, saveEmailStateRemotely } from "@/domain/data/airtable";
-import { addAirtableIdToEmailState, getEmailStates, getChangedEmailStates, markEmailStatesAsSavedRemote, saveEmailStateLocally, clearEmailStates, saveEmails, getEmailStateById, getCurrentEmailId, deleteEmailState } from "@/domain/data/localStorage";
-import { syncEmails, recoverState, saveEmailLocally, saveEmailRemotely, saveState, SavedEmailsContext, saveStates } from "@/domain/data/save";
-import { EmailStates } from "@/domain/schema";
+import { EditorContext, EditorState } from "@/domain/schema";
+import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "@/domain/data/airtable";
+import { } from "@/domain/data/localStorage";
+import { SavedEmailsContext, recoverCurrentEditorState, saveStateLocally, saveLocally, loadLocally, saveRemotely, deleteState, loadRemotely } from "@/domain/data/saveData";
+import { Saves } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
 import { LOCAL_SAVE_INTERVAL, REMOTE_SAVE_INTERVAL } from "@/domain/settings/save";
-import { Loader } from "@mantine/core";
+import { Box, Flex, Loader } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
 
 
-const DEBUG = false;
+const DEBUG = true;
 export function SaveContext({ children }: { children: React.ReactNode }) {
     const [editorState, setEditorState] = useContext(EditorContext);
+    const lastEditorState = useRef<EditorState | undefined>(undefined);
 
-    const [emailStates, setEmailStates] = useState<EmailStates>({});
+    const [saves, setSaves] = useState<Saves>([]);
+
     const localTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const remoteTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
-    const [needsSync, setNeedsSync] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
+
+    // Load last editor state on load
     useEffect(() => {
-        const onLoad = async () => {
+        const recoverState = async () => {
             // Resume email state on load
-            const recoveredId = getCurrentEmailId();
-            const recoveredState = recoverState(editorState, setEditorState);
+            setIsLoading(true);
 
-            if (recoveredId && !recoveredState)
-                setNeedsSync(true);
-            else
-                setEmailStates(getEmailStates());
+            const state = await recoverCurrentEditorState();
+            setEditorState(state ?? { step: 0 });
 
-            // Download email states from airtable
-            await syncEmails();
-
-            if (needsSync) {
-                recoverState(editorState, setEditorState);
-                setNeedsSync(false);
-                setEmailStates(getEmailStates());
-            }
+            setIsLoading(false);
         }
 
-        onLoad();
+        const loadSaves = async () => {
+            const saves = await loadRemotely();
+            setSaves(saves);
+        }
+
+        loadSaves();
+        recoverState();
     }, []);
 
+    // Save on any edit
     useEffect(() => {
-        if (!editorState.email) return;
+        if (!editorState.email || editorState.step === 0) return;
 
-        if (localTimeoutId.current)
-            clearTimeout(localTimeoutId.current);
-        localTimeoutId.current = setTimeout(() => {
-            saveEmailLocally(editorState);
-            setEmailStates(getEmailStates());
-        }, LOCAL_SAVE_INTERVAL);
+        // if (localTimeoutId.current)
+        //     clearTimeout(localTimeoutId.current);
+        // localTimeoutId.current = setTimeout(() => {
+        // saveStateLocally(editorState);
+        // setSaves(loadLocally());
+        // }, LOCAL_SAVE_INTERVAL);
 
         if (remoteTimeoutId.current)
             clearTimeout(remoteTimeoutId.current);
-        remoteTimeoutId.current = setTimeout(trySaveEmailRemotely, REMOTE_SAVE_INTERVAL);
+        remoteTimeoutId.current = setTimeout(async () => {
+            await saveRemotely();
+            setSaves(loadLocally());
+        }, REMOTE_SAVE_INTERVAL);
 
-        saveState(editorState);
+        if (lastEditorState.current?.email?.name !== editorState.email?.name) {
+            console.log('[SAVE] Saving old email during switch:', lastEditorState);
+            saveStateLocally(lastEditorState.current);
+        }
+        lastEditorState.current = editorState;
+
+        saveStateLocally(editorState);
+        setSaves(loadLocally());
+
     }, [JSON.stringify(editorState)]);
 
-    const trySaveEmailRemotely = async () => {
-        await saveEmailRemotely(editorState, setEditorState);
+    const handleEmailDelete = async (id?: string) => {
+        if (!id) return false;
+
+        if (DEBUG) console.log('[SAVE] Deleting email:', id, ' from state:', editorState);
+        if (id === editorState.email?.airtableId || id === editorState.email?.name) {
+            if (DEBUG) console.log('[SAVE] Deleting current email, resetting editor', editorState.email?.name);
+            lastEditorState.current = undefined;
+            setEditorState({ step: 0 });
+        }
+
+        const done = await deleteState(id);
+
+        setSaves(loadLocally());
+
+        return done;
     }
 
-
-    const handleEmailDelete = async (id: string) => {
-        const status = await deleteEmailStateRecord(id);
-        if (status) {
-            setEmailStates((prevState) => {
-                const newState = { ...prevState };
-                delete newState[id];
-                return newState;
-            });
-            deleteEmailState(id);
-        }
-        else {
-            console.error(`Failed to delete email state with id ${id}`);
-        }
-        return status;
-    }
+    console.log('[SAVE] Saves:', saves);
+    console.log('[SAVE] Editor state:', editorState);
 
     return (
-        <SavedEmailsContext.Provider value={[emailStates, handleEmailDelete]}>
+        <SavedEmailsContext.Provider value={[saves, handleEmailDelete]}>
             {
-                needsSync ?
-                    (<Loader className="absolute top-0 left-0 right-0 bottom-0 z-50" size="lg" color="gray" variant="lines" />)
+                isLoading ?
+                    (
+                        <Flex className="absolute top-0 left-0 right-0 bottom-0 z-50 backdrop-blur-xl" align={"center"} justify="center">
+                            <Loader size="lg" color="gray" variant="lines" />
+                        </Flex>
+                    )
                     :
                     children
             }

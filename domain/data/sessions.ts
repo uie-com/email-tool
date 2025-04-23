@@ -9,6 +9,14 @@ export type AirtableSessionRecord = {
         "Sync Source": string;
         "Calendar Title": string;
         "Cohort": string[];
+
+        "Title"?: string;
+        "Description"?: string;
+        "Lecture Link"?: string;
+        "Recording Link"?: string;
+        "Event Link"?: string;
+        "Collab Notes Link"?: string;
+        "Collab PDF Link"?: string;
     };
 }
 
@@ -20,6 +28,15 @@ export type Session = {
     "Session Type"?: string;
     "Cohort"?: string;
 
+    "Description"?: string;
+    "Lecture Link"?: string;
+    "Recording Link"?: string;
+    "Event Link"?: string;
+    "Collab Notes Link"?: string;
+    "Collab PDF Link"?: string;
+
+    "Session of Week"?: string;
+    "Sessions in Week"?: string;
     "Is First Session Of Week"?: string;
     "Is Last Session Of Week"?: string;
 
@@ -32,15 +49,14 @@ export type Session = {
 
     'Is Combined Workshop Session'?: string;
     "Lecture Date"?: Date;
-    "Lecture Time"?: string;
     "Coaching Date"?: Date;
-    "Coaching Time"?: string;
+    "Lecture Event Link"?: string;
+    "Coaching Event Link"?: string;
+
 
     "Is Combined Options Session"?: string;
-    "First Option Date"?: Date;
-    "First Time"?: string;
-    "Second Option Date"?: Date;
-    "Second Time"?: string;
+    "First Date"?: Date;
+    "Second Date"?: Date;
 
     'Is DST'?: string;
     'Session Day of Week'?: string;
@@ -55,6 +71,8 @@ export async function getSessionSchedule() {
     let sessions: Session[] = [];
     try {
         let records: AirtableSessionRecord[] = await fetchRecords();
+        console.log('Initial sessions: ', JSON.stringify(await fetchRecords()));
+
 
         records.forEach((record) => {
             const cohorts = record.fields["Cohort"];
@@ -78,6 +96,14 @@ export async function getSessionSchedule() {
                         Topic: topic,
                         "Session Type": sessionType,
                         Cohort: cohort,
+
+                        "Title": record.fields["Title"],
+                        Description: record.fields["Description"],
+                        "Lecture Link": record.fields["Lecture Link"],
+                        "Recording Link": record.fields["Recording Link"],
+                        "Event Link": record.fields["Event Link"],
+                        "Collab Notes Link": record.fields["Collab Notes Link"],
+                        "Collab PDF Link": record.fields["Collab PDF Link"],
                     });
                 });
             else
@@ -86,57 +112,102 @@ export async function getSessionSchedule() {
                     "Session Date": new Date(date),
                     Program: program,
                     Topic: topic,
-                    "Session Type": sessionType
+                    "Session Type": sessionType,
+
+                    "Title": record.fields["Title"],
+                    Description: record.fields["Description"],
+                    "Lecture Link": record.fields["Lecture Link"],
+                    "Recording Link": record.fields["Recording Link"],
+                    "Event Link": record.fields["Event Link"],
+                    "Collab Notes Link": record.fields["Collab Notes Link"],
+                    "Collab PDF Link": record.fields["Collab PDF Link"],
                 });
+
         });
+
+        sessions = sortSessionsByDate(sessions);
+
+        sessions = combineWorkshopSessions(sessions);
+        sessions = combineOptionsSessions(sessions);
+
+        sessions = addSessionWeekContext(sessions);
+        sessions = markTransitions(sessions);
+        sessions = markBreaks(sessions);
+
+        sessions = addSessionDateValues(sessions);
+        sessions = addSessionProgramContext(sessions);
+
+        sessions = addWeekNumbers(sessions);
+        sessions = addProgramWeekSessionsContext(sessions);
+
+
+
+        console.log('Sessions: ', sessions);
+        return sessions;
+
     } catch (error) {
         console.error('Error fetching session schedule:', error);
         return null;
     }
 
-    sessions = sortSessionsByDate(sessions);
-
-    sessions = combineWorkshopSessions(sessions);
-    sessions = combineOptionsSessions(sessions);
-
-    sessions = addSessionWeekContext(sessions);
-    sessions = markTransitions(sessions);
-    sessions = markBreaks(sessions);
-
-    sessions = addSessionDateValues(sessions);
-    sessions = addSessionProgramContext(sessions);
-
-    sessions = addNextWeekSessions(sessions);
-
-    console.log('Sessions: ', sessions);
-    return sessions;
 }
 
-function addNextWeekSessions(sessions: Session[]): Session[] {
+function addWeekNumbers(sessions: Session[]): Session[] {
     sessions.forEach((session) => {
         const sessionDate = moment(session["Session Date"]);
-        let nextWeekSessions = sessions.filter((s) => (
+        const weekNumber = sessionDate.isoWeek();
+        let firstSessionOfProgram = sessions.find((s) => (
             s.id !== session.id
             && s.Cohort === session.Cohort
             && s.Program === session.Program
-            && moment(s["Session Date"]).isoWeek() === sessionDate.isoWeek() + 1
-            && moment(s["Session Date"]).isAfter(sessionDate)
+            && moment(s["Session Date"]).isBefore(sessionDate)
         ));
-        if (!nextWeekSessions || nextWeekSessions.length === 0)
-            return;
-        nextWeekSessions = sortSessionsByDate(nextWeekSessions);
+        if (!firstSessionOfProgram) firstSessionOfProgram = session;
+        const firstSessionWeek = moment(firstSessionOfProgram["Session Date"]).isoWeek();
 
-        nextWeekSessions.forEach((nextSession, i) => {
-            let prefix = 'Next Session #' + (i + 1) + ' ';
-            prefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
-            Object.keys(nextSession).forEach((key) => {
-                if (key === "id") return;
-                if (key === "Program") return;
-                key = key.replace('Session', '');
-                session[prefix + key] = nextSession[key];
+        const weekNumberInProgram = weekNumber - firstSessionWeek + 1;
+        session["Week"] = 'Week ' + weekNumberInProgram;
+        session["Next Week"] = 'Week ' + (weekNumberInProgram + 1);
+        session["Last Week"] = 'Week ' + (weekNumberInProgram - 1);
+    });
+    return sessions;
+}
+
+function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
+    const programs = [...new Set(sessions.map((session) => session.Program))];
+
+    programs.forEach((program) => {
+        const cohorts = [...new Set(sessions.filter((session) => session.Program === program).map((session) => session.Cohort))];
+        cohorts.forEach((cohort) => {
+            const weeklySessionContext: { [key: string]: string } = {};
+            const programSessions = sessions.filter((session) => (
+                session.Cohort === cohort
+                && session.Program === program
+            ));
+
+            programSessions.forEach((session) => {
+                const weekName = session["Week"];
+                const sessionOfWeek = session["Session of Week"];
+                let prefix = weekName + ' ' + sessionOfWeek + ' ';
+                Object.keys(session).forEach((key) => {
+                    if (key === "id") return;
+                    if (key === "Program") return;
+                    if (key === "Cohort") return;
+                    weeklySessionContext[prefix + key.replaceAll('Session', '')] = session[key];
+                });
+            })
+
+            sessions.forEach((session) => {
+                if (session.Cohort === cohort && session.Program === program) {
+                    Object.keys(weeklySessionContext).forEach((key) => {
+                        session[key] = weeklySessionContext[key];
+                    });
+                }
             });
+
         });
 
+        return sessions;
     });
 
     return sessions;
@@ -170,7 +241,13 @@ function addSessionWeekContext(sessions: Session[]): Session[] {
         const sessionDate = moment(session["Session Date"]);
         const sessionWeek = sessionDate.isoWeek();
 
-        const sessionBeforeInWeek = sessions.find((s) => (
+        const sessionsInWeek = sessions.filter((s) => (
+            s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionWeek
+        ));
+
+        const sessionBeforeInWeek = sessionsInWeek.find((s) => (
             s.id !== session.id
             && s.Cohort === session.Cohort
             && s.Program === session.Program
@@ -178,7 +255,7 @@ function addSessionWeekContext(sessions: Session[]): Session[] {
             && moment(s["Session Date"]).isBefore(sessionDate)
         ));
 
-        const sessionAfterInWeek = sessions.find((s) => (
+        const sessionAfterInWeek = sessionsInWeek.find((s) => (
             s.id !== session.id
             && s.Cohort === session.Cohort
             && s.Program === session.Program
@@ -191,6 +268,10 @@ function addSessionWeekContext(sessions: Session[]): Session[] {
         if (!sessionBeforeInWeek)
             session["Is First Session Of Week"] = 'Is First Session Of Week';
 
+        const indexInWeek = sessionsInWeek.findIndex((s) => s.id === session.id);
+
+        session["Session of Week"] = 'Session #' + (indexInWeek + 1);
+        session["Sessions in Week"] = sessionsInWeek.length + '';
     })
     return sessions;
 }
@@ -276,6 +357,8 @@ function combineWorkshopSessions(sessions: Session[]): Session[] {
                 "Is Combined Workshop Session": "Is Combined Workshop Session",
                 "Lecture Date": firstSession["Session Date"],
                 "Coaching Date": secondSession["Session Date"],
+                "Lecture Event Link": firstSession["Event Link"],
+                "Coaching Event Link": secondSession["Event Link"],
                 "Session Type": '',
             };
             combinedSessions.push(combinedSession);
@@ -307,8 +390,8 @@ function combineOptionsSessions(sessions: Session[]): Session[] {
             const combinedSession: Session = {
                 ...firstSession,
                 "Is Combined Options Session": "Is Combined Options Session",
-                "First Session Date": firstSession["Session Date"],
-                "Second Session Date": secondSession["Session Date"],
+                "First Date": firstSession["Session Date"],
+                "Second Date": secondSession["Session Date"],
             };
             combinedSessions.push(combinedSession);
             skip.push(secondSession);

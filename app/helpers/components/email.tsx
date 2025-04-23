@@ -1,9 +1,9 @@
 import { EditorContext } from "@/domain/schema";
 import { Badge, Box, Button, Flex, Group, Pill, ScrollArea, Text, Title } from "@mantine/core";
-import { JSX, use, useContext, useEffect, useState } from "react";
+import { JSX, use, useContext, useEffect, useMemo, useState } from "react";
 import { VariableInput } from "./form";
 import { Values } from "@/domain/schema/valueCollection";
-import { TemplateView } from "./view";
+import { TemplateView } from "./template";
 import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, IconCopyleftFilled } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { CopyOverlay } from "./clipboard";
@@ -12,7 +12,7 @@ import { CopyOverlay } from "./clipboard";
 export const EMAIL_EDIT_VALUES = ['Email Name', 'Send Date', 'Send Type', 'Subject', 'Preview'];
 export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const emailValues = editorState.email?.values ?? new Values();
+    const emailValues = useMemo(() => new Values(editorState.email?.values?.initialValues) ?? new Values(), [JSON.stringify(editorState.email?.values)]);
 
     useEffect(() => { }, [JSON.stringify(emailValues)]);
 
@@ -20,7 +20,6 @@ export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) 
         emailValues.setValue(name, { value: value, source: 'user' });
         setEditorState({ ...editorState, email: { ...editorState.email, values: emailValues } });
     }
-
     return (
         <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 overflow-hidden" gap={25}>
             <div className={" relative w-[9rem] h-[16rem]"}>
@@ -83,15 +82,9 @@ export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) 
 
 export function EmailViewCard() {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const emailValues = editorState.email?.values ?? new Values();
+    const emailValues = useMemo(() => new Values(editorState.email?.values?.initialValues) ?? new Values(), [JSON.stringify(editorState.email?.values)]);
 
     useEffect(() => { }, [JSON.stringify(emailValues)]);
-
-    const setValue = (name: string, value: any) => {
-        emailValues.setValue(name, { value: value, source: 'user' });
-        setEditorState({ ...editorState, email: { ...editorState.email, values: emailValues } });
-    }
-
 
 
     const handleContinue = () => {
@@ -114,7 +107,7 @@ export function EmailViewCard() {
     else if (editorState.step === 3)
         return (
             <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-full border-1 overflow-hidden" gap={25}>
-                <div className={" relative w-[12rem] h-[16rem]"}>
+                <div className={" relative w-[9rem] h-[16rem]"}>
                     <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" />
                     <CopyOverlay name="HTML" value={editorState.email?.HTML} />
                 </div>

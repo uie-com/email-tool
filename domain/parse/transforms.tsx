@@ -3,11 +3,12 @@ import { shortenIdentifier } from "./parsePrograms";
 
 import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
+import { renderToString } from 'react-dom/server';
 
 
 
 
-export function resolveTransforms(transforms: string[], value: any): any {
+export function resolveTransforms(transforms: string[], value: any): Promise<any> {
     let remainingTransforms = [...transforms];
 
     // Date-specific transforms
@@ -21,7 +22,7 @@ export function resolveTransforms(transforms: string[], value: any): any {
             || transform === 'GMT'
         );
         if (timezoneTransform)
-            value = moment(value).tz(timezoneTransform, true);
+            value = moment(value).tz(timezoneTransform);
         remainingTransforms = remainingTransforms.filter(transform => transform !== timezoneTransform);
 
         // Day add or subtract ex. (+1d) or (-1d)
@@ -130,6 +131,14 @@ export function resolveTransforms(transforms: string[], value: any): any {
             value = shortenIdentifier(value);
         remainingTransforms = remainingTransforms.filter(transform => transform !== shorthandTransform);
 
+        // Just numbers ex. (#)
+        const numberTransform = remainingTransforms.find(transform =>
+            transform === '#'
+        );
+        if (numberTransform)
+            value = value.replace(/[^0-9]/g, '');
+        remainingTransforms = remainingTransforms.filter(transform => transform !== numberTransform);
+
         // All Caps ex. (Caps)
         const capsTransform = remainingTransforms.find(transform =>
             transform.includes('Caps')
@@ -154,12 +163,36 @@ export function resolveTransforms(transforms: string[], value: any): any {
             value = value.substring(0, parseInt(shortenTransform.replace(' Letters', '')));
         remainingTransforms = remainingTransforms.filter(transform => transform !== shortenTransform);
 
-        // Convert markdown to HTML ex. (Markdown)
+        // Convert markdown to HTML ex. (MD to HTML)
         const markdownTransform = remainingTransforms.find(transform =>
-            transform.includes('Markdown')
+            transform.includes('MD to HTML')
         );
+        const defaultStyles = {
+            'fontFamily': 'arial, helvetica neue, helvetica, sans-serif',
+            margin: 0,
+            'color': '#333333',
+            'letterSpacing': '0',
+            'marginBottom': '1rem',
+            'lineHeight': '24px',
+            'fontSize': '16px',
+        };
         if (markdownTransform)
-            value = render((<Markdown>{value as string}</Markdown>), { pretty: true });
+            value = renderToString((<Markdown
+                markdownCustomStyles={{
+                    p: {
+                        ...defaultStyles,
+                    },
+                    li: {
+                        ...defaultStyles,
+                    },
+                    ul: {
+                        ...defaultStyles,
+                        'marginBottom': '-0.5rem',
+                    }
+                }}
+            >{value as string}</Markdown >))
+                .replaceAll('<li', '<li><p')
+                .replaceAll('/li>', '/p></li>')
         remainingTransforms = remainingTransforms.filter(transform => transform !== markdownTransform);
     }
 

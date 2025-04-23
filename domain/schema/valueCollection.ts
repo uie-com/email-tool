@@ -263,8 +263,15 @@ export class Value<T> {
             return this.initialValues[this.initialValues.length - 1].value;
 
         const currentSource = this.initialValues[this.initialValues.length - 1].source;
-        this.initialValues.filter((v) => v.source === currentSource).sort((a, b) => (a.part ?? 0) - (b.part ?? 0));
-        return this.initialValues.map((part) => part.value).join('');
+        const parts = this.initialValues.filter((v) => v.source === currentSource)
+            .reduce((acc, part) => {
+                if (part.part === undefined) return acc;
+                while (acc.length <= part.part)
+                    acc.push('');
+                acc[part.part] = part.value as string;
+                return acc;
+            }, [] as string[]);
+        return parts.join('');
     }
 
     getAllValues(): any[][] | undefined {
