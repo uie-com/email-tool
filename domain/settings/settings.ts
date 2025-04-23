@@ -23,7 +23,7 @@ const hide = true; // You can also hide values from the user by adding this flag
 export const REQUIRED_SEND_VALUES = ['Send Date', 'Subject', 'Send Type', 'From Name', 'From Email', 'Reply To'];
 
 export const SETTINGS: Settings<ValuePart<any>> = {
-    settings: { // Provide defaults for all emails here
+    settings: { // Provide global defaults for all emails here
         'Template': { value: './templates', part: 0, fetch: 'text' },
         'Banner': { value: './banners', part: 0 },
         'Base ID': { value: 'appHcZTzlfXAJpL7I', hide },
@@ -206,7 +206,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Type:Before Week': {
             settings: {
                 'Email Name': { value: 'Before {Next Week}', part: 2 },
-
+                // weeks 3 + 4
                 'Template': { value: '/before-week-x.html', part: 2 },
                 'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
             },
