@@ -569,7 +569,7 @@ function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             rightContent: null
         }
     };
-
+    //
     const isReady = () => {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
             && editorState.email?.hasSentTest !== undefined && editorState.email?.hasSentTest === true;
