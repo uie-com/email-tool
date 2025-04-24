@@ -3,7 +3,7 @@ import { Settings } from "../schema/settingsCollection";
 export type VariableType = keyof typeof VARIABLE_TYPES;
 export const VARIABLE_TYPES: Settings<string[]> = {
     "Date": {
-        keywords: ['day', 'date', 'time', 'month', 'year', 'timestamp']
+        keywords: ['date', 'time', 'month', 'year', 'timestamp']
     },
     "Banner": {
         keywords: ['banner', 'hero']

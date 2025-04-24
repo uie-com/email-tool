@@ -75,7 +75,9 @@ export function getAllIdentifiers(programSchema: any): string[] {
 }
 
 export function shortenIdentifier(id: string) {
-    return id.replaceAll('Pillar ', 'P')
+    return id
+        .replaceAll('Events of Week', 'EOW')
+        .replaceAll('Pillar ', 'P')
         .replaceAll('Cohort ', 'C')
         .replaceAll('Topic ', 'T')
         .replaceAll('Live Lab ', 'L')

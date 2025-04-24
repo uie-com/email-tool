@@ -144,13 +144,13 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             },
             'Sessions in Prev Week:1': {
                 settings: {
-                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Session Day of Week}'s session</a></strong>.` },
+                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Day of Week}'s session</a></strong>.` },
                 }
             },
             'Sessions in Prev Week:2': {
                 settings: {
-                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Session Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
-                    'Last Week Notes #2': { value: `<strong><a href="{{Last Week} Session #2 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #2 Session Day of Week}'s session</a></strong>.` },
+                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
+                    'Last Week Notes #2': { value: `<strong><a href="{{Last Week} Session #2 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #2 Day of Week}'s session</a></strong>.` },
                 }
             },
             'Sessions in Week:1': {
@@ -194,7 +194,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: '{Topic}', part: 2 },
 
                 'Template': { value: '/today.html', part: 2 },
-                'Subject': { value: 'Outcome-Driven UX Metrics: {Next Week}: {Topic}: ​​{Title}' },
+                'Subject': { value: 'Outcome-Driven UX Metrics: {Week}: {Topic}: ​​{Title}' },
             }
         },
         'Email Type:Before Week': {
@@ -235,7 +235,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: '{Topic}', part: 2 },
 
                 'Template': { value: '/today.html', part: 2 },
-                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Next Week}: {Topic}: ​​{Title}' },
+                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Week}: {Topic}: ​​{Title}' },
             }
         },
         'Email Type:Before Week': {
@@ -276,7 +276,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: '{Topic}', part: 2 },
 
                 'Template': { value: '/today.html', part: 2 },
-                'Subject': { value: 'Advanced Strategic UX Research: {Next Week}: {Topic}: ​​{Title}' },
+                'Subject': { value: 'Advanced Strategic UX Research: {Week}: {Topic}: ​​{Title}' },
             }
         },
         'Email Type:Before Week': {

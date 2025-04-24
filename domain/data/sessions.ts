@@ -77,8 +77,8 @@ export type Session = {
 export async function getSessionSchedule() {
     let sessions: Session[] = [];
     try {
-        let records: AirtableSessionRecord[] = await fetchRecords();
-        console.log('Initial sessions: ', JSON.stringify(await fetchRecords()));
+        let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, false);
+        console.log('Initial sessions: ', JSON.stringify(await fetchRecords(undefined, undefined, false)));
 
 
         records.forEach((record) => {
@@ -200,7 +200,7 @@ function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
                     if (key === "id") return;
                     if (key === "Program") return;
                     if (key === "Cohort") return;
-                    weeklySessionContext[prefix + key.replaceAll('Session', '')] = session[key];
+                    weeklySessionContext[prefix + key.replaceAll('Sessions', '').replaceAll('Session', '')] = session[key];
                 });
             })
 
@@ -427,10 +427,10 @@ function combineOptionsSessions(sessions: Session[]): Session[] {
 }
 
 function addSessionDateValues(sessions: Session[]): Session[] {
-    sessions.map((session) => {
+    const newSessions = sessions.map((session) => {
         return { ...session, ...getSessionDateValues(moment(session["Session Date"])) };
     });
-    return sessions;
+    return newSessions;
 }
 
 const special = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'];

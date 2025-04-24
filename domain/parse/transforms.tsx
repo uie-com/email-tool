@@ -131,6 +131,14 @@ export function resolveTransforms(transforms: string[], value: any): Promise<any
             value = shortenIdentifier(value);
         remainingTransforms = remainingTransforms.filter(transform => transform !== shorthandTransform);
 
+        /// First Word like 'April 2024' -> 'April' ex. (First Word)
+        const monthShorthandTransform = remainingTransforms.find(transform =>
+            transform.includes('First Word')
+        );
+        if (monthShorthandTransform)
+            value = value.split(' ')[0];
+        remainingTransforms = remainingTransforms.filter(transform => transform !== monthShorthandTransform);
+
         // Just numbers ex. (#)
         const numberTransform = remainingTransforms.find(transform =>
             transform === '#'

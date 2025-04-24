@@ -84,6 +84,8 @@ export class Variables {
                 return text;
             }
 
+            if (DEBUG) console.log('Replaced', variable.writtenAs, 'with', value, 'offset', text.length - (text.slice(0, startIndex) + text.slice(endIndex + 1)).length);
+            text = text.slice(0, startIndex) + text.slice(endIndex + 1); // if the variable is not found, remove it
             return text;
         });
 
