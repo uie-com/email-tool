@@ -23,7 +23,8 @@ const hide = true; // You can also hide values from the user by adding this flag
 export const REQUIRED_SEND_VALUES = ['Send Date', 'Subject', 'Send Type', 'From Name', 'From Email', 'Reply To'];
 
 export const SETTINGS: Settings<ValuePart<any>> = {
-    settings: { // Provide global defaults for all emails here
+    settings: {
+        //default settings determine what variables each email type will inherit
         'Template': { value: './templates', part: 0, fetch: 'text' },
         'Banner': { value: './banners', part: 0 },
         'Base ID': { value: 'appHcZTzlfXAJpL7I', hide },
@@ -326,12 +327,21 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             settings: {
                 'Email Name': { value: '{Topic} {Lab}', part: 2 },
-                'Template': { value: '/homework-x.html', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
+            },
+            'Session Type:Live Lab 1': {
+                settings: {
+                    'Template': { value: '/homework-pillar-x-lab-1.html', part: 2 },
+                }
+            },
+            'Session Type:Live Lab 2': {
+                settings: {
+                    'Template': { value: '/homework-pillar-x-lab-2.html', part: 2 },
+                }
             },
             'Is First Session Of Program': {
                 settings: {
-                    'Template': { value: '/homework-1.html', part: 2 },
+                    'Template': { value: '/homework-pillar-1-lab-1.html', part: 2 },
                 }
             },
         },
