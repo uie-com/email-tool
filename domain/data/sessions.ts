@@ -414,6 +414,8 @@ function combineOptionsSessions(sessions: Session[]): Session[] {
                 "Is Combined Options Session": "Is Combined Options Session",
                 "First Date": firstSession["Session Date"],
                 "Second Date": secondSession["Session Date"],
+                "First Event Link": firstSession["Event Link"],
+                "Second Event Link": secondSession["Event Link"],
             };
             combinedSessions.push(combinedSession);
             skip.push(secondSession);
