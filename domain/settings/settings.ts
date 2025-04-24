@@ -41,6 +41,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
 
+        'Automation ID': { value: '226', hide }, // TEMP for testing
+
+
         'LoA ID': { value: '97', hide },
         'LoA Segment ID': { value: '1258', hide },
         'BL ID': { value: '108', hide },
@@ -137,9 +140,29 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Events of Week': {
             settings: {
-                'Template': { value: '/events-of-week.html', part: 2 },
                 'Subject': { value: 'This Week in the Stand Out Community' },
-            }
+            },
+            'Sessions in Prev Week:1': {
+                settings: {
+                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Session Day of Week}'s session</a></strong>.` },
+                }
+            },
+            'Sessions in Prev Week:2': {
+                settings: {
+                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Session Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
+                    'Last Week Notes #2': { value: `<strong><a href="{{Last Week} Session #2 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #2 Session Day of Week}'s session</a></strong>.` },
+                }
+            },
+            'Sessions in Week:1': {
+                settings: {
+                    'Template': { value: '/one-events-of-week.html', part: 2 },
+                }
+            },
+            'Sessions in Week:2': {
+                settings: {
+                    'Template': { value: '/two-events-of-week.html', part: 2 },
+                }
+            },
         },
         'Email Type:Today\'s Session': {
             'Session Type:Live Discussion': {

@@ -37,6 +37,9 @@ export type Session = {
 
     "Session of Week"?: string;
     "Sessions in Week"?: string;
+    "Sessions in Next Week"?: string;
+    "Sessions in Prev Week"?: string;
+
     "Is First Session Of Week"?: string;
     "Is Last Session Of Week"?: string;
 
@@ -52,7 +55,6 @@ export type Session = {
     "Coaching Date"?: Date;
     "Lecture Event Link"?: string;
     "Coaching Event Link"?: string;
-
 
     "Is Combined Options Session"?: string;
     "First Date"?: Date;
@@ -272,6 +274,21 @@ function addSessionWeekContext(sessions: Session[]): Session[] {
 
         session["Session of Week"] = 'Session #' + (indexInWeek + 1);
         session["Sessions in Week"] = sessionsInWeek.length + '';
+
+
+        const sessionsInNextWeek = sessions.filter((s) => (
+            s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionWeek + 1
+        ));
+        const sessionsInPrevWeek = sessions.filter((s) => (
+            s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isoWeek() === sessionWeek - 1
+        ));
+
+        session["Sessions in Next Week"] = sessionsInNextWeek.length + '';
+        session["Sessions in Prev Week"] = sessionsInPrevWeek.length + '';
     })
     return sessions;
 }
