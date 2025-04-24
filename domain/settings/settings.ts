@@ -323,12 +323,17 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             }
         },
         'Email Type:Homework': {
-            settings: {
-                'Email Name': { value: '{Topic}', part: 2 },
 
-                'Template': { value: '/today.html', part: 2 },
-                'Subject': { value: 'Advanced Strategic UX Research: {Next Week}: {Topic}: ​​{Title}' },
-            }
+            settings: {
+                'Email Name': { value: '{Topic} {Lab}', part: 2 },
+                'Template': { value: '/homework-x.html', part: 2 },
+                'Subject': { value: 'Win Program {Topic}. {Title}' },
+            },
+            'Is First Session Of Program': {
+                settings: {
+                    'Template': { value: '/homework-1.html', part: 2 },
+                }
+            },
         },
     }
 };
