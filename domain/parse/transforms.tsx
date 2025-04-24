@@ -4,11 +4,12 @@ import { shortenIdentifier } from "./parsePrograms";
 import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
 import { renderToString } from 'react-dom/server';
+import { Values } from "../schema/valueCollection";
 
 
 
 
-export function resolveTransforms(transforms: string[], value: any): Promise<any> {
+export function resolveTransforms(transforms: string[], value: any, context: Values): Promise<any> {
     let remainingTransforms = [...transforms];
 
     // Date-specific transforms
@@ -196,6 +197,10 @@ export function resolveTransforms(transforms: string[], value: any): Promise<any
                     ul: {
                         ...defaultStyles,
                         'marginBottom': '-0.5rem',
+                    },
+                    link: {
+                        'textDecoration': context && context.getCurrentValue ? context.getCurrentValue('Link Text Decoration') as string ?? 'underline' : 'underline',
+                        'color': context && context.getCurrentValue ? context.getCurrentValue('Link Color') as string : '#007bff',
                     }
                 }}
             >{value as string}</Markdown >))

@@ -29,7 +29,7 @@ export function fillQuillVariables(variables: Variables, values: Values): Op[] {
             value = new Variables(value, [foundName])._fillVariables(value, values);
             if (DEBUG) console.log('Filled internal variables to', value);
         }
-        value = variable.resolveTransforms(value);
+        value = variable.resolveTransforms(value, values);
 
         if (typeof value === 'string') {
             skipCount = foundVariable.split('{').length - 2;

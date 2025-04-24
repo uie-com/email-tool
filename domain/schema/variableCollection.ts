@@ -222,8 +222,8 @@ export class Variable {
         return new Variable('{' + new Variables(this.writtenNoBraces, [this.key, ...this.parentKeys]).resolveWith(values) + '}', this.index, [this.key, ...this.parentKeys]);
     }
 
-    resolveTransforms(value: any): any {
-        return resolveTransforms(this.transforms, value);
+    resolveTransforms(value: any, context: Values): any {
+        return resolveTransforms(this.transforms, value, context);
     }
 
 }

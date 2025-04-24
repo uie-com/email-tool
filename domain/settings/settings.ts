@@ -107,21 +107,36 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Session Type:Job Search Topic': {
             settings: {
                 'Banner': { value: '/jobsearch.png', part: 3 },
+                'Primary Color': { value: '#00a1b3' },
+                'Accent Color': { value: '#eb621d' },
             }
         },
         'Session Type:Metrics Topic': {
             settings: {
                 'Banner': { value: '/metrics.png', part: 3 },
+                'Primary Color': { value: '#9b0e5b' },
+                'Accent Color': { value: '#00a1b3' },
             }
         },
         'Session Type:Research Topic': {
             settings: {
                 'Banner': { value: '/research.png', part: 3 },
+                'Primary Color': { value: '#662547' },
+                'Accent Color': { value: '#00a1b3' },
             }
         },
         'Session Type:Win Topic': {
             settings: {
                 'Banner': { value: '/wininfluence.png', part: 3 },
+                'Primary Color': { value: '#00a1b3' },
+                'Accent Color': { value: '#8c9b29' },
+            }
+        },
+        'Session Type:Vision': {
+            settings: {
+                'Banner': { value: '/vision.png', part: 3 },
+                'Primary Color': { value: '#00a1b3' },
+                'Accent Color': { value: '#9b0e5b' },
             }
         },
     },
@@ -130,9 +145,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Send Type': { value: 'AUTOMATION', hide },
             'Email Name': { value: '{Email Type}', part: 1 },
             'Template': { value: '/standout', part: 1 },
-            'Banner': { value: '' },
 
             'Automation ID': { value: '226', hide },
+
+            'Banner': { value: '' },
+            'Link Color': { value: '#ec621d' },
+
 
             'Calendar Table ID': { value: 'tbly8jzaHpb0hGfbj', hide },
             // 'Session Type': { value: '{Airtable Session Query}&fields[]=Session Type', fetch: 'airtable' },
@@ -187,6 +205,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort} ', part: 1 },
 
             'Banner': { value: '' },
+            'Link Color': { value: '#006f74' },
+
 
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
         },
@@ -228,6 +248,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort} ', part: 1 },
 
             'Banner': { value: '' },
+            'Link Color': { value: '#662547' },
+
 
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
         },
@@ -270,6 +292,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Banner': { value: '' },
 
+            'Link Color': { value: '#662547' },
+
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },
         },
         'Email Type:Today\'s Session': {
@@ -310,8 +334,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort} ', part: 1 },
 
             'Banner': { value: '' },
+            'Link Color': { value: '#a5473d' },
+            'Link Text Decoration': { value: 'none' },
 
             'Calendar Table ID': { value: 'tblVtIK7hg8LOJfZd', hide },
+            'Cohort Table ID': { value: 'tblEQ09wfPRDZdXtN', hide },
         },
         'Session Type:Live Lab 1': {
             settings: {
@@ -323,8 +350,29 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Lab': { value: 'Lab 2' },
             }
         },
+        // Cohort-based recording links
+        'Week:Week 2': {
+            settings: {
+                'Week 1 Session #1 Recording Link': { value: '{Airtable URL}/{Cohort Table ID}?filterByFormula=SEARCH("{Cohort}", %7BCohort%7D)&fields[]=Pillar 1 Session Recordings', fetch: 'airtable' },
+            }
+        },
+        'Week:Week 3': {
+            settings: {
+                'Week 2 Session #1 Recording Link': { value: '{Airtable URL}/{Cohort Table ID}?filterByFormula=SEARCH("{Cohort}", %7BCohort%7D)&fields[]=Pillar 1 Session Recordings', fetch: 'airtable' },
+            }
+        },
+        'Week:Week 4': {
+            settings: {
+                'Week 3 Session #1 Recording Link': { value: '{Airtable URL}/{Cohort Table ID}?filterByFormula=SEARCH("{Cohort}", %7BCohort%7D)&fields[]=Pillar 2 Session Recordings', fetch: 'airtable' },
+            }
+        },
+        'Week:Week 5': {
+            settings: {
+                'Week 4 Session #1 Recording Link': { value: '{Airtable URL}/{Cohort Table ID}?filterByFormula=SEARCH("{Cohort}", %7BCohort%7D)&fields[]=Pillar 2 Session Recordings', fetch: 'airtable' },
+            }
+        },
+        // Email-specific settings
         'Email Type:Homework': {
-
             settings: {
                 'Email Name': { value: '{Topic} {Lab}', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },

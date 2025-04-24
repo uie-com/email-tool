@@ -70,7 +70,7 @@ export class Values {
                 if (DEBUG) console.log('Couldn\'t cast ' + value + ' to date', e);
             }
 
-        return key.resolveTransforms(value);
+        return key.resolveTransforms(value, this);
     }
 
     remoteType(key: string): FetchType | undefined {
@@ -360,7 +360,7 @@ export class Value<T> {
         const fetchDef = this.initialValues.reverse().find((part) => part.fetch);
         this.initialValues.reverse();
         if (fetchDef && fetchDef.fetch === 'airtable') {
-            if (DEBUG) console.log('[Airtable] Fetching setting', this.name, 'with url', url);
+            console.log('[Airtable] Fetching setting', this.name, 'with url', url);
             const response = await fetchAirtableData(url);
             if (DEBUG) console.log('[Airtable] Fetched data', this.name, response);
             if (response && response.records && response.records.length > 0) {
@@ -368,6 +368,7 @@ export class Value<T> {
                 return response.records[0].fields[fieldName];
             }
         } else if (fetchDef && fetchDef.fetch === 'text') {
+            console.log('[Text] Fetching setting', this.name, 'with url', url);
             const response = await fetch(url);
             if (response.ok) {
                 if (DEBUG) console.log('[Text] Fetched data', this.name, response);
