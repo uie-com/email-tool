@@ -131,15 +131,27 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Automation ID': { value: '226', hide },
 
             'Calendar Table ID': { value: 'tbly8jzaHpb0hGfbj', hide },
-            'Session Type': { value: '{Airtable Session Query}&fields[]=Session Type', fetch: 'airtable' },
-            'Event Link': { value: '{Airtable Session Query}&fields[]=Event Link', fetch: 'airtable' },
-            'Session Notes Link': { value: '{Airtable Session Query}&fields[]=Collab Notes Link', fetch: 'airtable' },
+            // 'Session Type': { value: '{Airtable Session Query}&fields[]=Session Type', fetch: 'airtable' },
+            // 'Event Link': { value: '{Airtable Session Query}&fields[]=Event Link', fetch: 'airtable' },
+            // 'Session Notes Link': { value: '{Airtable Session Query}&fields[]=Collab Notes Link', fetch: 'airtable' },
+        },
+        'Email Type:Events of Week': {
+            settings: {
+                'Template': { value: '/events-of-week.html', part: 2 },
+                'Subject': { value: 'This Week in the Stand Out Community' },
+            }
         },
         'Email Type:Today\'s Session': {
             'Session Type:Live Discussion': {
                 settings: {
                     'Template': { value: '/today-live-discussion.html', part: 2 },
                     'Subject': { value: 'Today’s Stand Out Community Session' },
+                }
+            },
+            'Session Type:Materials Critique': {
+                settings: {
+                    'Template': { value: '/materials-critique.html', part: 2 },
+                    'Subject': { value: 'Today’s Materials Critique Session' },
                 }
             }
         }
