@@ -17,6 +17,9 @@ export type AirtableSessionRecord = {
         "Event Link"?: string;
         "Collab Notes Link"?: string;
         "Collab PDF Link"?: string;
+
+        "First Homework"?: string;
+        "Second Homework"?: string;
     };
 }
 
@@ -64,6 +67,8 @@ export type Session = {
     "Second Date"?: Date;
     "First Event Link"?: string;
     "Second Event Link"?: string;
+    "First Homework"?: string;
+    "Second Homework"?: string;
 
     'Is DST'?: string;
     'Session Day of Week'?: string;
@@ -111,6 +116,9 @@ export async function getSessionSchedule() {
                         "Event Link": record.fields["Event Link"],
                         "Collab Notes Link": record.fields["Collab Notes Link"],
                         "Collab PDF Link": record.fields["Collab PDF Link"],
+
+                        "First Homework": record.fields["First Homework"],
+                        "Second Homework": record.fields["Second Homework"],
                     });
                 });
             else
@@ -128,6 +136,9 @@ export async function getSessionSchedule() {
                     "Event Link": record.fields["Event Link"],
                     "Collab Notes Link": record.fields["Collab Notes Link"],
                     "Collab PDF Link": record.fields["Collab PDF Link"],
+
+                    "First Homework": record.fields["First Homework"],
+                    "Second Homework": record.fields["Second Homework"],
                 });
 
         });
