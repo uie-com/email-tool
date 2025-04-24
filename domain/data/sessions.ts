@@ -21,6 +21,7 @@ export type AirtableSessionRecord = {
 }
 
 export type Session = {
+    // targets airtable assignments
     "id": string;
     "Session Date": Date;
     "Program": string;
@@ -50,15 +51,19 @@ export type Session = {
     "Is Before Break"?: string;
     "Is After Break"?: string;
 
+    //for Programs
     'Is Combined Workshop Session'?: string;
     "Lecture Date"?: Date;
     "Coaching Date"?: Date;
     "Lecture Event Link"?: string;
     "Coaching Event Link"?: string;
 
+    //for WIN
     "Is Combined Options Session"?: string;
     "First Date"?: Date;
     "Second Date"?: Date;
+    "First Event Link"?: string;
+    "Second Event Link"?: string;
 
     'Is DST'?: string;
     'Session Day of Week'?: string;

@@ -301,5 +301,34 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 },
             },
         },
+    },
+    'Program:Win': {
+        settings: {
+            'Send Type': { value: 'AUTOMATION', hide },
+            'Template': { value: '/win', part: 1 },
+            'Email Name': { value: '{Cohort} ', part: 1 },
+
+            'Banner': { value: '' },
+
+            'Calendar Table ID': { value: 'tblVtIK7hg8LOJfZd', hide },
+        },
+        'Session Type:Live Lab 1': {
+            settings: {
+                'Lab': { value: 'Lab 1' },
+            }
+        },
+        'Session Type:Live Lab 2': {
+            settings: {
+                'Lab': { value: 'Lab 2' },
+            }
+        },
+        'Email Type:Homework': {
+            settings: {
+                'Email Name': { value: '{Topic}', part: 2 },
+
+                'Template': { value: '/today.html', part: 2 },
+                'Subject': { value: 'Advanced Strategic UX Research: {Next Week}: {Topic}: ​​{Title}' },
+            }
+        },
     }
 };
