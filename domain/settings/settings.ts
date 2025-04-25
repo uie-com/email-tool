@@ -350,7 +350,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Lab': { value: 'Lab 2' },
             }
         },
-        // Cohort-based recording links
+        // Cohort-based recording links (just for Pillar 1 and Pillar 2, as they are all in one place in MN);
         'Week:Week 2': {
             settings: {
                 'Week 1 Session #1 Recording Link': { value: '{Airtable URL}/{Cohort Table ID}?filterByFormula=SEARCH("{Cohort}", %7BCohort%7D)&fields[]=Pillar 1 Session Recordings', fetch: 'airtable' },
@@ -393,5 +393,25 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 }
             },
         },
+        'Session Type: Wrap Up': {
+            settings: {
+                //is this also last session of program? Or is last session?
+
+            }
+        },
+        'Email Type:Certificate': {
+            settings: {
+                'Email Name': { value: '{Cohort} Certificate', part: 2 },
+                'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
+                'Template': { value: '/certificate.html', part: 2 },
+            },
+        },
+        'Email Type: Program Extension': {
+            settings: {
+                'Email Name': { value: '{Cohort} Extension Details', part: 2 },
+                'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
+                'Template': { value: '/program-extension.html', part: 2 },
+            }
+        }
     }
-};
+}
