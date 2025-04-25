@@ -345,16 +345,16 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Certificate': {
             settings: {
-                'Email Name': { value: '{Cohort} Certificate', part: 2 },
+                'Email Name': { value: 'Certificate', part: 2 },
                 'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
                 'Template': { value: '/certificate.html', part: 2 },
             },
         },
-        'Email Type:Program Extension': {
+        'Email Type: Extension Details': {
             settings: {
-                'Email Name': { value: '{Cohort} Extension Details', part: 2 },
+                'Email Name': { value: 'Extension Details', part: 2 },
                 'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
-                'Template': { value: '/program-extension.html', part: 2 },
+                'Template': { value: '/extension-details.html', part: 2 },
             }
         }
     },
