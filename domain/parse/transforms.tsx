@@ -45,6 +45,15 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = moment(value).add(parseInt(hourTransform.substring(0, hourTransform.length - 1)), 'hours').toDate();
         remainingTransforms = remainingTransforms.filter(transform => transform !== hourTransform);
 
+        // Month add or subtract ex. (+1M) or (-1M)
+        const monthTransform = remainingTransforms.find(transform =>
+            (transform.substring(0, 1) === '+' || transform.substring(0, 1) === '-')
+            && (transform.substring(transform.length - 1, transform.length) === 'M')
+        );
+        if (monthTransform)
+            value = moment(value).add(parseInt(monthTransform.substring(0, monthTransform.length - 1)), 'months').toDate();
+        remainingTransforms = remainingTransforms.filter(transform => transform !== monthTransform);
+
         // Day before ex. (Monday before)
         const dayBeforeTransform = remainingTransforms.find(transform =>
             transform.endsWith(' Before')
@@ -160,17 +169,6 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         if (monthShorthandTransform)
             value = value.split(' ')[0];
         remainingTransforms = remainingTransforms.filter(transform => transform !== monthShorthandTransform);
-
-        // 6 months from now ex. (6 Months)
-        const sixMonthsFromNow = remainingTransforms.find(transform =>
-            transform.includes('+6 Months')
-        );
-        if (sixMonthsFromNow) {
-            const date = moment(value);
-            date.add(6, 'months');
-            value = date.format('MMMM Do, YYYY');
-        }
-        remainingTransforms = remainingTransforms.filter(transform => transform !== sixMonthsFromNow);
 
         // Just numbers ex. (#)
         const numberTransform = remainingTransforms.find(transform =>
