@@ -249,7 +249,7 @@ function addSessionProgramContext(sessions: Session[]): Session[] {
             && moment(s["Session Date"]).isAfter(session["Session Date"])
         ));
 
-        if (sessionsAfterInProgram.length !== 0)
+        if (sessionsAfterInProgram.length === 0)
             session["Is Last Session Of Program"] = 'Is Last Session Of Program';
         if (!sessionBeforeInProgram)
             session["Is First Session Of Program"] = 'Is First Session Of Program';

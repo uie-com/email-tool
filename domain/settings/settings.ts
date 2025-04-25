@@ -231,7 +231,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: '{Topic}', part: 2 },
 
                 'Template': { value: '/today.html', part: 2 },
-                'Reference Doc': { value: '' },
+                'Reference Doc': { value: 'https://docs.google.com/document/d/160P5IwlEDgvg53zrCMTH1NwW7p0V0cnEqb-CV3VY-bc/edit' },
 
                 'Subject': { value: 'Advanced Strategic UX Research: {Week}: {Topic}: ​​{Title}' },
             }
@@ -241,14 +241,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: 'Before {Next Week}', part: 2 },
                 // weeks 3 + 4
                 'Template': { value: '/before-week-x.html', part: 2 },
-                'Reference Doc': { value: '' },
+                'Reference Doc': { value: 'https://docs.google.com/document/d/1GTwZUhhdJjiuPnWKLeEDcHRG1lX9gJG1mAk3CcogpPM/edit' },
 
                 'Subject': { value: 'Advanced Strategic UX Research: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
             },
             'Next Week:Week 2': {
                 settings: {
                     'Template': { value: '/before-week-2.html', part: 2 },
-                    'Reference Doc': { value: '' },
+                    'Reference Doc': { value: 'https://docs.google.com/document/d/1PxBRnXcGjY6ytzlTL4Xuvt63T8LtGHzPJM3gQywb7Sk/edit' },
 
                 }
             },
@@ -258,7 +258,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                         'Email Name': { value: 'Before {Week}', part: 2 },
                         'Subject': { value: 'Advanced Strategic UX Research: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
                         'Template': { value: '/before-week-1.html', part: 2 },
-                        'Reference Doc': { value: '' },
+                        'Reference Doc': { value: 'https://docs.google.com/document/d/1Vb5Q1FB2rumreNblfrK_qX-QyshoY9Wx3LCIjjrQm94/edit' },
 
                     }
                 },
@@ -320,24 +320,27 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Live Lab 1': {
                 settings: {
                     'Template': { value: '/homework-pillar-x-lab-1.html', part: 2 },
-                    'Reference Doc': { value: 'https://docs.google.com/document/d/1_pxEVNxRJ5ULj-E1gfSjbcQJj2oWRqKcYIuQLbnjkFc/edit' },
+                    'Reference Doc': { value: 'https://docs.google.com/document/d/1sDODxhDrRbsuUEPpw0J9S4eoah5U3L6QQ18Y2E2h_YQ/edit' },
                 }
             },
             'Session Type:Live Lab 2': {
                 settings: {
                     'Template': { value: '/homework-pillar-x-lab-2.html', part: 2 },
+                    'Reference Doc': { value: 'https://docs.google.com/document/d/1VDqUYv84Js2kSDbKEcGKpLXbyi_-_43bZlfNNdXxnms/edit' },
+
                 }
             },
             'Is First Session Of Program': {
                 settings: {
                     'Template': { value: '/homework-pillar-1-lab-1.html', part: 2 },
+                    'Reference Doc': { value: 'https://docs.google.com/document/d/1KDQbgOjxdiy3WKIfaQmk2QLLDJQoUcZOx1ANLVkHh1I/edit' },
+
+
                 }
             },
         },
         'Session Type: Wrap Up': {
             settings: {
-                //is this also last session of program? Or is last session?
-
             }
         },
         'Email Type:Certificate': {
@@ -347,7 +350,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/certificate.html', part: 2 },
             },
         },
-        'Email Type: Program Extension': {
+        'Email Type:Program Extension': {
             settings: {
                 'Email Name': { value: '{Cohort} Extension Details', part: 2 },
                 'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
