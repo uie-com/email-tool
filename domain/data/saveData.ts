@@ -171,7 +171,7 @@ export function saveLocally(emails: Saves, key: string = EMAILS_KEY) {
 }
 
 export function saveCurrentEmailName(id: string) {
-    if (DEBUG) console.log('[SAVE] Saving current email name', id);
+    console.log('[SAVE] Saving current email name', id);
     saveStringToLocalStorage(CURRENT_EMAIL_NAME_KEY, id);
 }
 

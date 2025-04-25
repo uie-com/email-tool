@@ -51,7 +51,10 @@ export class Variables {
             }),
             ...(values ? this.getValueVariables(values).map(variable => {
                 return variable.resolveDependencies(values);
-            }) : [])
+            }) : []),
+            ...(values ? this.getIterableVariables(values).map(variable => {
+                return variable.resolveDependencies(values);
+            }) : []),
         ]
         sum = sum.filter(variable => PRE_APPROVED_VALUES.includes(variable.name) === false);
         return this.getUniqueVariables(sum);
@@ -59,6 +62,19 @@ export class Variables {
 
     getValueVariables(values: Values): Variable[] {
         return new Variables(values.asArray().join(','), this.parentKeys).variables;
+    }
+
+    getIterableVariables(values: Values): Variable[] {
+        const iterables = this.variables.filter(v => v.writtenAs.includes('Iterate x'));
+        const iteratedValues = iterables.map(v => {
+            console.log('Found iterable', v.writtenAs);
+            console.log('With value', values.getCurrentValue(v.key));
+            console.log('Resolving to object', new Variable(v.writtenAs, 0, this.parentKeys));
+            console.log('Resolving to key', new Variable(v.writtenAs, 0, this.parentKeys).resolveDependencies(values));
+            console.log('Resolving to', new Variable(v.writtenAs, 0, this.parentKeys).resolveDependencies(values).resolveTransforms(values.getCurrentValue(v.key), new Values([])));
+            return new Variable(v.writtenAs, 0, this.parentKeys).resolveDependencies(values).resolveTransforms(values.getCurrentValue(v.key), new Values([]));
+        })
+        return new Variables(iteratedValues.join(','), this.parentKeys).variables;
     }
 
     _fillVariables(text: string, values: Values): string {

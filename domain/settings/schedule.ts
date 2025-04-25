@@ -19,7 +19,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 'Send Date': '{Session Date(+1d)(12:00pm)}',
             },
         },
-        'Odd Week': {
+        'Session Week Type:Odd Week': {
             emails: {
                 'Upcoming Topics': {
                     'Send Date': '{Session Date(+6d)(10:00am)}',
@@ -172,7 +172,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 },
                 'Welcome': {
                     'Send Date': '{Session Date(+1d)(10:00am)}',
-                    'Cohort': '{Cohort(Next Cohort)}',
+                    'Next Cohort': '{Cohort(Next Cohort)}',
                 }
             }
         }

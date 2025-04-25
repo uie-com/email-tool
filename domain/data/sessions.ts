@@ -54,7 +54,7 @@ export type Session = {
     "Is Before Break"?: string;
     "Is After Break"?: string;
 
-    //for Programs
+    //for Workshops
     'Is Combined Workshop Session'?: string;
     "Lecture Date"?: Date;
     "Coaching Date"?: Date;
@@ -69,6 +69,9 @@ export type Session = {
     "Second Event Link"?: string;
     "First Homework"?: string;
     "Second Homework"?: string;
+
+    // For TUXS
+    "Number of Upcoming Sessions"?: string;
 
     'Is DST'?: string;
     'Session Day of Week'?: string;
@@ -239,18 +242,31 @@ function addSessionProgramContext(sessions: Session[]): Session[] {
             && s.Program === session.Program
             && moment(s["Session Date"]).isBefore(session["Session Date"])
         ));
-        const sessionAfterInProgram = sessions.find((s) => (
+        const sessionsAfterInProgram = sessions.filter((s) => (
             s.id !== session.id
             && s.Cohort === session.Cohort
             && s.Program === session.Program
             && moment(s["Session Date"]).isAfter(session["Session Date"])
         ));
 
-        if (!sessionAfterInProgram)
+        if (sessionsAfterInProgram.length !== 0)
             session["Is Last Session Of Program"] = 'Is Last Session Of Program';
         if (!sessionBeforeInProgram)
             session["Is First Session Of Program"] = 'Is First Session Of Program';
+
+        session["Number of Upcoming Sessions"] = sessionsAfterInProgram.length + '';
+        if (session.Program === 'TUXS')
+            sessionsAfterInProgram.forEach((s, i) => {
+                const prefix = 'Upcoming Session #' + (i + 1);
+                Object.keys(s).forEach((key) => {
+                    if (key === "id") return;
+                    if (key === "Program") return;
+                    if (key === "Cohort") return;
+                    session[prefix + ' ' + key.replaceAll('Sessions', '').replaceAll('Session', '')] = s[key];
+                });
+            });
     });
+
     return sessions;
 }
 

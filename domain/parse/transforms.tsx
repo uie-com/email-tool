@@ -5,6 +5,7 @@ import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
 import { renderToString } from 'react-dom/server';
 import { Values } from "../schema/valueCollection";
+import { Variables } from "../schema/variableCollection";
 
 
 
@@ -83,7 +84,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         // Format date into string ex. (YYYY-MM-DD)
         const formatTransform = remainingTransforms.find(transform =>
             transform.includes('YY') || transform.includes('MM') || transform.includes('DD')
-            || transform.includes('hh') || transform.includes('mm') || transform.includes('ss') || transform.includes('dd') || transform.includes(':')
+            || transform.includes('hh') || transform.includes('mm') || transform.includes('ss') || transform.includes('dd') || transform === 'z'
         );
         if (formatTransform)
             value = moment(value).format(formatTransform);
@@ -93,6 +94,26 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
     // String-specific transforms
     if (typeof value === 'string') {
         value = value as string;
+
+        // Iterate variable: {Text to Repeat (Iterate x{Number})}
+        // Increments all '#1's in original string to '#2', '#3', etc.
+        // Inside of incremental value, use [] instead of {} for variables to be resolved _after_ iteration
+        const iterateTransform = remainingTransforms.find(transform =>
+            transform.includes('Iterate x')
+        );
+        if (iterateTransform) {
+            const number = parseInt(iterateTransform.substring(iterateTransform.indexOf('x') + 1, iterateTransform.length));
+            const textToRepeat = value;
+            const repeatedText = Array.from({ length: number }, (_, i) => {
+                return textToRepeat.replaceAll('#1', '#' + (i + 1).toString()).replaceAll('[', '{').replaceAll(']', '}');
+            }).join('');
+            if (context.initialValues.length > 0)
+                value = new Variables(repeatedText).resolveWith(context);
+            else
+                value = repeatedText;
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== iterateTransform);
+
 
         // Remove :00 ex. (-:00)
         const remove00Transform = remainingTransforms.find(transform =>
@@ -171,6 +192,30 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         if (shortenTransform)
             value = value.substring(0, parseInt(shortenTransform.replace(' Letters', '')));
         remainingTransforms = remainingTransforms.filter(transform => transform !== shortenTransform);
+
+        // Convert TUXS Descriptions to (1st Person)
+        const tuxsTransform = remainingTransforms.find(transform =>
+            transform.includes('1st Person')
+        );
+        if (tuxsTransform) {
+            value = value
+                .replaceAll('Jared Spool', 'I')
+                .replaceAll(' he ', ' I ')
+                .replaceAll(' explores ', ' explore ')
+                .replaceAll(' his ', ' my ')
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== tuxsTransform);
+
+        // Grab only last paragraph ex. (Last Paragraph)
+        const lastParagraphTransform = remainingTransforms.find(transform =>
+            transform.includes('Last Paragraph')
+        );
+        if (lastParagraphTransform) {
+            const paragraphs = value.trim().split('\n');
+            const lastParagraph = paragraphs[paragraphs.length - 1];
+            value = lastParagraph;
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== lastParagraphTransform);
 
         // Convert markdown to HTML ex. (MD to HTML)
         const markdownTransform = remainingTransforms.find(transform =>

@@ -1,3 +1,4 @@
+import { fixTemplate } from "@/domain/parse/parseTemplates";
 import { resolveTemplateRemotely } from "@/domain/parse/remoteParse";
 import { EditorContext } from "@/domain/schema";
 import { Value, Values } from "@/domain/schema/valueCollection";
@@ -34,7 +35,7 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
                 await templateValue?.populateRemote(values);
 
                 if (DEBUG) console.log('Fetched template', templateValue);
-                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } });
+                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: fixTemplate(templateValue.source('remote').currentValue), template: templateObject.source('user', 'settings').currentValue } });
             } catch {
                 console.error('Error fetching template', templateValue);
                 setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: templateObject.source('user', 'settings').currentValue } });
@@ -72,7 +73,7 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
                 setFilledTemplate(currentFilled.current);
             else
                 forceUpdate();
-        }, 600);
+        }, 1000);
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
 

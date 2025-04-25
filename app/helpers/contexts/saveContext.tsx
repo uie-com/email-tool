@@ -12,7 +12,7 @@ import { Box, Flex, Loader } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
 
 
-const DEBUG = true;
+const DEBUG = false;
 export function SaveContext({ children }: { children: React.ReactNode }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const lastEditorState = useRef<EditorState | undefined>(undefined);
@@ -50,12 +50,12 @@ export function SaveContext({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!editorState.email || editorState.step === 0) return;
 
-        // if (localTimeoutId.current)
-        //     clearTimeout(localTimeoutId.current);
-        // localTimeoutId.current = setTimeout(() => {
-        // saveStateLocally(editorState);
-        // setSaves(loadLocally());
-        // }, LOCAL_SAVE_INTERVAL);
+        if (localTimeoutId.current)
+            clearTimeout(localTimeoutId.current);
+        localTimeoutId.current = setTimeout(() => {
+            saveStateLocally(editorState);
+            setSaves(loadLocally());
+        }, LOCAL_SAVE_INTERVAL);
 
         if (remoteTimeoutId.current)
             clearTimeout(remoteTimeoutId.current);
@@ -70,8 +70,8 @@ export function SaveContext({ children }: { children: React.ReactNode }) {
         }
         lastEditorState.current = editorState;
 
-        saveStateLocally(editorState);
-        setSaves(loadLocally());
+        // saveStateLocally(editorState);
+        // setSaves(loadLocally());
 
     }, [JSON.stringify(editorState)]);
 
