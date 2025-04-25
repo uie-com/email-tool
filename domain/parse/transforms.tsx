@@ -161,6 +161,17 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = value.split(' ')[0];
         remainingTransforms = remainingTransforms.filter(transform => transform !== monthShorthandTransform);
 
+        // 6 months from now ex. (6 Months)
+        const sixMonthsFromNow = remainingTransforms.find(transform =>
+            transform.includes('+6 Months')
+        );
+        if (sixMonthsFromNow) {
+            const date = moment(value);
+            date.add(6, 'months');
+            value = date.format('MMMM Do, YYYY');
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== sixMonthsFromNow);
+
         // Just numbers ex. (#)
         const numberTransform = remainingTransforms.find(transform =>
             transform === '#'
