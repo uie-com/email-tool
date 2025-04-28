@@ -388,14 +388,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Email Name': { value: 'Certificate', part: 2 },
                 'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
-                'Template': { value: '/certificate.html', part: 2 },
+                'Template': { value: '/certificate.html', part: 2 }, 'Reference Doc': { value: 'https://docs.google.com/document/d/1ak_mQJ_mBQkSi7gwoYJO2s5CHOUejvXvUnypv2CNCvo/edit' },
             },
         },
         'Email Type: Extension Details': {
             settings: {
                 'Email Name': { value: 'Extension Details', part: 2 },
                 'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
-                'Template': { value: '/extension-details.html', part: 2 },
+                'Template': { value: '/extension-details.html', part: 2 }, 'Reference Doc': { value: 'https://docs.google.com/document/d/1woSv4H2wFdyDgG_fjzglTO_7rdbbKZRQrQyfPqYNf38/edit?' },
             }
         },
         'Cohort:April 2025': {
