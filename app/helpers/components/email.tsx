@@ -130,16 +130,17 @@ export function EmailViewCard() {
 
                         <Box className=" relative w-full mt-3">
                             <Title fw={600} className=" text-2xl ">{emailValues?.resolveValue('Email Name Shorthand', true)}</Title>
-                            <CopyOverlay name="Email Name" />
+                            <CopyOverlay name="Email Name Shorthand" />
                         </Box>
 
                         <Box className=" relative w-full mt-3 ml-0.5">
-                            <Text fw={500} className=" !text-lg">{emailValues?.resolveValue('Subject', true)}</Text>
+                            <Text fz={10} p={0} m={0} mt={-6} c='dimmed' ml='auto' className=" absolute right-3 -top-2.5" >Subject</Text>
+                            <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Subject', true)}</Text>
                             <CopyOverlay name="Subject" />
                         </Box>
 
                         <Box className=" relative w-full mt-0 ml-0.5">
-                            <Text fw={500} className=" !text-lg">{emailValues?.resolveValue('Preview', true)}</Text>
+                            <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Preview', true)}</Text>
                             <CopyOverlay name="Preview" />
                         </Box>
 

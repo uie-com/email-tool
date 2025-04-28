@@ -265,7 +265,7 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         }, globalSettings.activeCampaignToken ?? '');
         console.log("Created campaign message", messageResponse);
 
-        const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", });
+        const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", }, globalSettings.activeCampaignToken ?? '');
         const messageId = upgradedMessageResponse['id'];
         console.log("Upgraded message", upgradedMessageResponse);
 
@@ -397,7 +397,6 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
-
         const email = editorState.email;
         const values = email?.values;
 
@@ -432,7 +431,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         }, globalSettings.activeCampaignToken ?? '');
         console.log("Created temp campaign message", messageResponse);
 
-        const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", });
+        const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", }, globalSettings.activeCampaignToken ?? '');
         const messageId = upgradedMessageResponse['id'];
         console.log("Upgraded message", upgradedMessageResponse);
 

@@ -46,7 +46,7 @@ export async function createCampaign(email: Email, token: string): Promise<any> 
     }, token);
     console.log("Created campaign message", messageResponse);
 
-    const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", });
+    const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", }, token);
     const messageID = upgradedMessageResponse['id'];
     console.log("Upgraded message", upgradedMessageResponse);
 
@@ -142,8 +142,8 @@ export async function populateCampaignMessageWithTemplate(campaignID: string, me
     return await put("https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages/" + messageID + "/populate", { "baseTemplateId": templateID }, undefined, token);
 }
 
-export async function putMessage(messageID: string, payload: any): Promise<any> {
-    return await put("https://campaigns-backend.cluster.app-us1.com/messages/" + messageID, payload);
+export async function putMessage(messageID: string, payload: any, token: string): Promise<any> {
+    return await put("https://campaigns-backend.cluster.app-us1.com/messages/" + messageID, payload, undefined, token);
 }
 
 export async function getMessage(id: string): Promise<any> {

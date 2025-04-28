@@ -19,14 +19,17 @@ export type StateContent = {
     }
 };
 
-export function RemoteStatus({ name, icon, onClick, status }: { name: string, icon: React.ReactNode, onClick: () => void, status: 'success' | 'error' }) {
-    const color = status === 'success' ? 'green' : 'red';
+export function RemoteStatus({ name, icon, onClick, status }: { name: string, icon: React.ReactNode, onClick: () => void, status: string }) {
+    const color = status !== 'loading' ? status === 'success' ? 'green' : 'red' : 'yellow';
     return (
         <Badge color="white" onClick={onClick} className={" !cursor-pointer mr-1 !border-gray-200 border-1 " + (status === 'success' ? 'hover:!bg-green-100' : 'hover:!bg-orange-100')} leftSection={icon} rightSection={
             <Box className=" relative -mr-0.5 ">
-                <Box className=" absolute rounded-full blur-sm " h={10} w={10} top={-2} left={-2} ml={4} bg={color} tt='none' opacity={0.6}></Box>
-                <Box className=" absolute rounded-full blur-lg " h={10} w={26} top={-2} left={-20} ml={4} bg={color} tt='none' opacity={0.4}></Box>
-                {/* <Box className=" absolute rounded-full blur-sm " h={6} w={6} ml={4} bg={color} tt='none' opacity={0.5}></Box> */}
+                {status !== 'loading' ?
+                    <>
+                        <Box className=" absolute rounded-full blur-sm " h={10} w={10} top={-2} left={-2} ml={4} bg={color} tt='none' opacity={0.6}></Box>
+                        <Box className=" absolute rounded-full blur-lg " h={10} w={26} top={-2} left={-20} ml={4} bg={color} tt='none' opacity={0.4}></Box>
+                    </>
+                    : null}
                 <Box className=" rounded-full " h={6} w={6} ml={4} bg={color} tt='none'></Box>
             </Box>
         }>

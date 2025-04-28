@@ -10,6 +10,8 @@ import { AutomationPublisher } from "./automationPublisher";
 import { RemoteStatus } from "../components/remote";
 import { IconLink, IconMail, IconMailFilled } from "@tabler/icons-react";
 import { testActiveCampaignToken } from "@/domain/data/activeCampaignActions";
+import { useSearchParams } from "next/navigation";
+import { getToken, testGoogleToken } from "@/domain/data/googleActions";
 
 
 export function EmailPublisher() {
@@ -49,34 +51,103 @@ export function EmailPublisher() {
 export function AuthStatus() {
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
     const showMessage = useContext(MessageContext)
-    const [acStatus, setAcStatus] = useState(false);
-    const [gdStatus, setGdStatus] = useState(false);
-    const tempToken = useRef<string>('');
+    const [acStatus, setAcStatus] = useState('loading');
+    const [gdStatus, setGdStatus] = useState('loading');
+    const gdRefreshTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const searchParams = useSearchParams()
 
     useEffect(() => {
         const testAC = async () => {
+            if (!globalSettings.activeCampaignToken) {
+                setAcStatus('error');
+                return;
+            }
             const res = await testActiveCampaignToken(globalSettings.activeCampaignToken ?? '');
             console.log('[AUTH] Active Campaign Test Response: ', res);
             if (!res || res.content === undefined)
-                setAcStatus(false);
+                setAcStatus('error');
             else
-                setAcStatus(true);
+                setAcStatus('success');
         }
 
         const testGD = async () => {
+            if (!globalSettings.googleAccessToken) {
+                setGdStatus('error');
+                return;
+            }
+            const res = await testGoogleToken(globalSettings.googleAccessToken ?? '');
+            console.log('[AUTH] Google Drive Test Response: ', res);
+            if (!res || res.scope === undefined)
+                setGdStatus('error');
+            else
+                setGdStatus('success');
 
         }
 
-        testAC();
-        testGD();
-    }, [globalSettings.activeCampaignToken, globalSettings.googleToken]);
+        const recieveGDCode = async () => {
+            const code = searchParams.get('code');
+            if (!code || globalSettings.googleRefreshToken) return;
+            const response = await getToken(code);
+            if (response.refresh_token)
+                setGlobalSettings((prev) => ({
+                    ...prev,
+                    googleAccessToken: response.access_token,
+                    googleRefreshToken: response.refresh_token,
+                    googleRefreshTime: ((response.expires_in as number) * 1000) + Date.now(),
+                }));
+
+            console.log('[AUTH] Google Drive Response: ', response);
+
+        }
+
+        const startRefreshingGDToken = async () => {
+            if (!globalSettings.googleRefreshToken) return;
+            if (gdRefreshTimeout.current) clearTimeout(gdRefreshTimeout.current);
+            const refreshTimeFromNow = (globalSettings.googleRefreshTime ?? 0) - Date.now();
+            console.log('[AUTH] Google refresh scheduled in ' + (refreshTimeFromNow / (1000 * 60)) + ' minutes');
+            if (refreshTimeFromNow <= 0)
+                refreshGDToken();
+            else
+                gdRefreshTimeout.current = setTimeout(() => {
+                    refreshGDToken();
+                }, refreshTimeFromNow);
+
+        }
+
+        const refreshGDToken = async () => {
+            const response = await getToken(undefined, globalSettings.googleRefreshToken);
+            console.log('[AUTH] Google Drive Refresh Response: ', response);
+            if (response.access_token)
+                setGlobalSettings((prev) => ({
+                    ...prev,
+                    googleAccessToken: response.access_token,
+                    googleRefreshTime: ((response.expires_in as number) * 1000) + Date.now(),
+                }));
+            else
+                setGdStatus('error');
+        }
+
+        setTimeout(() => {
+            testAC();
+            testGD();
+
+            recieveGDCode();
+            startRefreshingGDToken();
+        }, 500);
+    }, [globalSettings, searchParams]);
 
     const handleACClick = () => {
         showMessage('Active Campaign Login', {
             onChange: (e: ChangeEvent<HTMLInputElement>) => {
                 setGlobalSettings((prev) => ({ ...prev, activeCampaignToken: e.target.value.trim() }));
             }
+
         })
+    }
+
+    const handleGDClick = () => {
+        showMessage('Google Drive Login', {})
     }
 
     return (
@@ -86,14 +157,14 @@ export function AuthStatus() {
                     name="Active Campaign"
                     icon={<Flex className="" w={16} h={16} mr={-2} ml={-4}><Image src='./interface/activecampaign.png' h={15} w={15} /></Flex>}
                     onClick={handleACClick}
-                    status={acStatus ? 'success' : 'error'}
+                    status={acStatus}
                 />
 
                 <RemoteStatus
                     name="Google Drive"
                     icon={<Flex w={16} h={16} mr={-2} ml={-4}><Image className=" relative" src='./interface/drive.png' h={10} w={10} top={3} left={3} /></Flex>}
-                    onClick={() => { }}
-                    status={gdStatus ? 'success' : 'error'}
+                    onClick={handleGDClick}
+                    status={gdStatus}
                 />
 
             </Flex>

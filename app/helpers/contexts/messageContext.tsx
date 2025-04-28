@@ -166,6 +166,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
     }
 
     const loginToGoogle = (options: any) => {
+        console.log('Google Login: ', process.env);
         return {
             title: `Authenticate Google Drive`,
             body:
@@ -177,7 +178,10 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
                             handleClose();
                         }}>Cancel</Button>
-                        <Anchor ml='auto' href={`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${window.location}&scope=https://www.googleapis.com/auth/drive&access_type=offline&prompt=consent`} >
+                        <Anchor ml='auto' onClick={() => {
+                            setGlobalSettings((prev) => ({ ...prev, googleAccessToken: undefined, googleRefreshToken: undefined, googleRefreshTime: undefined }));
+                            window.location.href = (`https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&scope=https://www.googleapis.com/auth/drive&access_type=offline&prompt=consent`);
+                        }} >
                             <Button variant="outline" color="blue" className="min-h-10 max-w-48" leftSection={<IconBrandGoogleDrive size={24} />}>
                                 Click to login
                             </Button>

@@ -14,6 +14,7 @@ export function GlobalSettingsProvider({ children }: { children: React.ReactNode
     }, []);
 
     useEffect(() => {
+        if (Object.keys(settings).length === 0) return;
         localStorage.setItem('globalSettings', JSON.stringify(settings));
     }, [settings]);
 

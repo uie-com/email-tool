@@ -9,7 +9,12 @@ import { MessageType } from "@/app/helpers/contexts/messageContext";
 
 export type GlobalSettings = {
     activeCampaignToken?: string;
-    googleToken?: string;
+    googleCode?: string;
+
+    googleAccessToken?: string;
+    googleRefreshToken?: string;
+    googleRefreshTime?: number;
+
 }
 export const GlobalSettingsContext = createContext<[GlobalSettings, Dispatch<SetStateAction<GlobalSettings>>]>([{}, () => { }]);
 
