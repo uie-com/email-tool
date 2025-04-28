@@ -8,7 +8,7 @@ export type Form = {
         default?: string;
     }
 };
-export function createProgramForm(programValues: { [key: string]: string }, programSchema: Settings<string[] | string> = EMAIL_TYPES) {
+export function createProgramForm(programValues: { [key: string]: string | Date }, programSchema: Settings<string[] | string> = EMAIL_TYPES) {
     let form: Form = {};
     Object.keys(programSchema).forEach((key) => {
 
@@ -20,7 +20,7 @@ export function createProgramForm(programValues: { [key: string]: string }, prog
             Object.keys(programSchema[key]).forEach((defaultKey) => {
                 form[defaultKey] = { ...form[defaultKey], default: programSchema[key][defaultKey] as string };
             });
-        } else if (Object.keys(programValues).find((valueKey) => parseVariableName(programValues[valueKey]).includes(parseVariableName(key))) !== undefined) {
+        } else if (typeof key === 'string' && Object.keys(programValues).find((valueKey) => parseVariableName(programValues[valueKey] as string).includes(parseVariableName(key))) !== undefined) {
             const childForm = createProgramForm(programValues, programSchema[key] as Settings<string[] | string>);
             Object.keys(childForm).forEach((childKey) => {
                 if (form[childKey])

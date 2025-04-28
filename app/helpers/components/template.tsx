@@ -3,7 +3,7 @@ import { resolveTemplateRemotely } from "@/domain/parse/remoteParse";
 import { EditorContext } from "@/domain/schema";
 import { Value, Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
-import { Flex, Loader, Text, Textarea } from "@mantine/core";
+import { Anchor, Flex, Loader, Text, Textarea } from "@mantine/core";
 import { useForceUpdate } from "@mantine/hooks";
 import { Editor } from "@monaco-editor/react";
 import { IconFileUnknown } from "@tabler/icons-react";
@@ -15,6 +15,8 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
     const [editorState, setEditorState] = useContext(EditorContext);
     const [filledTemplate, setFilledTemplate] = useState<string>('');
     const values = editorState.email?.values ?? new Values();
+
+    const [showOriginal, setShowOriginal] = useState(false);
 
     const currentFilled = useRef<string>('');
     const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -107,8 +109,9 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
                     border: "1px solid #e5e7eb",
                     borderRadius: "0.5rem",
                 }}
-                srcDoc={filledTemplate} >
+                srcDoc={showOriginal ? editorState.email?.templateHTML : filledTemplate} >
             </iframe>
+            <Anchor c='dimmed' size="xs" className=" absolute right-2.5 -top-5 hover:underline cursor-pointer opacity-60" onClick={() => setShowOriginal((prev) => !prev)}>{showOriginal ? 'Show filled' : 'Show original'}</Anchor>
         </div>
     )
 }
@@ -130,9 +133,22 @@ export function TemplateEditor({ className }: { className?: string }) {
         )
 
     return (
-        <Editor height="100%" defaultLanguage="html" defaultValue={editorState.email.templateHTML} onChange={handleChange} className={"rounded-lg overflow-hidden " + className} theme="vs-dark" options={{
-            wordWrap: "on",
-        }} />
+        <Editor height="100%" width='100%'
+            defaultLanguage="html"
+            defaultValue={editorState.email.templateHTML}
+            onChange={handleChange}
+            className={"rounded-lg overflow-hidden absolute top-0 bottom-0 right-0 left-0 " + className}
+            wrapperProps={{
+                className: "relative",
+                style: {
+                    flex: 1,
+                    height: undefined
+                }
+            }}
+            theme="vs-dark"
+            options={{
+                wordWrap: "on",
+            }} />
     )
 }
 

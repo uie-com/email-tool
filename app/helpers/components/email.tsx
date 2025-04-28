@@ -1,4 +1,4 @@
-import { EditorContext } from "@/domain/schema";
+import { EditorContext, getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
 import { Badge, Box, Button, Flex, Group, Pill, ScrollArea, Text, Title } from "@mantine/core";
 import { JSX, use, useContext, useEffect, useMemo, useState } from "react";
 import { VariableInput } from "./form";
@@ -7,6 +7,7 @@ import { TemplateView } from "./template";
 import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, IconCopyleftFilled } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { CopyOverlay } from "./clipboard";
+import { PROGRAM_COLORS } from "@/domain/settings/interface";
 
 
 export const EMAIL_EDIT_VALUES = ['Email Name', 'Send Date', 'Send Type', 'Subject', 'Preview'];
@@ -21,7 +22,7 @@ export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) 
         setEditorState({ ...editorState, email: { ...editorState.email, values: emailValues } });
     }
     return (
-        <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 overflow-hidden" gap={25}>
+        <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 overflow-hidden relative" gap={25}>
             <div className={" relative w-[9rem] h-[16rem]"}>
                 <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" />
             </div>
@@ -106,7 +107,8 @@ export function EmailViewCard() {
         );
     else if (editorState.step === 3)
         return (
-            <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-full border-1 overflow-hidden" gap={25}>
+            <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-full border-1 overflow-hidden relative" gap={25}>
+
                 <div className={" relative w-[9rem] h-[16rem]"}>
                     <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" />
                     <CopyOverlay name="HTML" value={editorState.email?.HTML} />
@@ -127,7 +129,7 @@ export function EmailViewCard() {
                         </Flex>
 
                         <Box className=" relative w-full mt-3">
-                            <Title fw={600} className=" text-2xl ">{emailValues?.resolveValue('Email Name', true)}</Title>
+                            <Title fw={600} className=" text-2xl ">{emailValues?.resolveValue('Email Name Shorthand', true)}</Title>
                             <CopyOverlay name="Email Name" />
                         </Box>
 
@@ -141,8 +143,13 @@ export function EmailViewCard() {
                             <CopyOverlay name="Preview" />
                         </Box>
 
-                        <Box className=" absolute right-0 bottom-0">
-                            <Text fw={300} className=" opacity-60">{emailTag}</Text>
+                        <Box className=" absolute right-2 bottom-6">
+                            <Text fw={300} className=" opacity-60">{emailValues?.resolveValue('Campaign Name', true)}</Text>
+                            <CopyOverlay name="Campaign Name" value={emailValues?.resolveValue('Campaign Name', true)} />
+                        </Box>
+
+                        <Box className=" absolute right-2 bottom-0">
+                            <Text fw={300} className=" opacity-20">{emailTag}</Text>
                             <CopyOverlay name="Email Tag" value={emailTag} />
                         </Box>
                     </Box>

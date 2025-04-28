@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContext } from "@/domain/schema";
+import { EditorContext, GlobalSettingsContext } from "@/domain/schema";
 import { ActionIcon, Anchor, Button, Flex, Group, HoverCard, Loader, Stack, Text, ThemeIcon } from "@mantine/core";
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
@@ -10,31 +10,24 @@ import { delCampaign, delTemplate, getCampaign, getMessage, getTemplate, populat
 import { createCampaignLink, createTemplateLink } from "@/domain/data/activeCampaign";
 import { HadIssue, RemoteStep, StateContent } from "../components/remote";
 import moment from "moment-timezone";
+import { AuthStatus } from "./emailPublisher";
 
 export function CampaignPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [hadIssue, setHadIssue] = useState(false);
 
 
-    const handleBack = () => {
-        setEditorState((prev) => ({ ...prev, step: prev.step - 1, email: { ...prev.email } }));
-    }
+
 
     return (
         <HadIssue.Provider value={[hadIssue, setHadIssue]}>
-            <Flex align="center" justify="center" direction='column' className=" h-full w-[48rem] p-20" gap={20}>
-                <RequireValues key={'rvc'} requiredValues={['Send Date', 'Subject', 'Email Name', 'Campaign Name', 'Template Name', 'List ID', 'Segment ID', 'Send Date', 'Subject', 'From Name', 'From Email', 'Reply To']} />
-                <Group justify="start" align="start" className="w-full px-4">
-                    <Button color='gray.7' variant="light" onClick={handleBack}>
-                        Back
-                    </Button>
-                </Group>
-                <EmailViewCard />
-                <CreateTemplate shouldAutoStart={false} />
-                <CreateCampaign shouldAutoStart={!hadIssue} />
-                <TestTemplate shouldAutoStart={false} />
-                <MarkReviewed shouldAutoStart={false} />
-            </Flex>
+            <RequireValues key={'rvc'} requiredValues={['Send Date', 'Subject', 'Email Name', 'Campaign Name', 'Template Name', 'List ID', 'Segment ID', 'Send Date', 'Subject', 'From Name', 'From Email', 'Reply To']} />
+            <EmailViewCard />
+            <AuthStatus />
+            <CreateTemplate shouldAutoStart={false} />
+            <CreateCampaign shouldAutoStart={!hadIssue} />
+            <TestTemplate shouldAutoStart={false} />
+            <MarkReviewed shouldAutoStart={false} />
         </HadIssue.Provider>
     );
 }
@@ -163,6 +156,8 @@ function CreateTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
 function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
+    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+
 
     const stateContent: StateContent = {
         waiting: {
@@ -262,26 +257,26 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             preHeader,
             fromName,
             editorVersion: 3,
-        });
+        }, globalSettings.activeCampaignToken ?? '');
         console.log("Created campaign message", messageResponse);
 
         const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", });
         const messageId = upgradedMessageResponse['id'];
         console.log("Upgraded message", upgradedMessageResponse);
 
-        const res = await populateCampaignMessageWithTemplate(campaignId + '', messageId + '', templateId ?? '');
+        const res = await populateCampaignMessageWithTemplate(campaignId + '', messageId + '', templateId ?? '', globalSettings.activeCampaignToken ?? '');
         console.log("Populated campaign message", res);
 
         const targetedCampaignResponse = await putCampaignInternal(campaignId, {
             listIds: [listId],
             segmentId,
-        });
+        }, globalSettings.activeCampaignToken ?? '');
         console.log("Filled in campaign", targetedCampaignResponse);
 
         const scheduledCampaignResponse = await putCampaignInternal(campaignId, {
             scheduledDate,
             predictiveSendEnabled: false
-        });
+        }, globalSettings.activeCampaignToken ?? '');
         console.log("Filled in campaign", scheduledCampaignResponse);
 
         const usedTemplate = await getTemplate(templateId ?? '');
@@ -306,7 +301,7 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         if (!campaignId) return;
 
         console.log("Deleting campaign", campaignId);
-        const res = await delCampaign(campaignId);
+        const res = await delCampaign(campaignId, globalSettings.activeCampaignToken ?? '');
         console.log("Deleted campaign", res);
 
         setEditorState((prev) => ({

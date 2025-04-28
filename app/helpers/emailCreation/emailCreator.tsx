@@ -6,19 +6,24 @@ import { focusOnNext, focusOnPrev } from "@/domain/form";
 import { parseVariableName } from "@/domain/parse/parse";
 import { Values } from "@/domain/schema/valueCollection";
 import { Email } from "@/domain/schema";
+import { DateInput, TimeInput } from "@mantine/dates";
+import moment, { Moment } from "moment-timezone";
+import dayjs from "dayjs";
+import { Variable } from "@/domain/schema/variableCollection";
+import { VariableInput } from "../components/form";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [values, setValues] = useState<{ [key: string]: string }>({});
+    const [values, setValues] = useState<{ [key: string]: string | Date }>({});
 
     const formSchema = useMemo(() => {
         return createProgramForm(values);
     }, [values]);
 
-    const handleValueChange = (key: string, value: string) => {
+    const handleValueChange = (key: string, value: string | Date) => {
         const newValues = Object.keys(values).filter((key) => {
-            return Object.keys(formSchema).includes(key);
-        }).reduce<{ [key: string]: string }>((acc, key) => {
+            return Object.keys(formSchema).includes(key) || key === 'Send Date';
+        }).reduce<{ [key: string]: string | Date }>((acc, key) => {
             acc[key] = values[key];
             return acc;
         }, {});
@@ -29,6 +34,7 @@ export function EmailCreator() {
     const handleSubmit = async () => {
         const emailValues = new Values();
         emailValues.addDict(values, 'email');
+        emailValues.setValue('Creation Type', { value: 'manual', source: 'email' });
         const email = new Email(emailValues);
 
         console.log('Starting an email as ', email);
@@ -40,8 +46,8 @@ export function EmailCreator() {
     }
 
     return (
-        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-96 bg-gray-50 border-1" gap={20}>
-            <h1>Create new email</h1>
+        <Flex align="start" justify="center" direction='column' className="" gap={20}>
+            <VariableInput value={values['Send Date']} variableName={'Send Date'} setValue={(v) => handleValueChange('Send Date', v)} index={0} />
             <FormBuilder form={formSchema} values={values} handleValueChange={handleValueChange} />
             <Flex align="center" justify="center" gap={10}>
                 <Button variant="light" color="gray" onClick={handleReset}>Reset</Button>
@@ -51,7 +57,7 @@ export function EmailCreator() {
     )
 }
 
-function FormBuilder({ form, values, handleValueChange }: { form: Form, values: { [key: string]: string }, handleValueChange: (key: string, value: string) => void }) {
+function FormBuilder({ form, values, handleValueChange }: { form: Form, values: { [key: string]: string | Date }, handleValueChange: (key: string, value: string | Date) => void }) {
 
     return (
         <>

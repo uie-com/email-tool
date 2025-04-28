@@ -1,7 +1,7 @@
 "use server";
 import { Email } from "../schema";
 
-const DEBUG = false;
+const DEBUG = true;
 export async function createTemplate(email: Email): Promise<any> {
     if (!email.values) return 'No email found.';
     if (!email.values.resolveValue("Subject")) {
@@ -22,7 +22,7 @@ export async function createTemplate(email: Email): Promise<any> {
     return res;
 }
 
-export async function createCampaign(email: Email): Promise<any> {
+export async function createCampaign(email: Email, token: string): Promise<any> {
     if (!email.values) return 'No email found.';
 
     const name = email.values.resolveValue("Email Name");
@@ -43,7 +43,7 @@ export async function createCampaign(email: Email): Promise<any> {
         preHeader: 'Test preheader text',
         fromName: 'Jared Spool',
         editorVersion: 3,
-    });
+    }, token);
     console.log("Created campaign message", messageResponse);
 
     const upgradedMessageResponse = await putMessage(messageResponse['id'], { editorVersion: "3", });
@@ -55,7 +55,7 @@ export async function createCampaign(email: Email): Promise<any> {
     console.log("Created template", templateResponse, templateID);
 
 
-    const res = await populateCampaignMessageWithTemplate(campaignID + '', messageID + '', templateID);
+    const res = await populateCampaignMessageWithTemplate(campaignID + '', messageID + '', templateID, token);
     console.log("Populated campaign message", res);
 
 
@@ -67,6 +67,10 @@ export async function createCampaign(email: Email): Promise<any> {
 
     return { usedTemplate, finalMessage, finalCampaign };
 
+}
+
+export async function testActiveCampaignToken(token: string): Promise<any> {
+    return await get("https://campaigns-backend.cluster.app-us1.com/campaigns", undefined, token);
 }
 
 // Campaign calls
@@ -82,16 +86,16 @@ export async function putCampaign(id: string, payload: any): Promise<any> {
     return await put("https://centercentre.api-us1.com/api/3/campaigns/" + id + "/edit", payload);
 }
 
-export async function putCampaignInternal(id: string, payload: any): Promise<any> {
-    return await put("https://campaigns-backend.cluster.app-us1.com/campaigns/" + id + "/edit", payload);
+export async function putCampaignInternal(id: string, payload: any, token: string): Promise<any> {
+    return await put("https://campaigns-backend.cluster.app-us1.com/campaigns/" + id + "/edit", payload, undefined, token);
 }
 
 export async function getCampaign(id: string): Promise<any> {
     return await get("https://centercentre.api-us1.com/api/3/campaigns/" + id);
 }
 
-export async function delCampaign(id: string): Promise<any> {
-    return await del("https://campaigns-backend.cluster.app-us1.com/campaigns/" + id + '/delete');
+export async function delCampaign(id: string, token: string): Promise<any> {
+    return await del("https://campaigns-backend.cluster.app-us1.com/campaigns/" + id + '/delete', undefined, token);
 }
 
 export async function testCampaign(payload: { campaignId: number, messageId: number, toEmail: string, subject: string }): Promise<any> {
@@ -129,13 +133,13 @@ export async function postMessage(payload: { subject: string, html: string, text
     });
 }
 
-export async function postCampaignMessage(campaignID: string, payload: { subject: string, fromEmail: string, replyToEmail: string, preHeader: string, fromName: string, editorVersion: number, html?: string, text?: string }): Promise<any> {
-    return await post("https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages", payload);
+export async function postCampaignMessage(campaignID: string, payload: { subject: string, fromEmail: string, replyToEmail: string, preHeader: string, fromName: string, editorVersion: number, html?: string, text?: string }, token: string): Promise<any> {
+    return await post("https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages", payload, undefined, token);
 }
 
-export async function populateCampaignMessageWithTemplate(campaignID: string, messageID: string, templateID: string): Promise<any> {
+export async function populateCampaignMessageWithTemplate(campaignID: string, messageID: string, templateID: string, token: string): Promise<any> {
     // console.log('url: ', "https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages/" + messageID + "/populate");
-    return await put("https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages/" + messageID + "/populate", { "baseTemplateId": templateID });
+    return await put("https://campaigns-backend.cluster.app-us1.com/campaigns/" + campaignID + "/messages/" + messageID + "/populate", { "baseTemplateId": templateID }, undefined, token);
 }
 
 export async function putMessage(messageID: string, payload: any): Promise<any> {
@@ -150,15 +154,22 @@ export async function getMessages(): Promise<any> {
     return await get("https://centercentre.api-us1.com/api/3/messages");
 }
 
-export async function get(url: string, params?: URLSearchParams) {
+export async function get(url: string, params?: URLSearchParams, token?: string) {
     if (!process.env.ACTIVECAMPAIGN_API_KEY) console.error("No API key found.");
+    console.log('headers', {
+        "content-type": "application/json",
+        "accept": "application/json",
+        "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
+        "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
+    });
+
     const res = await fetch(url + (params ?? ''), {
         method: "GET",
         headers: {
             "content-type": "application/json",
             "accept": "application/json",
             "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
         },
     });
     if (!res.ok) {
@@ -168,7 +179,7 @@ export async function get(url: string, params?: URLSearchParams) {
     return await res.json();
 }
 
-export async function post(url: string, payload: any, params?: URLSearchParams) {
+export async function post(url: string, payload: any, params?: URLSearchParams, token?: string) {
     if (!process.env.ACTIVECAMPAIGN_API_KEY) console.error("No API key found.");
     const res = await fetch(url + (params ?? ''), {
         method: "POST",
@@ -176,7 +187,7 @@ export async function post(url: string, payload: any, params?: URLSearchParams) 
             "content-type": "application/json",
             "accept": "application/json",
             "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
         },
         body: JSON.stringify(payload),
     });
@@ -193,14 +204,14 @@ export async function post(url: string, payload: any, params?: URLSearchParams) 
     }
 }
 
-export async function put(url: string, payload: any, params?: URLSearchParams) {
+export async function put(url: string, payload: any, params?: URLSearchParams, token?: string) {
     if (!process.env.ACTIVECAMPAIGN_API_KEY) console.error("No API key found.");
 
     console.log('headers', {
         "content-type": "application/json",
         "accept": "application/json",
         "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-        "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+        "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
     });
     const res = await fetch(url + (params ?? ''), {
         method: "PUT",
@@ -208,7 +219,7 @@ export async function put(url: string, payload: any, params?: URLSearchParams) {
             "content-type": "application/json",
             "accept": "application/json",
             "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
         },
         body: JSON.stringify(payload),
     });
@@ -225,14 +236,14 @@ export async function put(url: string, payload: any, params?: URLSearchParams) {
     }
 }
 
-export async function del(url: string, params?: URLSearchParams) {
+export async function del(url: string, params?: URLSearchParams, token?: string) {
     if (!process.env.ACTIVECAMPAIGN_API_KEY) console.error("No API key found.");
 
     console.log('headers', {
         "content-type": "application/json",
         "accept": "application/json",
         "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-        "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+        "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
     });
     const res = await fetch(url + (params ?? ''), {
         method: "DELETE",
@@ -240,7 +251,7 @@ export async function del(url: string, params?: URLSearchParams) {
             "content-type": "application/json",
             "accept": "application/json",
             "Api-Token": url.includes('centercentre') ? process.env.ACTIVECAMPAIGN_API_KEY ?? "" : '',
-            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + process.env.ACTIVECAMPAIGN_TOKEN,
+            "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + token,
         },
     });
     if (!res.ok) {

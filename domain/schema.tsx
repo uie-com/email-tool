@@ -4,19 +4,27 @@ import { initializeSettings } from "./parse/parseSettings";
 import { Values } from "./schema/valueCollection";
 import { Variables } from "./schema/variableCollection";
 import { Dispatch, SetStateAction, createContext } from "react";
-import { IconBrandTelegram, IconCalendarCheck, IconEdit, IconMailCheck, IconMessageQuestion } from "@tabler/icons-react";
+import { IconBrandTelegram, IconCalendarCheck, IconEdit, IconFileText, IconMailCheck, IconMessageQuestion } from "@tabler/icons-react";
+import { MessageType } from "@/app/helpers/contexts/messageContext";
 
+export type GlobalSettings = {
+    activeCampaignToken?: string;
+    googleToken?: string;
+}
+export const GlobalSettingsContext = createContext<[GlobalSettings, Dispatch<SetStateAction<GlobalSettings>>]>([{}, () => { }]);
+
+export type ShowMessage = (messageType: MessageType, options: any) => void;
+export const MessageContext = createContext<ShowMessage>(() => { });
 
 export type EditorState = {
     email?: Email;
+    originalEmail?: Email;
     step: number;
 }
 
 export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>]>([{ step: 0 }, () => { }]);
 
-
 export type Saves = EditorState[];
-
 
 export class Email {
     airtableId?: string; // Airtable ID once uploaded
@@ -53,20 +61,24 @@ export class Email {
     }
 }
 
-export type EmailStatus = 'Editing' | 'Review' | 'Ready' | 'Scheduled' | 'Sent';
-export function getStateFromEmail(email?: Email): EmailStatus | undefined {
+export type EmailStatus = 'Editing' | 'Uploaded' | 'Review' | 'Ready' | 'Scheduled' | 'Sent';
+export function getStatusFromEmail(email?: Email): EmailStatus | undefined {
     if (!email) return undefined;
-    if (!email.hasSentTest) return 'Editing';
+    if (email.isSentOrScheduled)
+        return moment(email.values?.resolveValue('Send Date', true)).isBefore(moment()) ? 'Sent' : 'Scheduled';
+
+    if (!email.templateId) return 'Editing';
+    if (!email.hasSentTest) return 'Uploaded';
     if (!email.isReviewed) return 'Review';
     if (!email.isSentOrScheduled) return 'Ready';
-    const isPast = moment(email.values?.resolveValue('Send Date', true)).isBefore(moment());
-    if (isPast) return 'Sent';
-    return 'Scheduled';
 }
 export const STATUS_COLORS = {
-    Editing: [(<IconEdit size={18} strokeWidth={2.5} color='#e77600' />), 'yellow.3', '#e77600'],
-    Review: [<IconMessageQuestion size={18} strokeWidth={2.5} color='#a61f4d' />, 'red.2', '#a61f4d'],
+    Editing: [(<IconEdit size={18} strokeWidth={2.5} color='#e8580c' />), 'yellow.3', '#e8580c'],
+    Uploaded: [(<IconFileText size={18} strokeWidth={2.5} color='#1864ab' />), 'blue.1', '#1864ab'],
+    Review: [<IconMessageQuestion size={18} strokeWidth={2.5} color='#862e9c' />, 'violet.1', '#862e9c'],
     Ready: [<IconBrandTelegram size={18} strokeWidth={2.5} color='#1864ab' />, 'blue.1', '#1864ab'],
     Scheduled: [<IconCalendarCheck size={18} strokeWidth={2.5} color='#2b8a3e' />, 'green.2', '#2b8a3e'],
     Sent: [<IconMailCheck size={18} strokeWidth={2.5} color='#2b8a3e' />, 'green.2', '#2b8a3e'],
 };
+
+

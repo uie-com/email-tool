@@ -1,5 +1,5 @@
 
-import { ActionIcon, Anchor, Button, Flex, Group, HoverCard, Loader, Stack, Text, ThemeIcon } from "@mantine/core";
+import { ActionIcon, Anchor, Badge, Box, Button, Flex, Group, HoverCard, Loader, Stack, Text, ThemeIcon } from "@mantine/core";
 import { useContext, useEffect, useState, createContext } from "react";
 import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
@@ -18,6 +18,26 @@ export type StateContent = {
         rightContent: React.ReactNode
     }
 };
+
+export function RemoteStatus({ name, icon, onClick, status }: { name: string, icon: React.ReactNode, onClick: () => void, status: 'success' | 'error' }) {
+    const color = status === 'success' ? 'green' : 'red';
+    return (
+        <Badge color="white" onClick={onClick} className={" !cursor-pointer mr-1 !border-gray-200 border-1 " + (status === 'success' ? 'hover:!bg-green-100' : 'hover:!bg-orange-100')} leftSection={icon} rightSection={
+            <Box className=" relative -mr-0.5 ">
+                <Box className=" absolute rounded-full blur-sm " h={10} w={10} top={-2} left={-2} ml={4} bg={color} tt='none' opacity={0.6}></Box>
+                <Box className=" absolute rounded-full blur-lg " h={10} w={26} top={-2} left={-20} ml={4} bg={color} tt='none' opacity={0.4}></Box>
+                {/* <Box className=" absolute rounded-full blur-sm " h={6} w={6} ml={4} bg={color} tt='none' opacity={0.5}></Box> */}
+                <Box className=" rounded-full " h={6} w={6} ml={4} bg={color} tt='none'></Box>
+            </Box>
+        }>
+            <Box className=" relative">
+                {/* <Text className="absolute" fw={700} tt='none' size="xs" c={color} opacity={0} px={0}>{name}</Text> */}
+                <Text fw={500} tt='none' size="xs" c={'gray.8'}>{name}</Text>
+            </Box>
+
+        </Badge>
+    );
+}
 
 export function RemoteStep(
     { shouldAutoStart, stateContent, isReady, tryAction, tryUndo, isDone, allowsRedo, allowsUndo }:

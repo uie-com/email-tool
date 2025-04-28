@@ -2,7 +2,7 @@
 
 import { Anchor, Button, Flex, Loader, ScrollArea, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext, MessageContext } from "@/domain/schema";
 import moment from "moment-timezone";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
@@ -11,6 +11,7 @@ import { VariableInput } from "./components/form";
 import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
 import { EMAIL_EDIT_VALUES, EmailEditCard } from "./components/email";
 import { EditorState } from "@/domain/schema";
+import { SavedEmailsContext } from "@/domain/data/saveData";
 
 
 export function ValueReview() {
@@ -18,6 +19,11 @@ export function ValueReview() {
     const values = editorState.email?.values;
     const [hasResolvedRemote, setHasResolvedRemote] = useState(false);
     const template = editorState.email?.templateHTML;
+
+    const [emailStates, deleteEmail] = useContext(SavedEmailsContext);
+    const showMessage = useContext(MessageContext);
+
+
 
     const variables = useMemo(() => {
         const variables = new Variables('{Template}' + (editorState.email?.templateHTML ?? ''));
@@ -63,6 +69,34 @@ export function ValueReview() {
         resolvePromises();
     }, []);
 
+
+    const templateId = useMemo(() => editorState.email?.templateId, [editorState.email]);
+    const campaignId = useMemo(() => editorState.email?.campaignId, [editorState.email]);
+    const handleDelete = async (force: boolean = false) => {
+        console.log('Deleting email: ', editorState.email?.name, ' from state: ', editorState);
+
+        if ((templateId || campaignId) && !force)
+            return showMessage('Deleting While Uploaded', {
+                templateId: templateId,
+                campaignId: campaignId,
+                deleteEmail: () => handleDelete(true),
+            });
+
+        await deleteEmail(editorState.email?.airtableId ?? editorState.email?.name);
+
+        setEditorState({ step: 0 });
+    }
+
+    const handleReset = async (force: boolean = false) => {
+        if ((templateId || campaignId) && !force)
+            return showMessage('Deleting While Uploaded', {
+                templateId: templateId,
+                campaignId: campaignId,
+                deleteEmail: () => handleReset(true),
+            });
+        setEditorState({ step: 1, email: editorState.originalEmail });
+    }
+
     // const handleBack = () => {
     //     setEditorState({ ...editorState, step: 0 });
     //     console.log('Returning to state: ', { ...editorState, step: 0 });
@@ -83,7 +117,8 @@ export function ValueReview() {
                     <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1" gap={20}>
                         <Table data={tableData} />
                         <Flex className="w-full" align="center" justify="space-between" gap={10}>
-                            {/* <Button variant="light" color="gray.7" c='red.7' onClick={handleBack}>Delete</Button> */}
+                            <Button variant="outline" color="red.7" c='red.7' onClick={() => handleDelete()}>Delete</Button>
+                            <Button variant="light" color="gray" onClick={() => handleReset()}>Reset</Button>
                             <Button variant="filled" className=" ml-auto" onClick={handleSubmit} disabled={!hasResolvedRemote || !template}>{template ? 'Approve Values' : 'Needs Working Template'}</Button>
                         </Flex>
                     </Flex>

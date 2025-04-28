@@ -87,6 +87,7 @@ export async function getSessionSchedule() {
     try {
         let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, false);
         console.log('Initial sessions: ', JSON.stringify(await fetchRecords(undefined, undefined, false)));
+        moment.tz.setDefault("America/New_York");
 
 
         records.forEach((record) => {
@@ -106,7 +107,7 @@ export async function getSessionSchedule() {
                 cohorts.forEach((cohort) => {
                     sessions.push({
                         id: record.id,
-                        "Session Date": new Date(date),
+                        "Session Date": moment(date).toDate(),
                         Program: program,
                         Topic: topic,
                         "Session Type": sessionType,
@@ -127,7 +128,7 @@ export async function getSessionSchedule() {
             else
                 sessions.push({
                     id: record.id,
-                    "Session Date": new Date(date),
+                    "Session Date": moment(date).toDate(),
                     Program: program,
                     Topic: topic,
                     "Session Type": sessionType,

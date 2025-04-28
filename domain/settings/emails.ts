@@ -16,32 +16,32 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
         },
         'Today': {
             options: {
-                'Session Date': generateDateOptions(),
+                // 'Session Date': [],
             },
         },
         'Recording': {
             options: {
-                'Session Date': generateDateOptions(),
+                // 'Session Date': [],
             },
         },
         'New Topic': {
             options: {
-                'Session Date': generateDateOptions(),
+                // 'Session Date': [],
             },
         },
         'Upcoming Topics': {
             options: {
-                'First Session Date': generateDateOptions(),
-                'Second Session Date': generateDateOptions(),
-                'Third Session Date': generateDateOptions(),
+                // 'First Session Date': [],
+                // 'Second Session Date': [],
+                // 'Third Session Date': [],
             },
         },
     },
     'Metrics': {
         options: {
-            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
         },
-        'Today\'s Topic': {
+        'Today\'s Session': {
             options: {
                 'Cohort': generateNumberedOptions('Cohort', 12),
                 'Topic': generateNumberedOptions('Topic', 8),
@@ -59,9 +59,9 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Research': {
         options: {
-            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
         },
-        'Today\'s Topic': {
+        'Today\'s Session': {
             options: {
                 'Cohort': generateNumberedOptions('Cohort'),
                 'Topic': generateNumberedOptions('Topic', 8),
@@ -79,9 +79,9 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Visions': {
         options: {
-            'Email Type': ['Today\'s Topic', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
         },
-        'Today\'s Topic': {
+        'Today\'s Session': {
             options: {
                 'Cohort': generateNumberedOptions('Cohort'),
                 'Topic': generateNumberedOptions('Topic', 8),
@@ -156,14 +156,6 @@ function generateMonthOptions() {
         for (let month = 0; month < 12; month++) {
             options.push(moment().month(month).year(year).format('MMMM yyyy'));
         }
-    }
-    return options;
-}
-
-function generateDateOptions(start: number = 365, limit: number = 365) {
-    let options = [];
-    for (let i = 0; i < limit + start; i++) {
-        options.push(moment().add(start * -1, 'days').add(i, 'days').format('YYYY-MM-DD'));
     }
     return options;
 }

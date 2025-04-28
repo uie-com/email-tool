@@ -5,6 +5,7 @@ import "./globals.css";
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from "@mantine/core";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
+import { EditorStateProvider } from "./helpers/contexts/editorContext";
 
 const geistSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -35,9 +36,14 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider>
+          <EditorStateProvider >
+            {children}
+          </EditorStateProvider>
+
+        </MantineProvider>
       </body>
     </html>
   );

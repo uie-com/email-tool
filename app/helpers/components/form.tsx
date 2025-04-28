@@ -88,13 +88,14 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
     } else if (variable.type === 'Number') {
 
     } else if (variable.type === 'Date') {
-        let date: Moment | undefined | Date = moment(value), time = '00:00';
+        let date: Moment | undefined | Date = moment(value ?? moment().hour(12).minute(0)), time = '00:00';
         if (!date.isValid()) {
             date = undefined;
         } else {
             date = moment(value).toDate();
             time = moment(value).format('HH:mm');
         }
+
         return (
             <Flex direction="row" align={'end'} key={'vi' + index} gap={variant === 'unstyled' ? 0 : 2} >
                 {variant === 'unstyled' ? <IconCalendarEventFilled size={18} opacity={0.8} className=" relative bottom-[0.55rem] mr-1.5" strokeWidth={1.5} /> : null}
@@ -115,6 +116,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                         setValue(newDate);
                     }}
                     {...sharedProps}
+                    label={''}
                     key={'vi' + index + 'time'}
                     mb={variant === 'unstyled' ? -0.25 : 0}
                 />

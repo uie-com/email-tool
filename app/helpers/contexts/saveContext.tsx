@@ -13,7 +13,7 @@ import { ReactNode, useContext, useEffect, useState, createContext, useRef } fro
 
 
 const DEBUG = false;
-export function SaveContext({ children }: { children: React.ReactNode }) {
+export function SaveContextProvider({ children }: { children: React.ReactNode }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const lastEditorState = useRef<EditorState | undefined>(undefined);
 
@@ -78,7 +78,7 @@ export function SaveContext({ children }: { children: React.ReactNode }) {
     const handleEmailDelete = async (id?: string) => {
         if (!id) return false;
 
-        if (DEBUG) console.log('[SAVE] Deleting email:', id, ' from state:', editorState);
+        console.log('[SAVE] Deleting email:', id, ' from state:', editorState);
         if (id === editorState.email?.airtableId || id === editorState.email?.name) {
             if (DEBUG) console.log('[SAVE] Deleting current email, resetting editor', editorState.email?.name);
             lastEditorState.current = undefined;

@@ -1,13 +1,15 @@
 "use client";
 
+import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/data/activeCampaign";
+import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
 import { SavedEmailsContext } from "@/domain/data/saveData";
 import { parseVariableName } from "@/domain/parse/parse";
-import { EditorContext, EditorState, Email, getStateFromEmail, STATUS_COLORS } from "@/domain/schema";
+import { EditorContext, EditorState, Email, getStatusFromEmail, GlobalSettingsContext, MessageContext, STATUS_COLORS } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
-import { ActionIcon, Badge, Box, Button, Flex, Loader, Menu, ScrollArea, Text, ThemeIcon } from "@mantine/core";
+import { ActionIcon, Anchor, Badge, Box, Button, Flex, Loader, Menu, ScrollArea, Switch, Text, ThemeIcon } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
-import { IconArrowRight, IconArrowRightBar, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconDots, IconEdit, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMessageQuestion, IconPlus, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";
+import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, IconBackspace, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCheck, IconCheckbox, IconDots, IconEdit, IconExternalLink, IconFile, IconFileX, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMailX, IconMessageQuestion, IconPlus, IconRoute, IconRouteOff, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -18,10 +20,31 @@ export function EmailMenuWrapper() {
     return (
         <Flex className="absolute top-0 left-0 w-0 bottom-0" gap={0} >
             <SidebarBumper setIsSidebarOpen={setIsSidebarOpen} />
+            <ScheduleButton isSidebarOpen={isSidebarOpen} />
             <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
             <SidebarIcon isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
         </Flex>
     );
+}
+
+function ScheduleButton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const handleOpenSchedule = () => {
+        setEditorState({
+            step: 0
+        })
+    }
+
+    if (editorState.step === 0)
+        return null;
+
+    return (
+        <Button className={" absolute left-18 top-5.5 min-w-48 z-50 transition-transform  " + (isSidebarOpen ? ' translate-x-[1px]' : 'translate-x-0 ')} px={0} pr={8} h={36} color="gray.6" variant="light" leftSection={<IconArrowLeft size={20} strokeWidth={2.5} style={{ marginBottom: '1px' }} />} onClick={handleOpenSchedule} >
+            Return to Schedule
+        </Button >
+    )
+
 }
 
 function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, setIsSidebarOpen: (isOpen: boolean) => void }) {
@@ -35,6 +58,8 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
     const [selectedEmail, setSelectedEmail] = useState<string | undefined>(editorState.email?.name);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const [showFinished, setShowFinished] = useState(false);
+
     if (selectedEmail !== editorState.email?.name) {
         setSelectedEmail(editorState.email?.name);
     }
@@ -43,31 +68,52 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
         let sorted = emailStates.sort((a, b) => {
             const aDate = moment(a.email?.values?.resolveValue('Send Date', true));
             const bDate = moment(b.email?.values?.resolveValue('Send Date', true));
+            if (showFinished)
+                return aDate.isAfter(bDate) ? -1 : 1;
             return aDate.isAfter(bDate) ? 1 : -1;
         });
-        return sorted.filter((state) => {
+        return showFinished ? sorted : sorted.filter((state) => {
             const sendDate = state.email?.values?.resolveValue('Send Date', true);
             const isValidDate = moment(sendDate).isValid();
             const daysBeforeToday = moment(sendDate).diff(moment(), 'days') > -5;
             return isValidDate && daysBeforeToday;
         });
-    }, [emailStates]);
+    }, [emailStates, showFinished]);
 
     // Will be different between server and client
     useEffect(() => {
         setIsLoaded(true);
     }, []);
 
+    const handleToggleShowFinished = () => {
+        setShowFinished((prev) => !prev);
+    }
+
+    const handleDefaultClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        console.log('Clicked outside', e.target, e.currentTarget);
+        if (e.target === e.currentTarget) {
+            setEditorState({ step: 0 });
+        }
+    }
+
     if (!isLoaded)
         return null;
 
     return (
         <Flex className={" flex-col items-center  absolute transition-transform z-40 border-gray-200 border-r-1 overflow-y-hidden " + (isSidebarOpen || pinSidebar ? 'translate-x-[300px]' : 'translate-x-0')} w={300} h="100vh" left="-300px" top={0} bottom={0} bg="gray.0" suppressHydrationWarning ref={ref} >
-            <ScrollArea className="w-full h-full" type="hover" offsetScrollbars scrollbarSize={8} styles={{ scrollbar: { backgroundColor: 'transparent' } }} >
-                <Flex className=" flex-col items-center justify-start pt-22 px-2.5" gap={12}>
-                    <NewEmailButton />
+            <ScrollArea className="w-full h-full" type="hover" offsetScrollbars scrollbarSize={8} styles={{ scrollbar: { backgroundColor: 'transparent' } }} viewportProps={{ onClick: handleDefaultClick }}>
+                <Flex className=" flex-col items-center justify-start pt-16 px-2.5" gap={12}>
+                    {/* <NewEmailButton /> */}
+                    <Flex justify='space-between' align='center' direction='row' className=" w-full mt-4 pl-2">
+                        <Text fz={14} fw={600} c='dimmed'>{showFinished ? 'All Saved Emails' : 'Pending Emails'}</Text>
+                        <Anchor fz={14} fw={400} c='dimmed' onClick={handleToggleShowFinished}>{showFinished ? 'Hide Finished' : 'Show All'}</Anchor>
+                    </Flex>
                     {sortedEmailStates.map((state) => {
                         const selected = selectedEmail === state.email?.name;
+
+                        if (!selected && !showFinished && (getStatusFromEmail(state.email) === 'Sent' || getStatusFromEmail(state.email) === 'Scheduled'))
+                            return null;
+
                         return (
                             <EmailItem
                                 key={state.email?.name}
@@ -108,9 +154,14 @@ function NewEmailButton() {
 
 function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPinSidebar, setIsSidebarOpen }: { editorState: EditorState, selected: boolean, deleteEmail: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void }) {
     const [_, setEditorState] = useContext(EditorContext);
+    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+
+
     const [hovered, setHovered] = useState(false);
     const [newlySelected, setNewlySelected] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    const showMessage = useContext(MessageContext);
 
 
     const email = editorState.email;
@@ -127,18 +178,83 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
     const emailName = useMemo(() => emailId.split(' ').slice(1).join(' '), [emailId]);
     const emailNameMinusProgram = useMemo(() => Object.keys(PROGRAM_COLORS).reduce((acc, program) => acc.replace(program, ''), emailName), [emailId]);
 
-    const status = useMemo(() => getStateFromEmail(email), [email, values.initialValues]);
+    const status = useMemo(() => getStatusFromEmail(email), [email, values.initialValues]);
     const statusColor = useMemo(() => STATUS_COLORS[status || 'Editing'], [status]);
+
+    const publishType = useMemo(() => email?.values?.resolveValue('Send Type', true), [email?.values?.initialValues]);
+
+    const isMarkedDone = useMemo(() => email?.isSentOrScheduled, [email]);
+    const templateId = useMemo(() => email?.templateId, [email]);
+    const campaignId = useMemo(() => email?.campaignId, [email]);
+    const automationId = useMemo(() => values.resolveValue('Automation ID'), [email]);
 
     // Rerender ever time the email states change
     useEffect(() => { }, [JSON.stringify(editorState)]);
 
-    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleToggleMarkDone = async () => {
+        setPinSidebar(true);
+        setIsSidebarOpen(true);
+
+        setEditorState({
+            ...editorState,
+            email: {
+                ...email,
+                isSentOrScheduled: !isMarkedDone,
+            }
+        });
+
+        setPinSidebar(false);
+    }
+
+    const deleteTemplate = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        setPinSidebar(true);
+        setProcessing(true);
+        setIsSidebarOpen(true);
+        const response = await delTemplate(templateId as string);
+        if (response)
+            setEditorState({
+                ...editorState,
+                email: {
+                    ...email,
+                    templateId: undefined,
+                }
+            });
+
+        setProcessing(false);
+        setPinSidebar(false);
+    }
+
+    const deleteCampaign = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        setPinSidebar(true);
+        setProcessing(true);
+        setIsSidebarOpen(true);
+        const response = await delCampaign(campaignId as string, globalSettings.activeCampaignToken ?? '');
+        if (response)
+            setEditorState({
+                ...editorState,
+                email: {
+                    ...email,
+                    campaignId: undefined,
+                }
+            });
+        setProcessing(false);
+        setPinSidebar(false);
+    }
+
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>, force: boolean = false) => {
+        if ((templateId || campaignId) && !force)
+            return showMessage('Deleting While Uploaded', {
+                templateId: templateId,
+                campaignId: campaignId,
+                deleteEmail: () => handleDelete(e, true),
+            });
+
+
         setPinSidebar(true);
         setProcessing(true);
         setIsSidebarOpen(true);
 
-        const deleted = await deleteEmail(e);
+        await deleteEmail(e);
 
         setProcessing(false);
         setPinSidebar(false);
@@ -188,7 +304,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
                     onClose={handleMenuClose}
                     onOpen={() => setPinSidebar(true)}
                     onDismiss={handleMenuClose}
-                    closeOnItemClick={false}
+                    closeOnItemClick={true}
                 >
                     <Menu.Target>
 
@@ -201,6 +317,38 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
 
                     </Menu.Target>
                     <Menu.Dropdown bg='gray.0' >
+                        <Menu.Item color="blue" onClick={handleToggleMarkDone} leftSection={isMarkedDone ? <IconArrowBackUp size={14} /> : <IconCheck size={14} />}>
+                            {isMarkedDone ? 'Mark incomplete' : 'Mark as Done'}
+                        </Menu.Item>
+
+                        {templateId ? <Anchor target="_blank" href={createTemplateLink(templateId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
+                            Open Template
+                        </Menu.Item></Anchor> : <Menu.Item color="gray" disabled leftSection={<IconFile size={14} />}>
+                            No Template Made
+                        </Menu.Item>}
+                        {campaignId ? <Anchor target="_blank" href={createCampaignLink(campaignId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
+                            Open Campaign
+                        </Menu.Item></Anchor> : null}
+                        {!campaignId && publishType === 'CAMPAIGN' ? <Menu.Item color="gray" disabled leftSection={<IconMail size={14} />}>
+                            No Campaign Made
+                        </Menu.Item> : null}
+                        {automationId ? <Anchor target="_blank" href={createAutomationLink(automationId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
+                            Open Automation
+                        </Menu.Item></Anchor> : null}
+                        {!automationId && publishType === 'AUTOMATION' ? <Menu.Item color="gray" disabled leftSection={<IconRouteOff size={14} />}>
+                            No Automation Setting
+                        </Menu.Item> : null}
+
+                        <Menu.Divider />
+
+                        {/* Danger area */}
+                        {templateId ? <Menu.Item color="red" onClick={deleteTemplate} leftSection={<IconBackspace size={14} />}>
+                            Delete Template
+                        </Menu.Item> : null}
+                        {campaignId ? <Menu.Item color="red" onClick={deleteCampaign} leftSection={<IconBackspace size={14} />}>
+                            Delete Campaign
+                        </Menu.Item> : null}
+
                         <Menu.Item color="red" onClick={handleDelete} leftSection={<IconTrash size={14} />}>
                             Remove Email
                         </Menu.Item>
@@ -217,10 +365,10 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
                 <Text fz={14} fw={600} className=" pointer-events-none">{emailNameMinusProgram}</Text>
             </Flex>
             <Flex gap={6} ml={0} w={'100%'} align='center' className="w-full pointer-events-none">
-                <Badge tt='none' radius='sm' px={4} color='gray.4' autoContrast
-                    leftSection={<IconCalendarFilled size={14} strokeWidth={2.5} opacity={0.6} className=" mb-[1.5px]" />}
+                <Badge tt='none' radius='sm' px={4} color='gray.3' autoContrast
+                    leftSection={<IconCalendarFilled size={14} strokeWidth={2.5} opacity={1} className=" mb-[1.5px]" />}
                 >
-                    <Text fz={14} fw={500}>{sendDate}</Text>
+                    <Text fz={14} fw={600}>{sendDate}</Text>
                 </Badge>
                 {/* <Badge tt='none' radius='lg' ml='auto' px={9} color='pink.3' autoContrast>
                     <Text fz={14} fw={600} c='pink.9'>Ready</Text>

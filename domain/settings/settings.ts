@@ -38,6 +38,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Test Email': { value: 'accounts@centercentre.com', hide },
 
         'Email Name': { value: '{Program} ', part: 0, hide },
+        'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -161,6 +162,26 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 },
             },
         },
+        'Cohort:Cohort 7': {
+            settings: {
+                'Automation ID': { value: '263', hide },
+            }
+        },
+        'Cohort:Cohort 8': {
+            settings: {
+                'Automation ID': { value: '276', hide },
+            }
+        },
+        'Cohort:Cohort 9': {
+            settings: {
+                'Automation ID': { value: '277', hide },
+            }
+        },
+        'Cohort:Cohort 10': {
+            settings: {
+                'Automation ID': { value: '303', hide },
+            }
+        },
     },
     'Program:Visions': {
         settings: {
@@ -213,6 +234,16 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 },
             },
         },
+        'Cohort:Cohort 1': {
+            settings: {
+                'Automation ID': { value: '286', hide },
+            }
+        },
+        'Cohort:Cohort 2': {
+            settings: {
+                'Automation ID': { value: '287', hide },
+            }
+        },
     },
     'Program:Research': {
         settings: {
@@ -263,6 +294,16 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                     }
                 },
             },
+        },
+        'Cohort:Cohort 3': {
+            settings: {
+                'Automation ID': { value: '250', hide },
+            }
+        },
+        'Cohort:Cohort 4': {
+            settings: {
+                'Automation ID': { value: '282', hide },
+            }
         },
     },
     'Program:Win': {
@@ -356,7 +397,42 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
                 'Template': { value: '/extension-details.html', part: 2 },
             }
-        }
+        },
+        'Cohort:April 2025': {
+            settings: {
+                'Automation ID': { value: '273', hide },
+            }
+        },
+        'Cohort:January 2025': {
+            settings: {
+                'Automation ID': { value: '205', hide },
+            }
+        },
+        'Cohort:February 2025': {
+            settings: {
+                'Automation ID': { value: '255', hide },
+            }
+        },
+        'Cohort:March 2025': {
+            settings: {
+                'Automation ID': { value: '260', hide },
+            }
+        },
+        'Cohort:May 2025': {
+            settings: {
+                'Automation ID': { value: '294', hide },
+            }
+        },
+        'Cohort:June 2025': {
+            settings: {
+                'Automation ID': { value: '299', hide },
+            }
+        },
+        'Cohort:July 2025': {
+            settings: {
+                'Automation ID': { value: '300', hide },
+            }
+        },
     },
     'Program:TUXS': {
         settings: {
@@ -476,7 +552,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                     </tbody>
                   </table>
                 </td>
-            </tr>`, part: 0
+            </tr>`, hide
                 },
             }
 

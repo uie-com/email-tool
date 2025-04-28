@@ -24,3 +24,10 @@ export function loadStringFromLocalStorage(key: string) {
         return '';
     }
 }
+
+export function hasStringInLocalStorage(key: string) {
+    if (typeof window === 'undefined' || !localStorage) return false;
+    const value = localStorage.getItem(key);
+    if (DEBUG) console.log('[LOCAL] Checking local storage', key, value);
+    return value !== null;
+}
