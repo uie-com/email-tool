@@ -5,7 +5,7 @@
 
 import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
 import { ShowMessage, MessageContext, EditorContext, GlobalSettingsContext } from "@/domain/schema";
-import { Anchor, Button, Flex, Loader, Modal, Text, TextInput, Title } from "@mantine/core";
+import { Anchor, Box, Button, Flex, Loader, Modal, Text, TextInput, Title } from "@mantine/core";
 import { IconBrandGoogleDrive, IconExternalLink } from "@tabler/icons-react";
 import { ChangeEvent, JSX, useContext, useEffect, useState } from "react";
 
@@ -97,17 +97,17 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
         };
     }
 
-    const returningWhileUploaded = (options: any) => {
+    const editingWhileUploaded = (options: any) => {
         const templateId = options.templateId;
         const campaignId = options.campaignId;
-        const editEmail = options.editEmail;
+        const editEmail = options.onConfirm;
 
         return {
-            title: `Remove before resetting ${templateId ? 'Template' : ''} ${templateId && campaignId ? '&' : ''} ${campaignId ? 'Campaign' : ''} from Active Campaign?`,
+            title: `Remove ${templateId ? 'Template' : ''} ${templateId && campaignId ? '&' : ''} ${campaignId ? 'Campaign' : ''} from Active Campaign before editing?`,
             body:
                 (<Flex direction="column" align="center" justify="center" gap={30} className="w-full h-full">
                     <Text c="black">
-                        <b>This email has been uploaded to Active Campaign as a {templateId ? 'Template' : ''}{templateId && campaignId ? ' and ' : ''}{campaignId ? 'Campaign' : ''}.</b> If you continue to edit this email, those changes will not be reflected in the {templateId ? 'Template' : ''}{templateId && campaignId ? ' and ' : ''}{campaignId ? 'Campaign' : ''}. You will still be able to delete the old email in Active Campaign by going to the {templateId ? 'Campaign Templates' : ''} {templateId && campaignId ? 'and' : ''} {campaignId ? 'Campaigns' : ''} page, but it will have the same name.
+                        This email has already been uploaded to Active Campaign. <b>Further edits will not be reflected in the {templateId ? 'Template' : ''}{templateId && campaignId ? ' or ' : ''}{campaignId ? 'Campaign' : ''}.</b><br /><br /> If you edit out-of-sync and upload a duplicate, it will be difficult to distinguish.
                     </Text>
                     <Flex justify="start" align="center" className="w-full" gap={20}>
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
@@ -130,7 +130,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                                 editEmail();
                             handleClose();
                             setProcessing(false);
-                        }}>Clear {templateId ? 'Template' : ''}{templateId && campaignId ? ' and ' : ''}{campaignId ? 'Campaign' : ''}</Button>
+                        }}>Delete {templateId ? 'Template' : ''}{templateId && campaignId ? ' and ' : ''}{campaignId ? 'Campaign' : ''}</Button>
                     </Flex>
                 </Flex>),
         };
@@ -146,6 +146,9 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                     <Text c="black">
                         <b>To take actions on your behalf, this program needs an Active Campaign OAuth token.</b> Active Campaign does not provide a way to generate a token, so you need to login to your Active Campaign account, and copy the <i>ac</i> token from <i>Session Storage</i>.
                     </Text>
+                    <Box className="relative overflow-hidden rounded-md shadow-lg" w={700} h={400} mt={-20} >
+                        <video src="./tutorials/ac-token.mp4" autoPlay muted className=" absolute -top-0.5 -left-0.5 w-[705px] max-w-none h-[405px] "></video>
+                    </Box>
                     <TextInput onChange={onChange} label={'Token'} w='100%' defaultValue={globalSettings.activeCampaignToken} />
                     <Flex justify="start" align="center" className="w-full" gap={20}>
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
@@ -194,7 +197,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
     const messages: Record<MessageType, (options: any) => Message> = {
         'Deleting While Uploaded': deletingWhileUploaded,
         'Resetting While Uploaded': resettingWhileUploaded,
-        'Editing While Uploaded': returningWhileUploaded,
+        'Editing While Uploaded': editingWhileUploaded,
         'Google Drive Login': loginToGoogle,
         'Active Campaign Login': loginToActiveCampaign,
     };
@@ -215,7 +218,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
 
     return (
         <MessageContext.Provider value={showMessage}>
-            <Modal opened={!!message} onClose={handleClose} title={message?.title} centered size="lg" classNames={{
+            <Modal opened={!!message} onClose={handleClose} title={message?.title} centered size="xl" classNames={{
                 title: '!text-2xl !font-bold',
                 content: 'p-2'
             }}>

@@ -5,7 +5,7 @@ import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
 import { IconAlertCircle, IconArrowBackUp, IconExternalLink, IconFileExport, IconProgressX, IconRefresh, IconUpload, IconX } from "@tabler/icons-react";
 import { postTemplate } from "@/domain/data/activeCampaignActions";
-import { createTemplateLink } from "@/domain/data/activeCampaign";
+import { createTemplateLink } from "@/domain/parse/parseIds";
 import { EditorContext } from "@/domain/schema";
 
 export const HadIssue = createContext<[boolean, React.Dispatch<React.SetStateAction<boolean>>]>([false, () => { }]);
@@ -16,6 +16,7 @@ export type StateContent = {
         title: string,
         subtitle: string,
         rightContent: React.ReactNode
+        expandedContent?: React.ReactNode
     }
 };
 
@@ -155,25 +156,31 @@ export function RemoteStep(
                 </Flex>
             }
             errorMessage={message}
+            expandedContent={currentStateContent.expandedContent ? currentStateContent.expandedContent : null}
         />
     );
 }
 
-function RemoteStepIndicator({ iconContent, rightContent, title, subtitle, errorMessage }: { iconContent: React.ReactNode, rightContent: React.ReactNode, title: string, subtitle: string, errorMessage: React.ReactNode | undefined }) {
+function RemoteStepIndicator({ iconContent, rightContent, title, subtitle, errorMessage, expandedContent }: { iconContent: React.ReactNode, rightContent: React.ReactNode, title: string, subtitle: string, errorMessage: React.ReactNode | undefined, expandedContent?: React.ReactNode }) {
 
     return (
         <HoverCard width={280} shadow="md">
             <HoverCard.Target>
-                <Flex align="center" justify="start" direction='row' className="py-4 px-5 border-gray-200 rounded-lg w-full border-1" gap={20}>
-                    {iconContent}
-                    <Stack gap={0}>
-                        <Text fw={600}>{title}</Text>
-                        <Text size="sm" c="dimmed">{subtitle}</Text>
-                    </Stack>
+                <Flex align="start" justify="start" direction='column' className="py-4 px-5 rounded-lg w-full relative" gap={20}>
+                    <Flex align="center" justify="start" direction='row' className="w-full rounded-lg relative" gap={20} h={50} >
+                        {iconContent}
+                        <Stack gap={0}>
+                            <Text fw={600}>{title}</Text>
+                            <Text size="sm" c="dimmed">{subtitle}</Text>
+                        </Stack>
 
-                    <Flex align="center" justify="end" direction='row' className="ml-auto">
-                        {rightContent}
+                        <Flex align="center" justify="end" direction='row' className="ml-auto">
+                            {rightContent}
+                        </Flex>
+                        <Box className="absolute rounded-lg -z-10 border-gray-200 border-1" top={-16} bottom={-16} left={-20} right={-20} bg='white' ></Box>
                     </Flex>
+                    {expandedContent}
+                    <Box className="absolute rounded-lg -z-20" top={0} bottom={0} left={0} right={0} bg='gray.0'></Box>
                 </Flex>
             </HoverCard.Target>
             {errorMessage ? <HoverCard.Dropdown>

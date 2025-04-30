@@ -7,3 +7,23 @@ export const PROGRAM_COLORS = {
     'Visions': '#00a5b7',
     'TUXS': '#00a3b4',
 }
+
+export const DAY_OF_WEEK_COLOR = {
+    'Monday': 'blue',
+    'Tuesday': 'cyan',
+    'Wednesday': 'lime',
+    'Thursday': 'yellow',
+    'Friday': 'orange',
+    'Saturday': 'pink',
+    'Sunday': 'grape',
+}
+
+export const HOURS_TO_COLOR = (hour: number) => {
+    if (hour <= 10) {
+        return 'yellow'
+    } else if (hour >= 12) {
+        return 'blue'
+    } else {
+        return 'violet'
+    }
+}

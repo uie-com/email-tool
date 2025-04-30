@@ -4,8 +4,8 @@ import { parseVariableName } from "@/domain/parse/parse";
 import { shortenIdentifier } from "@/domain/parse/parsePrograms";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { Email } from "@/domain/schema";
-import { PROGRAM_COLORS } from "@/domain/settings/interface";
-import { ActionIcon, Badge, Button, Center, Flex, Loader, Modal, Pill, ScrollArea, Text, TextInput, Title } from "@mantine/core";
+import { DAY_OF_WEEK_COLOR, HOURS_TO_COLOR, PROGRAM_COLORS } from "@/domain/settings/interface";
+import { ActionIcon, Badge, Button, Center, em, Flex, Loader, Modal, Pill, ScrollArea, Text, TextInput, Title } from "@mantine/core";
 import { IconArrowRight, IconCalendar, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconEdit, IconMail, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { ForwardedRef, JSX, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -92,20 +92,40 @@ export function EmailSchedule() {
         setCreateManual(false);
     }
 
-    const listObjects = useMemo(() => {
-        if (!loadedSessions.current) return [];
+    const manualEmails = useMemo(() => {
         const manualEmails = savedStates.filter((session) => {
             return session && session.email && session.email.values?.hasValueFor('Creation Type');
         });
-        const combinedObjects = (loadedSessions.current as (Session | EditorState)[]).concat(manualEmails);
-        const sortedObjects = combinedObjects.sort((a, b) => {
-            const dateA = (a as Session)["Session Date"] ? moment((a as Session)["Session Date"]) : moment((a as EditorState).email?.values?.resolveValue('Send Date'));
-            const dateB = (b as Session)["Session Date"] ? moment((b as Session)["Session Date"]) : moment((b as EditorState).email?.values?.resolveValue('Send Date'));
+        return manualEmails.map((email) => ({ email: email.email, session: undefined }));
+    }, [savedStates]);
+
+    const sessionsByEmail = useMemo(() => {
+        const sessionEmails = loadedSessions.current?.map((session) => {
+            const emails = createEmailsFromSession(session);
+            Object.keys(emails).filter((key) => {
+                const email = emails[key];
+                const sendDate = email.values?.resolveValue('Send Date', true);
+                const daysAway = sendDate ? moment(sendDate).dayOfYear() - moment().dayOfYear() : null;
+                if (daysAway !== null && daysAway < -1 * DAYS_IN_PAST) {
+                    delete emails[key];
+                }
+            });
+            return Object.keys(emails).map((key) => ({
+                email: emails[key],
+                emailType: key,
+                session: session,
+            } as { email?: Email, session?: Session, emailType?: string }));
+        }).flat();
+        const allEmailsBySession = sessionEmails?.concat(manualEmails) ?? manualEmails ?? [];
+
+        const sortedEmailsBySession = allEmailsBySession.sort((a, b) => {
+            const dateA = moment((a.email as Email)?.values?.resolveValue('Send Date'));
+            const dateB = moment((b.email as Email)?.values?.resolveValue('Send Date'));
             return dateA.diff(dateB);
         });
-        return sortedObjects;
 
-    }, [loadedSessions.current, JSON.stringify(savedStates)]);
+        return sortedEmailsBySession;
+    }, [loadedSessions.current, manualEmails]);
 
     return (
         <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] bg-gray-50 border-1" h={920} gap={20} pr={15}>
@@ -122,15 +142,16 @@ export function EmailSchedule() {
             </Modal>
             <ScrollArea className="max-w-full w-full overflow-x-hidden h-full " onBottomReached={handleScroll} viewportRef={ref} type="hover" >
                 <Flex align="start" justify="start" direction='column' className="max-w-full w-full h-full " gap={15} pr={15} >
-                    {listObjects ? listObjects.slice(0, sessionCount).map((session, i) => {
-                        if (session && (session as Session).Program === undefined) {
+                    {sessionsByEmail ? sessionsByEmail.slice(0, sessionCount).map((session, i) => {
+                        if ((!session.session || (session.session as Session).Program === undefined) && session.email) {
                             console.log('Found manual email ', session);
                             return (
-                                <EmailEntry key={session.email.id + i} email={session.email as Email} savedStates={savedStates} />
+                                <EmailEntry key={'me' + i} email={session.email} savedStates={savedStates} />
                             )
                         }
+                        if (!session.session) return null;
                         return (
-                            <SessionEntry key={(session as Session).id + i} session={session as Session} filter={searchQuery} savedStates={savedStates} />
+                            <SessionEntry key={'s' + i} session={session.session} filter={searchQuery} savedStates={savedStates} email={session.email} emailType={session.emailType ?? ''} />
                         )
                     }) : <Flex className="w-full min-h-96" justify="center" align="center"><Loader color="gray" /></Flex>}
                 </Flex>
@@ -139,23 +160,14 @@ export function EmailSchedule() {
     )
 }
 
-function SessionEntry({ session, filter, savedStates }: { session: Session, filter?: string, savedStates?: Saves }) {
+function SessionEntry({ session, filter, savedStates, email, emailType }: { session: Session, filter?: string, savedStates?: Saves, email?: Email, emailType?: string }) {
     const colorMain = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + '44';
     const colorPill = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + 'ff';
 
 
-    const emails = useMemo(() => {
-        const emails = createEmailsFromSession(session);
-        Object.keys(emails).filter((key) => {
-            const email = emails[key];
-            const sendDate = email.values?.resolveValue('Send Date', true);
-            const daysAway = sendDate ? moment(sendDate).dayOfYear() - moment().dayOfYear() : null;
-            if (daysAway !== null && daysAway < -1 * DAYS_IN_PAST) {
-                delete emails[key];
-            }
-        });
-        return emails;
-    }, [session]);
+    const emails = {
+        ...(emailType ? { [emailType]: email } : {}),
+    }
 
     const isMatchFilter = useMemo(() => {
         if (!filter || filter.trim().length < 3) return true;
@@ -169,18 +181,20 @@ function SessionEntry({ session, filter, savedStates }: { session: Session, filt
         const filtered = Object.keys(emails).filter((email) => {
             return (parseVariableName(JSON.stringify(emails[email])) + '' + email).includes(parseVariableName(filter));
         }).reduce((acc, key) => {
-            acc[key] = emails[key];
+            if (emails[key]) {
+                acc[key] = emails[key] as Email;
+            }
             return acc;
         }, {} as { [key: string]: Email })
         return filtered;
     }, [session, emails, filter])
 
-    if (!emails || Object.keys(filteredEmails).length === 0) return null;
+    if (!emails || !filteredEmails || Object.keys(filteredEmails).length === 0) return null;
     if (!isMatchFilter) return null;
 
     return (
-        <Flex direction='column' align='start' justify='start' className="w-full" gap={10}>
-            <Flex align="center" justify="start" gap={10} mt={0} className={`p-2 rounded-md w-full bg-gray-100 hover:bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap`}
+        <Flex direction='column' align='start' justify='start' className="w-full relative" gap={10}>
+            <Flex align="center" justify="start" gap={10} mt={0} className={`p-2 rounded-md w-full bg-gray-100 hover:bg-gray-100 cursor-pointer  overflow-hidden whitespace-nowrap`}
                 style={{ backgroundColor: colorMain }}
             >
                 <Pill fw={700} bg={colorPill} radius={5} pl={7} >
@@ -208,7 +222,7 @@ function SessionEntry({ session, filter, savedStates }: { session: Session, filt
                     </Badge>
                 ) : ''}
 
-                <Text size="sm" fw={600} ml={'auto'}>
+                <Text size="sm" fw={600} ml={'auto'} opacity={0.75} >
                     {
                         moment(session["Session Date"]).format('ddd, MMMM D • h:mma') +
                         (session["Is Combined Workshop Session"] !== undefined ? (' • ' + moment(session["Coaching Date"]).format('h:mma')) : '') +
@@ -218,6 +232,7 @@ function SessionEntry({ session, filter, savedStates }: { session: Session, filt
             </Flex>
             {Object.keys(filteredEmails).length > 0 ? <Flex direction='column' align='start' justify='start' className="w-full" gap={10} mb={10} pl={15}>
                 {Object.keys(filteredEmails).map((key, i) => {
+                    if (!filteredEmails[key]) return null;
                     return (
                         <EmailEntry key={session.id + i + 'email'} email={filteredEmails[key]} savedStates={savedStates} />
                     )
@@ -237,7 +252,8 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
     const type = email.values?.getCurrentValue('Email Type');
     const sendDate = email.values?.resolveValue('Send Date', true);
 
-    const sendDateMessage = sendDate ? moment(sendDate).format('ddd, MMMM Do • h:mma') : null;
+    const sendDateMoment = sendDate ? moment(sendDate) : null;
+    const sendTimeMessage = sendDate ? moment(sendDate).format('h:mma') : null;
     const daysAway = sendDate ? moment(sendDate).dayOfYear() - moment().dayOfYear() : null;
     const daysAwayMessage = daysAway !== null ?
         (daysAway === 0 ?
@@ -275,6 +291,7 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
             variant: 'filled',
             color: '',
             px: 12,
+            ml: 'auto',
         };
         if (!emailStatus)
             return <Button {...sharedProps}>Start</Button>;
@@ -282,13 +299,13 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
         sharedProps.color = (STATUS_COLORS[emailStatus][1] as string).split('.')[0] + '.8';
 
         if (emailStatus === 'Editing')
-            return <Button {...sharedProps} pr={8} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />}>Continue</Button>;
+            return <Button {...sharedProps} pr={8} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />}>Edit</Button>;
         if (emailStatus === 'Uploaded')
             return <Button {...sharedProps} pr={8} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />} >Uploaded</Button>;
         if (emailStatus === 'Review')
             return <Button {...sharedProps} pl={8} leftSection={<IconClock size={16} strokeWidth={2.5} className=" -mr-1" />}>Review</Button>;
         if (emailStatus === 'Ready')
-            return <Button {...sharedProps} >Ready to Publish</Button>;
+            return <Button {...sharedProps} >Ready</Button>;
         if (emailStatus === 'Scheduled')
             return <Button {...sharedProps} pl={8} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
         if (emailStatus === 'Sent')
@@ -299,13 +316,37 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
 
 
     return (
-        <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100  cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300`}
+        <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300`}
             style={{ backgroundColor: colorMain }}
             onMouseUp={handleSubmit}
         >
-            <Pill fw={700} bg={colorPill} radius={5} ><Flex pt={2.5} gap={6}><IconMailFilled size={16} stroke={2} color="white" /><Text fw={700} size="sm" c="white" mt={-2}>{type}</Text></Flex></Pill>
-            {sendDate ? (<Text fw={600} size="sm" opacity={0.4}>{daysAwayMessage}</Text>) : null}
-            {sendDate ? (<Text fw={600} size="sm" ml='auto' >{sendDateMessage}</Text>) : null}
+            <Pill fw={700} bg={colorPill} radius={5} >
+                <Flex pt={2.5} gap={6}>
+                    <IconMailFilled size={16} stroke={2} color="white" />
+                    <Text fw={700} size="sm" c="white" mt={-2}>{type}</Text>
+                </Flex>
+            </Pill>
+            <Pill fw={700} bg={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.2'} radius={5} ml={1} >
+                <Flex pt={2.5} gap={6}>
+                    <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>{sendDateMoment?.format('ddd, MMM D')}</Text>
+                </Flex>
+            </Pill>
+            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.2'} radius={5} ml={-3} >
+                <Flex pt={2.5} gap={6}>
+                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.9'} mt={-2}>{sendDateMoment?.format('h:mma').replace(':00', '')}</Text>
+                </Flex>
+            </Pill>
+            {/* {sendDate ? (
+                <>
+                    <Text fw={600} size="sm" ml='auto' opacity={0.6} >{daysAwayMessage}</Text>
+                    <Flex className=" absolute left-48" align='center' justify='center' gap={5} >
+                        <Text fw={700} size="sm">{sendDate}</Text>
+                        <Text fw={700} size="sm">•</Text>
+                        <Text fw={700} size="sm"  >{sendTimeMessage?.replace(':00', '')}</Text>
+                    </Flex>
+
+                </>
+            ) : null} */}
             {button}
         </Flex>
     )

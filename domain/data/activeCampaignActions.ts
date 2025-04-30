@@ -174,9 +174,16 @@ export async function get(url: string, params?: URLSearchParams, token?: string)
     });
     if (!res.ok) {
         console.error("Error:", res);
-        console.error("Response:", await res.text());
+        return await res.text();
+
     }
-    return await res.json();
+    try {
+        return JSON.parse(JSON.stringify(await res.json()));
+    } catch (e) {
+        // console.log("Error parsing response:", e, res);
+        console.error("Couldn't parse response:", res);
+        return JSON.parse(JSON.stringify(res));
+    }
 }
 
 export async function post(url: string, payload: any, params?: URLSearchParams, token?: string) {
@@ -225,7 +232,7 @@ export async function put(url: string, payload: any, params?: URLSearchParams, t
     });
     if (!res.ok) {
         console.error("Error:", res);
-        console.error("Response:", await res.text());
+        return await res.text();
     }
     try {
         return JSON.parse(JSON.stringify(await res.json()));
@@ -256,7 +263,7 @@ export async function del(url: string, params?: URLSearchParams, token?: string)
     });
     if (!res.ok) {
         console.error("Error:", res);
-        console.error("Response:", await res.text());
+        return await res.text();
     }
     try {
         return JSON.parse(JSON.stringify(await res.json()));

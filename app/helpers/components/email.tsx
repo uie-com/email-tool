@@ -92,7 +92,6 @@ export function EmailViewCard() {
         setEditorState((prev) => ({ ...prev, step: prev.step + 1, email: { ...prev.email } }));
     }
 
-    const emailTag = (moment(emailValues?.resolveValue('Send Date', true)).format('YYYY-MM-DD-') + emailValues?.resolveValue('Email Name', true)).replaceAll('  ', ' ').replaceAll(' ', '-');
 
     if (editorState.step === 2)
         return (
@@ -119,12 +118,8 @@ export function EmailViewCard() {
                         <Flex direction='row' gap={10} >
                             <Flex align='center' justify='start' bg='gray.1' className=" rounded-full pl-3 pr-4 h-9 -ml-0.5 relative " gap={8}>
                                 <IconCalendarEventFilled size={20} strokeWidth={3} className=" -mt-0.5" />
-                                <Text size="md" fw={500}>{moment(emailValues?.resolveValue('Send Date', true)).format('dddd, MMMM Do YYYY')}</Text>
-                                <CopyOverlay name="Send Date" value={moment(emailValues?.resolveValue('Send Date', true)).format('MMMM D YYYY')} />
-                            </Flex>
-                            <Flex align='center' justify='start' bg='gray.1' className=" rounded-full pl-3 pr-3 h-9 -ml-0.5 relative " gap={8}>
-                                <Text size="md" fw={500}>{moment(emailValues?.resolveValue('Send Date', true)).format('hh:mma')}</Text>
-                                <CopyOverlay name="Send Time" value={moment(emailValues?.resolveValue('Send Date', true)).format('MMMM D YYYY')} />
+                                <Text size="md" fw={500}>{moment(emailValues?.resolveValue('Send Date', true)).format('dddd, MMMM Do YYYY [at] hh:mma')}</Text>
+                                <CopyOverlay name="Send Date" value={moment(emailValues?.resolveValue('Send Date', true)).format('dddd, MMMM Do YYYY [at] hh:mma')} />
                             </Flex>
                         </Flex>
 
@@ -134,24 +129,23 @@ export function EmailViewCard() {
                         </Box>
 
                         <Box className=" relative w-full mt-3 ml-0.5">
-                            <Text fz={10} p={0} m={0} mt={-6} c='dimmed' ml='auto' className=" absolute right-3 -top-2.5" >Subject</Text>
                             <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Subject', true)}</Text>
                             <CopyOverlay name="Subject" />
                         </Box>
 
-                        <Box className=" relative w-full mt-0 ml-0.5">
+                        <Box className=" relative w-full mt-4 ml-0.5">
                             <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Preview', true)}</Text>
                             <CopyOverlay name="Preview" />
                         </Box>
 
                         <Box className=" absolute right-2 bottom-6">
-                            <Text fw={300} className=" opacity-60">{emailValues?.resolveValue('Campaign Name', true)}</Text>
-                            <CopyOverlay name="Campaign Name" value={emailValues?.resolveValue('Campaign Name', true)} />
+                            <Text fw={300} className=" opacity-60">{emailValues?.resolveValue('Template Name', true)}</Text>
+                            <CopyOverlay name="Template Name" value={emailValues?.resolveValue('Template Name', true)} />
                         </Box>
 
                         <Box className=" absolute right-2 bottom-0">
-                            <Text fw={300} className=" opacity-20">{emailTag}</Text>
-                            <CopyOverlay name="Email Tag" value={emailTag} />
+                            <Text fw={300} className=" opacity-20">{emailValues?.resolveValue('Email Tag', true)}</Text>
+                            <CopyOverlay name="Email Tag" value={emailValues?.resolveValue('Email Tag', true)} />
                         </Box>
                     </Box>
                 </Flex>

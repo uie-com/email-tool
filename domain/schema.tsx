@@ -46,9 +46,15 @@ export class Email {
     // (Messages are an internal Active Campaign object that hold email content for campaigns)
     campaignId?: string; // Campaign ID in Active Campaign
 
-    hasSentTest?: boolean; // Whether the test email has been sent
+    referenceDocURL?: string;
+
+    sentTest?: string; // Whether the test email has been sent
+    hasRendered?: string; // Whether the template in Active Campaign has been rendered by Save + Exiting
+    hasPostmarkAction?: string; // Whether the email has been sent to Postmark
+    hasWaitAction?: boolean; // Whether the email has a wait action
+    hasSentReview?: boolean; // Whether the email has a pending review ticket
     isReviewed?: boolean; // Whether the email has been reviewed
-    isSentOrScheduled?: boolean; // Whether the email has been marked done
+    isSentOrScheduled?: string; // Whether the email template has been marked done
 
     constructor(values?: Values, email?: Email) {
         Object.assign(this, email);
@@ -73,10 +79,19 @@ export function getStatusFromEmail(email?: Email): EmailStatus | undefined {
         return moment(email.values?.resolveValue('Send Date', true)).isBefore(moment()) ? 'Sent' : 'Scheduled';
 
     if (!email.templateId) return 'Editing';
-    if (!email.hasSentTest) return 'Uploaded';
+    if (!email.sentTest) return 'Uploaded';
     if (!email.isReviewed) return 'Review';
     if (!email.isSentOrScheduled) return 'Ready';
 }
+
+export const STATUS_MESSAGES = {
+    Editing: 'Editing',
+    Uploaded: 'Uploaded to Active Campaign',
+    Review: 'Under Review',
+    Ready: 'Ready to Send',
+    Scheduled: 'Scheduled',
+    Sent: 'Sent',
+};
 export const STATUS_COLORS = {
     Editing: [(<IconEdit size={18} strokeWidth={2.5} color='#e8580c' />), 'yellow.3', '#e8580c'],
     Uploaded: [(<IconFileText size={18} strokeWidth={2.5} color='#1864ab' />), 'blue.1', '#1864ab'],

@@ -202,6 +202,14 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = value.substring(0, parseInt(shortenTransform.replace(' Letters', '')));
         remainingTransforms = remainingTransforms.filter(transform => transform !== shortenTransform);
 
+        // Replace spaces with dashes ex. (Tag)
+        const tagTransform = remainingTransforms.find(transform =>
+            transform.includes('Tag')
+        );
+        if (tagTransform)
+            value = value.replaceAll('  ', ' ').replaceAll(' ', '-');
+        remainingTransforms = remainingTransforms.filter(transform => transform !== tagTransform);
+
         // Convert TUXS Descriptions to (1st Person)
         const tuxsTransform = remainingTransforms.find(transform =>
             transform.includes('1st Person')

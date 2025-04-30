@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     ACTIVECAMPAIGN_TOKEN: process.env.ACTIVECAMPAIGN_TOKEN,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI,
+    SLACK_CREATE_WEBHOOK_URL: process.env.SLACK_CREATE_WEBHOOK_URL,
   }
 };
 

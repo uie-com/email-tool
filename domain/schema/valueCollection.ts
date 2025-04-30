@@ -1,5 +1,5 @@
 import moment from "moment-timezone";
-import { fetchAirtableData } from "../data/airtable";
+import { fetchAirtableData } from "../data/airtableActions";
 import { parseVariableName } from "../parse/parse";
 import { Variable, Variables } from "./variableCollection";
 

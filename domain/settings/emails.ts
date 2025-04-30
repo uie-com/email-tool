@@ -56,6 +56,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
             ...generateWeeklyDefaultTopics(),
         },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        }
     },
     'Research': {
         options: {
@@ -76,6 +81,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
             ...generateWeeklyDefaultTopics(),
         },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        }
     },
     'Visions': {
         options: {
@@ -96,6 +106,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
             ...generateWeeklyDefaultTopics(),
         },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        }
     },
     'Win': {
         options: {
@@ -106,6 +121,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
                 'Cohort': generateMonthOptions(),
                 'Pillar': generateNumberedOptions('Pillar', 8),
                 'Level': generateNumberedOptions('Level', 2),
+            },
+        },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL'],
             },
         }
     },

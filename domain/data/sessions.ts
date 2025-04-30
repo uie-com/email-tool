@@ -1,6 +1,6 @@
 import moment from "moment-timezone";
 import { Moment } from "moment-timezone";
-import { fetchRecords } from "./airtable";
+import { fetchRecords } from "./airtableActions";
 
 export type AirtableSessionRecord = {
     id: string;

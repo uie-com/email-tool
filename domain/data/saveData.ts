@@ -1,6 +1,6 @@
 import { createContext, Dispatch, SetStateAction } from "react";
 import { EditorState, Email, Saves } from "../schema";
-import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "./airtable";
+import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "./airtableActions";
 import { saveStringToLocalStorage, loadStringFromLocalStorage } from "./localStorage";
 
 const DEBUG = true;

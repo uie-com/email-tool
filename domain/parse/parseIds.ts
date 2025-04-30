@@ -1,0 +1,16 @@
+
+export function createTemplateLink(id?: string) {
+    return `https://centercentre.activehosted.com/campaign/template/?tid=${id ?? ''}`;
+}
+
+export function createCampaignLink(id?: string) {
+    return `https://centercentre.activehosted.com/app/campaigns/${id ?? ''}`;
+}
+
+export function createAutomationLink(id?: string) {
+    return `https://centercentre.activehosted.com/series/${id ?? ''}`;
+}
+
+export function createGoogleDocLink(id?: string) {
+    return `https://docs.google.com/document/d/${id ?? ''}/edit`;
+}

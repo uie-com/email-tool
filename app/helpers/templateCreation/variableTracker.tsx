@@ -70,7 +70,7 @@ export function VariableTracker() {
 
     return (
         <ScrollArea style={{ height: '100%', width: '100%' }} type="always" offsetScrollbars={false} scrollbarSize={0} >
-            <Flex align="center" justify="center" direction='column' className="w-full h-full p-20" gap={20} style={{ position: 'relative' }}>
+            <Flex align="center" justify="center" direction='column' className="w-full h-full py-20" gap={20} style={{ position: 'relative' }}>
                 <Accordion variant="contained" w="100%">
                     {
                         Object.keys(variableOccurance).map((key) => (

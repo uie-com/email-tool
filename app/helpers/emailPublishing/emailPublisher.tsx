@@ -1,7 +1,7 @@
 "use client";
 
-import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/schema";
-import { Box, Button, Flex, Group, Image, ThemeIcon } from "@mantine/core";
+import { EditorContext, getStatusFromEmail, GlobalSettingsContext, MessageContext, STATUS_COLORS, STATUS_MESSAGES } from "@/domain/schema";
+import { Box, Button, DefaultMantineColor, Flex, Group, Image, ThemeIcon } from "@mantine/core";
 import { ChangeEvent, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RequireValues } from "../components/require";
 import { parseVariableName } from "@/domain/parse/parse";
@@ -16,21 +16,38 @@ import { getToken, testGoogleToken } from "@/domain/data/googleActions";
 
 export function EmailPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
+    const showMessage = useContext(MessageContext)
     const sendType = parseVariableName(editorState.email?.values?.resolveValue('Send Type'));
+    const emailStatus = getStatusFromEmail(editorState.email);
 
     const handleBack = () => {
+        if (editorState.email?.templateId !== undefined) {
+            return showMessage('Editing While Uploaded', {
+                onConfirm: () => {
+                    setEditorState((prev) => ({ ...prev, step: prev.step - 1, email: { ...prev.email } }));
+                },
+                templateId: editorState.email?.templateId,
+
+            });
+        }
+
         setEditorState((prev) => ({ ...prev, step: prev.step - 1, email: { ...prev.email } }));
     }
     return (
-        <Flex align="center" justify="center" direction='column' className=" h-full  p-20" gap={20}>
+        <Flex align="center" justify="center" direction='column' className=" h-full  py-20" gap={20}>
 
             <RequireValues requiredValues={['Send Type']} />
             <Flex align="center" justify="center" direction='column' className=" h-full w-[48rem] p-20 relative" gap={20}>
-                <Group justify="start" align="start" className="w-full px-4">
+                <Flex justify="space-between" align="start" className="w-full px-4">
                     <Button color='gray' variant="outline" onClick={handleBack}>
                         Edit Email
                     </Button>
-                </Group>
+                    {emailStatus ?
+                        <Button variant="light" className="  cursor-default" color={(STATUS_COLORS[emailStatus][1] as string).split('.')[0] as DefaultMantineColor} >
+                            {STATUS_MESSAGES[emailStatus]}
+                        </Button>
+                        : null}
+                </Flex>
                 {
                     sendType === 'campaign' ?
                         <CampaignPublisher />

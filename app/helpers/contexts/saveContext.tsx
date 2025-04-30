@@ -1,7 +1,7 @@
 "use client";
 
 import { EditorContext, EditorState } from "@/domain/schema";
-import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "@/domain/data/airtable";
+import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "@/domain/data/airtableActions";
 import { } from "@/domain/data/localStorage";
 import { SavedEmailsContext, recoverCurrentEditorState, saveStateLocally, saveLocally, loadLocally, saveRemotely, deleteState, loadRemotely } from "@/domain/data/saveData";
 import { Saves } from "@/domain/schema";

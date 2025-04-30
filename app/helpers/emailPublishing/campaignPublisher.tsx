@@ -1,16 +1,27 @@
 "use client";
 
 import { EditorContext, GlobalSettingsContext } from "@/domain/schema";
-import { ActionIcon, Anchor, Button, Flex, Group, HoverCard, Loader, Stack, Text, ThemeIcon } from "@mantine/core";
+import { ActionIcon, Anchor, Box, Button, Flex, Group, HoverCard, Image, Loader, Select, Stack, Text, TextInput, ThemeIcon } from "@mantine/core";
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
-import { IconAlertCircle, IconChecklist, IconExternalLink, IconFileExport, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMessageCheck, IconMessageSearch, IconMessageX, IconProgressX, IconRefresh, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowBackUp, IconCheck, IconChecklist, IconClipboardCheck, IconClipboardText, IconClipboardX, IconCopy, IconExternalLink, IconFileExport, IconLink, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMessageCheck, IconMessageSearch, IconMessageX, IconProgressX, IconRefresh, IconRosetteDiscountCheckFilled, IconRosetteDiscountCheckOff, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { delCampaign, delTemplate, getCampaign, getMessage, getTemplate, populateCampaignMessageWithTemplate, postCampaign, postCampaignMessage, postTemplate, putCampaign, putCampaignInternal, putMessage, testCampaign } from "@/domain/data/activeCampaignActions";
-import { createCampaignLink, createTemplateLink } from "@/domain/data/activeCampaign";
+import { createCampaignLink, createGoogleDocLink, createTemplateLink } from "@/domain/parse/parseIds";
 import { HadIssue, RemoteStep, StateContent } from "../components/remote";
 import moment from "moment-timezone";
 import { AuthStatus } from "./emailPublisher";
+import { isEmailReviewed } from "@/domain/data/airtableActions";
+import { createEmailInSlack, deleteEmailInSlack } from "@/domain/data/slackActions";
+import { MARKETING_REVIEWERS, GET_REVIEW_INDEX, GET_DEFAULT_PRIORITY, PRIORITY_FLAGS, PRIORITY_ICONS, MARKETING_REVIEWER_IDS, SLACK_LIST_URL } from "@/domain/settings/slack";
+import { copy } from "@/domain/parse/parse";
+import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
+import { Values } from "@/domain/schema/valueCollection";
+
+const openPopup = (url: string) => {
+    if (!url || window === undefined) return;
+    return window.open(url, '_blank', 'noopener,noreferrer,popup');
+}
 
 export function CampaignPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -26,8 +37,10 @@ export function CampaignPublisher() {
             <AuthStatus />
             <CreateTemplate shouldAutoStart={false} />
             <CreateCampaign shouldAutoStart={!hadIssue} />
+            <CreateReferenceDoc shouldAutoStart={!hadIssue} />
             <TestTemplate shouldAutoStart={false} />
-            <MarkReviewed shouldAutoStart={false} />
+            <SendReview shouldAutoStart={false} />
+            <MarkComplete shouldAutoStart={false} />
         </HadIssue.Provider>
     );
 }
@@ -76,11 +89,11 @@ function CreateTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             title: 'Created Template',
             subtitle: 'Created a Template with this HTML.',
             rightContent:
-                <Anchor href={editorState.email?.campaignId ? createCampaignLink(editorState.email?.campaignId) : createTemplateLink(editorState.email?.templateId)} target="_blank">
-                    <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
-                        Edit Template
-                    </Button>
-                </Anchor>
+                // <Anchor href={editorState.email?.campaignId ? createCampaignLink(editorState.email?.campaignId) : createTemplateLink(editorState.email?.templateId)} target="_blank">
+                <Button variant="light" color="green.5" h={40} onClick={() => openPopup(editorState.email?.campaignId ? createCampaignLink(editorState.email?.campaignId) : createTemplateLink(editorState.email?.templateId))} rightSection={<IconExternalLink />} >
+                    Edit Template
+                </Button>
+            // </Anchor> 
         }
     };
 
@@ -199,11 +212,12 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             icon: <ThemeIcon w={50} h={50} color="green.6"><IconMailCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Created Campaign',
             subtitle: 'Scheduled a Campaign with Template.',
-            rightContent: <Anchor href={createCampaignLink(editorState.email?.campaignId)} target="_blank">
-                <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
+            rightContent:
+                // <Anchor href={createCampaignLink(editorState.email?.campaignId)} target="_blank">
+                <Button variant="light" color="green.5" h={40} onClick={() => openPopup(createCampaignLink(editorState.email?.campaignId))} rightSection={<IconExternalLink />} >
                     Edit Campaign
                 </Button>
-            </Anchor>
+            // </Anchor>
         }
     };
 
@@ -212,7 +226,6 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const isDone = () => {
-        console.log("Already has campaign? ", editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0 ? true : false);
         return editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0;
     }
 
@@ -328,13 +341,166 @@ function CreateCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     )
 }
 
+function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Create Reference Document',
+            subtitle: 'Create a Google Doc for content reference',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Create Reference Document',
+            subtitle: 'Create a Google Doc for content reference',
+            rightContent: '',
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Create Reference Document',
+            subtitle: 'Create a Google Doc for content reference',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Create Doc</Button>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Creating Reference Document',
+            subtitle: 'Creating a Google Doc for content reference...',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Create Reference Doc',
+            subtitle: 'You may need to copy the Doc manually.',
+            rightContent:
+                <Anchor href={(editorState.email?.values?.resolveValue('Source Reference Doc', true))} target="_blank">
+                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
+                        Open Source
+                    </Button>
+                </Anchor>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
+                    <Text size="xs">Either input a source document to duplicate and retry, <br />or input a completed reference document below and continue.</Text>
+                    <TextInput description='Link to Source Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            const newValues = new Values(editorState.email?.values?.initialValues);
+                            newValues.setValue('Source Reference Doc', { value: e.target.value, source: 'user' });
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    values: newValues,
+                                }
+                            }));
+                        }} />
+                    <TextInput description='Link to Final Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    referenceDocURL: e.target.value,
+                                }
+                            }));
+                        }} />
+                </Flex>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconClipboardCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Created Reference Doc',
+            subtitle: 'Created content reference doc.',
+            rightContent:
+                <Flex gap={10}>
+                    <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.referenceDocURL ?? ''))}>
+                        <IconCopy />
+                    </ActionIcon>
+                    <Anchor href={(editorState.email?.referenceDocURL ?? '')} target="_blank">
+                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
+                            Open Doc
+                        </Button>
+                    </Anchor>
+                </Flex>
+
+        }
+    };
+
+    const isReady = () => {
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
+            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0;
+    }
+
+    const isDone = () => {
+        return editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        const email = editorState.email;
+        const values = email?.values;
+
+        if (!email || !values) return setMessage('No email found.');
+
+        const sourceDoc = values.resolveValue("Source Reference Doc", true) ?? '';
+        const docName = values.resolveValue("Template Name", true) ?? '';
+
+        const res = await copyGoogleDocByUrl(sourceDoc, docName, globalSettings.googleAccessToken ?? '');
+
+        if (!res.success || !res.newFileId) {
+            console.log("Error copying doc", res.error);
+            return setMessage(res.error);
+        }
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                referenceDocURL: createGoogleDocLink(res.newFileId),
+            }
+        }));
+
+        return true;
+    }
+
+    const tryUndo = async () => {
+        const referenceDocURL = editorState.email?.referenceDocURL;
+        if (!referenceDocURL) return true;
+
+        console.log("Deleting reference doc", referenceDocURL);
+        const res = await deleteGoogleDocByUrl(referenceDocURL, globalSettings.googleAccessToken ?? '');
+        if (!res.success) {
+            console.log("Error deleting doc", res.error);
+            return;
+        }
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                referenceDocURL: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo
+        />
+    )
+}
 
 
 function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const testEmail = useMemo(() => {
-        return editorState.email?.values?.resolveValue("Test Email", true) ?? '';
-    }, [editorState.email?.values?.initialValues]);
+    const [testEmail, setTestEmail] = useState<string | undefined>(editorState.email?.values?.resolveValue("Test Email", true));
 
     const stateContent: StateContent = {
         waiting: {
@@ -353,7 +519,13 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconSend size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Send Test Email',
             subtitle: 'Sends test email to ' + testEmail + '.',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Send Test</Button>
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Send Test</Button>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' className=" p-2">
+                    <Box className=" relative w-full mt-2">
+                        <TextInput description='Test Email' value={testEmail} onChange={(e) => setTestEmail(e.target.value)} />
+                    </Box>
+                </Flex>
         },
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconSend size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -382,11 +554,13 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
     const isReady = () => {
         return editorState.email?.messageId !== undefined && editorState.email?.messageId.length > 0
-            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0;
+            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+
     }
 
     const isDone = () => {
-        return editorState.email?.hasSentTest !== undefined && editorState.email?.hasSentTest === true;
+        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.campaignId;
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
@@ -417,7 +591,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             ...prev,
             email: {
                 ...prev.email,
-                hasSentTest: true,
+                sentTest: editorState.email?.campaignId,
             }
         }));
 
@@ -437,52 +611,197 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     )
 }
 
-
-function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
+
+    const [reviewer, setReviewer] = useState(MARKETING_REVIEWERS[GET_REVIEW_INDEX(editorState.email?.templateId ?? '') % MARKETING_REVIEWERS.length]);
+    const [priority, setPriority] = useState<string | undefined>(undefined);
+    const defaultPriority = useMemo(() => GET_DEFAULT_PRIORITY(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
+
+    const [isPostPending, setIsPostPending] = useState(false);
+    const [hasPosted, setHasPosted] = useState(false);
+
+    const handleCreateTicket = async () => {
+        if (isPostPending) return;
+        setIsPostPending(true);
+
+        const priorityFlag = PRIORITY_FLAGS[PRIORITY_ICONS.indexOf(priority ?? '')] ?? PRIORITY_FLAGS[1];
+        const userId = MARKETING_REVIEWER_IDS[MARKETING_REVIEWERS.indexOf(reviewer)] ?? MARKETING_REVIEWER_IDS[0];
+
+        const res = await createEmailInSlack(undefined, editorState.email?.referenceDocURL ?? '', editorState.email?.values?.resolveValue('Subject', true), editorState.email?.values?.resolveValue('Email ID', true), userId, priorityFlag);
+        console.log("Created email in slack", res);
+
+        setHasPosted(true);
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                hasSentReview: true,
+            }
+        }));
+        setIsPostPending(false);
+    }
+
+    const handleDeleteTicket = async (forceRefresh: boolean = false) => {
+        if (isPostPending) return;
+        setIsPostPending(true);
+        const res = await deleteEmailInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+        console.log("Deleted email in slack", res);
+
+        setHasPosted(false);
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                hasSentReview: false,
+            }
+        }));
+        setIsPostPending(false);
+
+        if (forceRefresh) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+        }
+    }
+
 
     const stateContent: StateContent = {
         waiting: {
             icon: <ThemeIcon w={50} h={50} color="gray.2"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Review Email',
-            subtitle: '',
+            title: 'Create Review Ticket',
+            subtitle: 'Create email review item in Slack.',
             rightContent: '',
         },
         ready: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Review Email',
-            subtitle: '',
+            title: 'Create Review Ticket',
+            subtitle: 'Create email review item in Slack.',
             rightContent: '',
         },
         manual: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Review Email',
-            subtitle: '',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark Reviewed</Button>
+            title: 'Create Review Ticket',
+            subtitle: 'Create email review item in Slack.',
+            rightContent:
+                !hasPosted ? null :
+                    <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
+            ,
+            expandedContent:
+                <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
+                    <Flex gap={20} direction="row" p={10} align="start" justify="space-between" w='100%'>
+                        <Flex gap={20} direction="column" align="start" justify="start" w={320}>
+                            {
+                                !hasPosted ?
+                                    <Flex gap={10} direction="column" align="start" justify="space-between">
+                                        <Flex gap={10} direction="row" align="start" justify="space-between">
+
+                                            <Box className=" relative w-full mt-2">
+                                                <Select
+                                                    description='Reviewer'
+                                                    value={reviewer}
+                                                    data={MARKETING_REVIEWERS}
+                                                    onChange={(v) => setReviewer(v ?? '')}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                            <Box className=" relative w-24 mt-2">
+                                                <Select
+                                                    description='Priority'
+                                                    value={priority}
+                                                    defaultValue={PRIORITY_ICONS[PRIORITY_FLAGS.indexOf(defaultPriority)]}
+                                                    data={PRIORITY_ICONS}
+                                                    onChange={(v) => setPriority(v ?? '')}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                        </Flex>
+                                        <Text size="xs" c="dimmed" mt={2}>Last marketing reviewer was {MARKETING_REVIEWERS[(GET_REVIEW_INDEX(editorState.email?.templateId ?? '') - 1) % MARKETING_REVIEWERS.length]}.</Text>
+                                    </Flex>
+
+                                    :
+                                    <Flex gap={20} direction="column" align="start" justify="space-between">
+                                        <Text size="xs">Add screenshots and switch Review to 'Template Email Review' to post the review ticket.</Text>
+
+                                        <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={100} >
+                                            <Image src={'./tutorials/upload-screenshots.gif'} />
+                                        </Box>
+                                        <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={270}>
+                                            <Image src={'./tutorials/send-review.gif'} />
+                                        </Box>
+                                    </Flex>
+                            }
+                        </Flex>
+                        {
+                            !hasPosted ?
+                                <Button variant="outline" color="blue.5" mt={10} h={40} onClick={handleCreateTicket} disabled={isPostPending} loading={isPostPending}>Create Ticket</Button>
+                                :
+                                <Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={20}>
+                                    <Anchor href={SLACK_LIST_URL} target="_blank">
+                                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} >
+                                            Open Slack List
+                                        </Button>
+                                    </Anchor>
+                                    <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket()} >
+                                        Delete Ticket
+                                    </Button>
+                                </Flex>
+
+                        }
+                    </Flex>
+                    {/* <Box px={10}>
+                        <Text size="xs">Remember to add screenshots and switch Review to 'Template Email Review'.</Text>
+                        <Text size="xs" c="dimmed" >Remember to screenshot the final wait action for review.</Text>
+                    </Box> */}
+                </Flex>
         },
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Review Email',
-            subtitle: '',
-            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+            title: 'Waiting for Reviews',
+            subtitle: 'Sent review ticket to ' + reviewer + '.',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />,
+            expandedContent:
+                <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
+                    <Flex gap={20} direction="row" p={10} align="start" justify="space-between" w='100%'>
+                        <Flex direction="row" align="end" justify="end" mt={10} mr={-5} gap={20} w='100%'>
+                            <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket(true)} >
+                                Delete Ticket
+                            </Button>
+                            <Anchor href={SLACK_LIST_URL} target="_blank">
+                                <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} >
+                                    Open Slack List
+                                </Button>
+                            </Anchor>
+                        </Flex>
+                    </Flex>
+                    {/* <Box px={10}>
+                        <Text size="xs">Remember to add screenshots and switch Review to 'Template Email Review'.</Text>
+                        <Text size="xs" c="dimmed" >Remember to screenshot the final wait action for review.</Text>
+                    </Box> */}
+                </Flex>
         },
         failed: {
             icon: <ThemeIcon w={50} h={50} color="orange.6"><IconMessageX size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Couldn\'t Mark Reviewed',
-            subtitle: '',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark Reviewed</Button>
+            title: 'Couldn\'t Find Review Ticket',
+            subtitle: 'Try to send the review again.',
+            rightContent:
+                <Anchor href={SLACK_LIST_URL} target="_blank">
+                    <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />}>Open Slack</Button>
+                </Anchor >
         },
         succeeded: {
             icon: <ThemeIcon w={50} h={50} color="green.6"><IconMessageCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Email Reviewed',
-            subtitle: '',
-            rightContent: null
+            title: 'Email Approved',
+            subtitle: 'Final email review marked as approved.',
+            rightContent: ''
+            // rightContent: <ThemeIcon size={36} bg='none' c='blue' ml={12} mr={0}><IconConfetti strokeWidth={2.5} size={36} /></ThemeIcon>
         }
     };
-
+    //
     const isReady = () => {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
-            && editorState.email?.hasSentTest !== undefined && editorState.email?.hasSentTest === true;
+            && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.campaignId
+            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId === editorState.email?.campaignId
     }
 
     const isDone = () => {
@@ -490,11 +809,123 @@ function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        await handleDeleteTicket();
+
         setEditorState((prev) => ({
             ...prev,
             email: {
                 ...prev.email,
+                hasSentReview: false,
                 isReviewed: false,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        return await new Promise((resolve) => {
+            setInterval(async () => {
+                if (!editorState.email?.hasSentReview)
+                    resolve(false);
+
+                const isReviewed = await isEmailReviewed(editorState.email?.values?.resolveValue('Email ID', true));
+                console.log('isReviewed', isReviewed);
+                if (isReviewed) {
+                    setEditorState((prev) => ({
+                        ...prev,
+                        email: {
+                            ...prev.email,
+                            isReviewed: true,
+                            hasSentReview: true,
+                        }
+                    }));
+                    resolve(true);
+                }
+            }, 15000)
+        });
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo={false}
+            allowsRedo={true}
+        />
+    )
+}
+
+function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const sentOrScheduled = useMemo(() => {
+        const sendDate = editorState.email?.values?.resolveValue('Send Date', true);
+        const hoursUntilSend = moment(sendDate).diff(moment(), 'hours');
+        return hoursUntilSend > 1 ? 'Scheduled' : 'Sent';
+    }, [editorState.email?.values?.resolveValue('Send Date', true)]);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconRosetteDiscountCheckFilled size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Confirm ' + sentOrScheduled,
+            subtitle: 'Confirm email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconRosetteDiscountCheckFilled size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Confirm ' + sentOrScheduled,
+            subtitle: 'Confirm email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: '',
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconRosetteDiscountCheckFilled size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Confirm ' + sentOrScheduled,
+            subtitle: 'Confirm email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark {sentOrScheduled}</Button>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconRosetteDiscountCheckFilled size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Confirm ' + sentOrScheduled,
+            subtitle: 'Confirming email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconRosetteDiscountCheckOff size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Can\'t confirm if ' + sentOrScheduled,
+            subtitle: 'Confirm email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Mark {sentOrScheduled}</Button>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconRosetteDiscountCheckFilled size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Confirmed ' + sentOrScheduled,
+            subtitle: 'Confirmed email has been ' + sentOrScheduled.toLowerCase() + '.',
+            rightContent: null
+        }
+    };
+    //
+    const isReady = () => {
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
+            && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
+            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0
+            && editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
+    }
+
+    const isDone = () => {
+        return editorState.email?.isSentOrScheduled !== undefined && editorState.email?.isSentOrScheduled === editorState.email?.campaignId;
+    }
+
+    const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isSentOrScheduled: undefined,
             }
         }));
 
@@ -507,7 +938,7 @@ function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             ...prev,
             email: {
                 ...prev.email,
-                isReviewed: true,
+                isSentOrScheduled: editorState.email?.campaignId,
             }
         }));
 
@@ -522,6 +953,7 @@ function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             isDone={isDone}
             tryAction={tryAction}
             tryUndo={tryUndo}
+            allowsUndo={true}
         />
     )
 }

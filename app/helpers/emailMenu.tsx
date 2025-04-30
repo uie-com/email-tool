@@ -1,6 +1,6 @@
 "use client";
 
-import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/data/activeCampaign";
+import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/parse/parseIds";
 import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
 import { SavedEmailsContext } from "@/domain/data/saveData";
 import { parseVariableName } from "@/domain/parse/parse";
@@ -13,6 +13,10 @@ import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, Icon
 import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
 
+const openPopup = (url: string) => {
+    if (!url || window === undefined) return;
+    return window.open(url, '_blank', 'noopener,noreferrer,popup');
+}
 
 export function EmailMenuWrapper() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -195,13 +199,13 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setPinSidebar(true);
         setIsSidebarOpen(true);
 
-        setEditorState({
-            ...editorState,
+        setEditorState((prev) => ({
+            ...prev,
             email: {
                 ...email,
-                isSentOrScheduled: !isMarkedDone,
+                isSentOrScheduled: prev.email?.isSentOrScheduled ? undefined : email?.templateId,
             }
-        });
+        }));
 
         setPinSidebar(false);
     }
@@ -321,20 +325,32 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
                             {isMarkedDone ? 'Mark incomplete' : 'Mark as Done'}
                         </Menu.Item>
 
-                        {templateId ? <Anchor target="_blank" href={createTemplateLink(templateId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
-                            Open Template
-                        </Menu.Item></Anchor> : <Menu.Item color="gray" disabled leftSection={<IconFile size={14} />}>
-                            No Template Made
-                        </Menu.Item>}
-                        {campaignId ? <Anchor target="_blank" href={createCampaignLink(campaignId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
-                            Open Campaign
-                        </Menu.Item></Anchor> : null}
+                        {templateId ?
+                            // <Anchor target="_blank" href={createTemplateLink(templateId)}>
+                            <Menu.Item color="blue" onClick={() => openPopup(createTemplateLink(templateId))} leftSection={<IconExternalLink size={14} />}>
+                                Open Template
+                            </Menu.Item>
+                            // </Anchor>
+                            : <Menu.Item color="gray" disabled leftSection={<IconFile size={14} />}>
+                                No Template Made
+                            </Menu.Item>}
+                        {campaignId ?
+                            // <Anchor target="_blank" href={createCampaignLink(campaignId)}>
+                            <Menu.Item color="blue" onClick={() => openPopup(createCampaignLink(campaignId))} leftSection={<IconExternalLink size={14} />}>
+                                Open Campaign
+                            </Menu.Item>
+                            // </Anchor>
+                            : null}
                         {!campaignId && publishType === 'CAMPAIGN' ? <Menu.Item color="gray" disabled leftSection={<IconMail size={14} />}>
                             No Campaign Made
                         </Menu.Item> : null}
-                        {automationId ? <Anchor target="_blank" href={createAutomationLink(automationId)}><Menu.Item color="blue" leftSection={<IconExternalLink size={14} />}>
-                            Open Automation
-                        </Menu.Item></Anchor> : null}
+                        {automationId ?
+                            // <Anchor target="_blank" href={createAutomationLink(automationId)}>
+                            <Menu.Item color="blue" onClick={() => openPopup(createAutomationLink(automationId))} leftSection={<IconExternalLink size={14} />}>
+                                Open Automation
+                            </Menu.Item>
+                            //  </Anchor>
+                            : null}
                         {!automationId && publishType === 'AUTOMATION' ? <Menu.Item color="gray" disabled leftSection={<IconRouteOff size={14} />}>
                             No Automation Setting
                         </Menu.Item> : null}
@@ -423,6 +439,6 @@ function SidebarBumper({ setIsSidebarOpen }: { setIsSidebarOpen: (isOpen: boolea
     }
 
     return (
-        <Box className="absolute top-24 bottom-0 left-0 w-12 z-40" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseExit} />
+        <Box className="absolute top-24 bottom-0 left-0 w-24 z-40" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseExit} />
     );
 }
