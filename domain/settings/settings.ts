@@ -35,7 +35,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'From Email': { value: 'jared.m.spool@centercentre.com', hide },
         'Reply To': { value: 'jared.m.spool@centercentre.com', hide },
 
-        'Test Email': { value: 'ayang@centercentre.com', hide },
+        'Test Email': { value: 'accounts@centercentre.com', hide },
 
         'Email Name': { value: '{Program} ', part: 0, hide },
         'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
@@ -56,7 +56,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
     'Program:Stand Out': {
         settings: {
             'Send Type': { value: 'AUTOMATION', hide },
-            'Email Name': { value: '{Email Type}', part: 1 },
             'Template': { value: '/standout', part: 1 },
 
             'Automation ID': { value: '226', hide },
@@ -74,6 +73,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Subject': { value: 'This Week in the Stand Out Community' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1BkCicp_dYsIPlfffnELtok4ywhfRqJxR05eZxOTj2EE/edit' },
+                'Email Name': { value: '{Email Type}', part: 1 },
+
             },
             'Sessions in Prev Week:1': {
                 settings: {
@@ -98,6 +99,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             },
         },
         'Email Type:Today\'s Session': {
+            settings: {
+                'Email Name': { value: '{Session Type}', part: 1 },
+            },
             'Session Type:Live Discussion': {
                 settings: {
                     'Template': { value: '/today-live-discussion.html', part: 2 },
@@ -312,7 +316,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         settings: {
             'Send Type': { value: 'AUTOMATION', hide },
             'Template': { value: '/win', part: 1 },
-            'Email Name': { value: '{Cohort} ', part: 1 },
+            'Email Name': { value: '{Cohort (First Word)} ', part: 1 },
 
             'Banner': { value: '' },
             'Link Color': { value: '#a5473d' },

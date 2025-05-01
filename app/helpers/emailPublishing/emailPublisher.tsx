@@ -43,7 +43,7 @@ export function EmailPublisher() {
                         Edit Email
                     </Button>
                     {emailStatus ?
-                        <Button variant="light" className="  cursor-default" color={(STATUS_COLORS[emailStatus][1] as string).split('.')[0] as DefaultMantineColor} >
+                        <Button variant="light" className=" pointer-events-none" color={(STATUS_COLORS[emailStatus][1] as string).split('.')[0] as DefaultMantineColor} >
                             {STATUS_MESSAGES[emailStatus]}
                         </Button>
                         : null}

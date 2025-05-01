@@ -11,7 +11,7 @@ import React, { useState, useMemo, useEffect, useContext, useRef } from "react";
 
 const DEBUG = true;
 
-export function TemplateView({ setVariables, className }: { setVariables: (v: Variables) => void, className?: string }) {
+export function TemplateView({ setVariables, className, showToggle }: { setVariables: (v: Variables) => void, className?: string, showToggle: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [filledTemplate, setFilledTemplate] = useState<string>('');
     const values = editorState.email?.values ?? new Values();
@@ -19,6 +19,8 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
     const [showOriginal, setShowOriginal] = useState(false);
 
     const currentFilled = useRef<string>('');
+    const currentlyRenderedEmail = useRef<string>(editorState.email?.template ?? '');
+
     const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
     const forceUpdate = useForceUpdate();
 
@@ -29,14 +31,14 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
     useEffect(() => {
         const fetchTemplate = async () => {
             const templateObject = values.getValueObj('template');
-            if (!templateObject) return console.log('No template object found', values);
+            if (!templateObject) return console.log('[TEMPLATE] No template object found', values);
             const templateValue = templateObject.source('user', 'settings');
-            if (DEBUG) console.log('Fetching template', templateValue);
-            if (!templateValue) return console.log('No template value found', templateObject);
+            if (DEBUG) console.log('[TEMPLATE] Fetching template', templateValue);
+            if (!templateValue) return console.log('[TEMPLATE] No template value found', templateObject);
             try {
                 await templateValue?.populateRemote(values);
 
-                if (DEBUG) console.log('Fetched template', templateValue);
+                if (DEBUG) console.log('[TEMPLATE] Fetched template', templateValue);
                 setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: fixTemplate(templateValue.source('remote').currentValue), template: templateObject.source('user', 'settings').currentValue } });
             } catch {
                 console.error('Error fetching template', templateValue);
@@ -60,29 +62,34 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
         }
         const variables = new Variables(templateHTML);
         setVariables(variables);
-        if (DEBUG) console.log('Filling template', templateHTML);
+        if (DEBUG) console.log('[TEMPLATE] Filling template', templateHTML);
         const filled = variables.resolveWith(values);
-        if (DEBUG) console.log('Filled template', filled);
+        if (DEBUG) console.log('[TEMPLATE] Filled template', filled);
+
         currentFilled.current = (filled);
 
         if (waitingTimeout.current)
             clearTimeout(waitingTimeout.current);
 
         waitingTimeout.current = setTimeout(() => {
-            if (DEBUG) console.log('Waited for template to be filled');
+            if (DEBUG) console.log('[TEMPLATE] Waited for template to be filled');
             waitingTimeout.current = null;
+            currentlyRenderedEmail.current = editorState.email?.template ?? '';
+
             if (currentFilled.current !== filledTemplate)
                 setFilledTemplate(currentFilled.current);
             else
                 forceUpdate();
+
         }, 1000);
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
+    if (DEBUG) console.log('[TEMPLATE] Rendering template view of ' + editorState.email?.template + ' with ' + ((currentlyRenderedEmail.current !== editorState.email?.template) ? 0 : filledTemplate.length) + ' characters');
 
     return (
         <div className={className + ' relative'} >
             <Flex
-                className={"absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm transition-opacity delay-100 overflow-hidden pointer-events-none " + ((waitingTimeout.current || noTemplateFound) ? 'opacity-100' : 'opacity-0') + (noTemplateFound ? ' bg-gray-50 ' : '')}
+                className={"absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm transition-opacity delay-100 overflow-hidden pointer-events-none " + ((waitingTimeout.current || noTemplateFound || (currentlyRenderedEmail.current !== editorState.email?.template)) ? 'opacity-100' : 'opacity-0') + (noTemplateFound ? ' bg-gray-50 ' : '')}
                 align={"center"}
                 justify="center"
                 gap={30}
@@ -109,9 +116,9 @@ export function TemplateView({ setVariables, className }: { setVariables: (v: Va
                     border: "1px solid #e5e7eb",
                     borderRadius: "0.5rem",
                 }}
-                srcDoc={showOriginal ? editorState.email?.templateHTML : filledTemplate} >
+                srcDoc={(currentlyRenderedEmail.current !== editorState.email?.template) ? '' : (showOriginal ? editorState.email?.templateHTML : filledTemplate)} >
             </iframe>
-            <Anchor c='dimmed' size="xs" className=" absolute right-2.5 -top-5 hover:underline cursor-pointer opacity-60" onClick={() => setShowOriginal((prev) => !prev)}>{showOriginal ? 'Show filled' : 'Show original'}</Anchor>
+            {showToggle ? <Anchor c='dimmed' size="xs" className=" absolute right-4 top-3 hover:underline cursor-pointer opacity-60" onClick={() => setShowOriginal((prev) => !prev)}>{showOriginal ? 'Show filled' : 'Show original'}</Anchor> : null}
         </div>
     )
 }
@@ -120,7 +127,7 @@ export function TemplateEditor({ className }: { className?: string }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
     const handleChange = (value: string | undefined) => {
-        if (DEBUG) console.log('Template changed: ', value);
+        if (DEBUG) console.log('[TEMPLATE] Template changed: ', value);
         setEditorState((prev) => ({ ...prev, email: { ...prev.email, templateHTML: value } }));
     }
 
@@ -158,16 +165,16 @@ export function PlainTextEditor({ variables, values, setVariables, displayRender
     const [content, setContent] = useState<string>('');
 
     const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        if (DEBUG) console.log('Parsing variables');
+        if (DEBUG) console.log('[TEMPLATE] Parsing variables');
         setContent(e.target.value);
         setVariables(new Variables(e.target.value));
     };
 
     const filledContent = useMemo(() => {
         if (!values) return content;
-        if (DEBUG) console.log('Filling variables');
+        if (DEBUG) console.log('[TEMPLATE] Filling variables');
         const filled = variables.resolveWith(values);
-        if (DEBUG) console.log('Filled variables', filled);
+        if (DEBUG) console.log('[TEMPLATE] Filled variables', filled);
         return filled;
     }, [variables, values]);
 
@@ -218,17 +225,17 @@ export function PlainTextEditor({ variables, values, setVariables, displayRender
 
 //     useEffect(() => {
 //         if (!quill) return;
-//         if (DEBUG) console.log('Setting up quill');
+//         if (DEBUG) console.log('[TEMPLATE] Setting up quill');
 //         // On input, parse variables and update email
 //         const handleInput = () => {
-//             if (DEBUG) console.log('Parsing variables');
+//             if (DEBUG) console.log('[TEMPLATE] Parsing variables');
 //             const timestamp = new Date().getTime();
 
 //             if (!quill) return;
 //             const newVariables = (parseVariables(quill.getText()));
 //             updateEmail({ sourceRichText: quill.getContents(), sourcePlainText: quill.getText() });
 
-//             if (DEBUG) console.log('Parsed variables in ' + (new Date().getTime() - timestamp) + 'ms ', newVariables);
+//             if (DEBUG) console.log('[TEMPLATE] Parsed variables in ' + (new Date().getTime() - timestamp) + 'ms ', newVariables);
 //             setVariables(newVariables);
 //         };
 //         quill.on('text-change', () => handleInput());
@@ -244,7 +251,7 @@ export function PlainTextEditor({ variables, values, setVariables, displayRender
 //             const timestamp = new Date().getTime();
 //             const delta = new Delta(fillQuillVariables(variables, values));
 //             renderedQuill.updateContents(delta, 'silent');
-//             if (DEBUG) console.log('Rendered variables in ' + (new Date().getTime() - timestamp) + 'ms');
+//             if (DEBUG) console.log('[TEMPLATE] Rendered variables in ' + (new Date().getTime() - timestamp) + 'ms');
 //             updateEmail({ filledRichText: renderedQuill.getContents(), filledPlainText: renderedQuill.getText() });
 //             renderedQuill?.disable();
 //         }

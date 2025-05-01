@@ -155,7 +155,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                             onChange({ target: { value: '' } } as ChangeEvent<HTMLInputElement>);
                             handleClose();
                         }}>Cancel</Button>
-                        <Anchor ml='auto' href={`https://centercentre.activehosted.com/admin/index.php?error_mesg=timeout&redir=aHR0cHM6Ly9jZW50ZXJjZW50cmUuYWN0aXZlaG9zdGVkLmNvbS9hcHAvb3ZlcnZpZXc_`} >
+                        <Anchor ml='auto' href={`https://centercentre.activehosted.com/admin/index.php?error_mesg=timeout&redir=aHR0cHM6Ly9jZW50ZXJjZW50cmUuYWN0aXZlaG9zdGVkLmNvbS9hcHAvb3ZlcnZpZXc_`} target="_blank" >
                             <Button variant="outline" color="blue" className="min-h-10" rightSection={<IconExternalLink size={24} />}>
                                 Open Active Campaign
                             </Button>

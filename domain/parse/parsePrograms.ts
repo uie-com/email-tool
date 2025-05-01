@@ -86,4 +86,17 @@ export function shortenIdentifier(id: string) {
         .replaceAll('Before Week ', 'BW')
         .replaceAll('Session ', 'S')
         .replaceAll('Week ', 'W')
+
+        .replaceAll('January', 'Jan')
+        .replaceAll('February', 'Feb')
+        .replaceAll('March', 'Mar')
+        .replaceAll('April', 'Apr')
+        .replaceAll('May', 'May')
+        .replaceAll('June', 'Jun')
+        .replaceAll('July', 'Jul')
+        .replaceAll('August', 'Aug')
+        .replaceAll('September', 'Sep')
+        .replaceAll('October', 'Oct')
+        .replaceAll('November', 'Nov')
+        .replaceAll('December', 'Dec')
 }

@@ -5,7 +5,7 @@ import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
 import { IconAlertCircle, IconArrowBackUp, IconExternalLink, IconFileExport, IconProgressX, IconRefresh, IconUpload, IconX } from "@tabler/icons-react";
 import { postTemplate } from "@/domain/data/activeCampaignActions";
-import { createTemplateLink } from "@/domain/parse/parseIds";
+import { createTemplateLink } from "@/domain/parse/parseLinks";
 import { EditorContext } from "@/domain/schema";
 
 export const HadIssue = createContext<[boolean, React.Dispatch<React.SetStateAction<boolean>>]>([false, () => { }]);
@@ -67,7 +67,14 @@ export function RemoteStep(
 
     const currentStateContent = stateContent[stepState];
 
+    // Mark ready when waiting and state changes
     useEffect(() => {
+        if (stepState === 'succeeded' && !isReady() && tryUndo)
+            handleUndo();
+
+        if (stepState === 'succeeded' && !isDone())
+            setStepState('waiting');
+
         if (stepState === 'waiting' && isReady() && !isDone())
             setStepState('ready');
         else if (stepState === 'waiting' && isReady() && isDone())
@@ -78,7 +85,12 @@ export function RemoteStep(
 
     }, [JSON.stringify(editorState)]);
 
+    // Auto start the action if the step is ready and shouldAutoStart is true
     useEffect(() => {
+        if ((stepState === 'ready' || stepState === 'manual') && !isReady())
+            setStepState('waiting');
+
+
         if (stepState === 'ready' && shouldAutoStart) {
             handleStart();
         } else if (stepState === 'ready' && !shouldAutoStart) {

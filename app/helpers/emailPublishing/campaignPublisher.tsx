@@ -5,30 +5,32 @@ import { ActionIcon, Anchor, Box, Button, Flex, Group, HoverCard, Image, Loader,
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
-import { IconAlertCircle, IconArrowBackUp, IconCheck, IconChecklist, IconClipboardCheck, IconClipboardText, IconClipboardX, IconCopy, IconExternalLink, IconFileExport, IconLink, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMessageCheck, IconMessageSearch, IconMessageX, IconProgressX, IconRefresh, IconRosetteDiscountCheckFilled, IconRosetteDiscountCheckOff, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowBackUp, IconArrowRight, IconCheck, IconChecklist, IconClipboardCheck, IconClipboardText, IconClipboardX, IconCopy, IconExternalLink, IconFileExport, IconLink, IconListCheck, IconListDetails, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMessageCheck, IconMessageSearch, IconMessageX, IconPlaylistX, IconProgressX, IconRefresh, IconRosetteDiscountCheck, IconRosetteDiscountCheckFilled, IconRosetteDiscountCheckOff, IconSend, IconSendOff, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { delCampaign, delTemplate, getCampaign, getMessage, getTemplate, populateCampaignMessageWithTemplate, postCampaign, postCampaignMessage, postTemplate, putCampaign, putCampaignInternal, putMessage, testCampaign } from "@/domain/data/activeCampaignActions";
-import { createCampaignLink, createGoogleDocLink, createTemplateLink } from "@/domain/parse/parseIds";
+import { createCampaignLink, createGoogleDocLink, createNotionUri, createTemplateLink } from "@/domain/parse/parseLinks";
 import { HadIssue, RemoteStep, StateContent } from "../components/remote";
 import moment from "moment-timezone";
 import { AuthStatus } from "./emailPublisher";
 import { isEmailReviewed } from "@/domain/data/airtableActions";
 import { createEmailInSlack, deleteEmailInSlack } from "@/domain/data/slackActions";
 import { MARKETING_REVIEWERS, GET_REVIEW_INDEX, GET_DEFAULT_PRIORITY, PRIORITY_FLAGS, PRIORITY_ICONS, MARKETING_REVIEWER_IDS, SLACK_LIST_URL } from "@/domain/settings/slack";
-import { copy } from "@/domain/parse/parse";
+import { copy, openPopup } from "@/domain/parse/parse";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
 import { Values } from "@/domain/schema/valueCollection";
-
-const openPopup = (url: string) => {
-    if (!url || window === undefined) return;
-    return window.open(url, '_blank', 'noopener,noreferrer,popup');
-}
+import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
+import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { saveScheduleOpen } from "@/domain/data/saveData";
 
 export function CampaignPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [hadIssue, setHadIssue] = useState(false);
 
-
-
+    const handleOpenSchedule = () => {
+        saveScheduleOpen();
+        setEditorState({
+            step: 0
+        })
+    }
 
     return (
         <HadIssue.Provider value={[hadIssue, setHadIssue]}>
@@ -38,9 +40,17 @@ export function CampaignPublisher() {
             <CreateTemplate shouldAutoStart={false} />
             <CreateCampaign shouldAutoStart={!hadIssue} />
             <CreateReferenceDoc shouldAutoStart={!hadIssue} />
+            <GetNotionPage shouldAutoStart={false} />
             <TestTemplate shouldAutoStart={false} />
             <SendReview shouldAutoStart={false} />
             <MarkComplete shouldAutoStart={false} />
+            {
+                editorState.email?.isSentOrScheduled ?
+                    <Flex gap={10} direction="row" align="center" justify="end" w='100%' px='24' mt={6}>
+                        <Button variant="filled" color="green" h={40} rightSection={<IconArrowRight strokeWidth={2} />} onClick={handleOpenSchedule} >Return to Schedule</Button>
+                    </Flex>
+                    : null
+            }
         </HadIssue.Provider>
     );
 }
@@ -371,12 +381,12 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             rightContent: <Loader variant="bars" color="blue.5" size={30} />
         },
         failed: {
-            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Couldn\'t Create Reference Doc',
-            subtitle: 'You may need to copy the Doc manually.',
+            icon: <ThemeIcon w={50} h={50} color="gray.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Find Reference Doc',
+            subtitle: 'Input a document manually.',
             rightContent:
                 <Anchor href={(editorState.email?.values?.resolveValue('Source Reference Doc', true))} target="_blank">
-                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
+                    <Button variant="light" color="gray.9" h={40} rightSection={<IconExternalLink />} >
                         Open Source
                     </Button>
                 </Anchor>,
@@ -497,6 +507,182 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     )
 }
 
+function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const [didCreate, setDidCreate] = useState(false);
+    const [updatingCard, setUpdatingCard] = useState(false);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: '',
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Create Doc</Button>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: (updatingCard ? 'Adding Ref Doc to' : (didCreate ? 'Creating' : 'Finding')) + ' Notion Card',
+            subtitle: (didCreate ? 'Creating' : 'Finding') + 'a Notion card for the email....',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconPlaylistX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Create Notion Card',
+            subtitle: 'Couldn\'t find or create a Notion card.',
+            rightContent:
+                <Anchor href={(NOTION_CALENDAR)} target="_blank">
+                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
+                        Open Notion
+                    </Button>
+                </Anchor>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
+                    <Text size="xs">Input the Link to the Notion Card to Continue</Text>
+                    <TextInput description='Link to Notion Card' value={editorState.email?.notionURL} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    notionURL: e.target.value,
+                                }
+                            }));
+                        }} />
+
+                </Flex>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: (didCreate ? 'Created' : 'Found') + ' Notion Card',
+            subtitle: 'Notion card ' + (didCreate ? 'created' : 'found') + ' and linked.',
+            rightContent:
+                <Flex gap={10}>
+                    <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.notionURL ?? ''))}>
+                        <IconCopy />
+                    </ActionIcon>
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
+                            Open Card
+                        </Button>
+                    </Anchor>
+                </Flex>
+
+        }
+    };
+
+    const isReady = () => {
+        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
+            && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
+            && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+    }
+
+    const isDone = () => {
+        return editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        const email = editorState.email;
+        const values = email?.values;
+
+        if (!email || !values) return setMessage('No email found.');
+
+        const emailName = values.resolveValue("Email Name", true) ?? '';
+        const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
+        const referenceDocURL = email?.referenceDocURL ?? '';
+
+        setDidCreate(false);
+
+        let res = await findNotionCard(sendDate, emailName);
+        if (!res || !res.success) {
+            console.log("Error querying Notion", res);
+            setMessage(res?.error ?? 'Error searching Notion: ' + res?.error);
+        }
+
+        if (!res.url) {
+            setDidCreate(true);
+
+            const notionCard = await createNotionCard(sendDate, emailName);
+            if (notionCard && notionCard.success && notionCard.url && notionCard.id) {
+                res = notionCard;
+            } else {
+                return setMessage('Error creating Notion card: ' + notionCard?.error);
+            }
+        }
+
+        setUpdatingCard(true);
+
+        const notionId = res.id;
+        const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false);
+        if (!updateRes.success) {
+            console.log("Error updating Notion card", updateRes.error);
+            return setMessage('Error updating Notion card: ' + updateRes.error);
+        }
+        console.log("Updated Notion card", updateRes);
+
+        setUpdatingCard(false);
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                notionURL: res.url,
+                notionId: res.id,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryUndo = async () => {
+        const notionId = editorState.email?.notionId;
+        if (!notionId) return true;
+
+        console.log("Deleting notion card", notionId);
+        const res = await deleteNotionCard(notionId);
+        if (!res.success) {
+            console.log("Error deleting notion card", res.error);
+            return;
+        }
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                notionURL: undefined,
+                notionId: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo
+        />
+    )
+}
 
 function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -555,7 +741,8 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const isReady = () => {
         return editorState.email?.messageId !== undefined && editorState.email?.messageId.length > 0
             && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0
-            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0
+            && editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0
 
     }
 
@@ -607,6 +794,122 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             tryAction={tryAction}
             allowsRedo
             allowsUndo={false}
+        />
+    )
+}
+
+function ReviewTestEmail({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' className="">
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} mt={5}>
+                            Open Checklist
+                        </Button>
+                    </Anchor>
+                </Flex>
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
+            expandedContent:
+                <Flex gap={20} direction="row" align="start" justify="end" w='100%' className="">
+                    <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10} onClick={() => openPopup('https://mail.google.com/mail/u/0/#search/' + editorState.email?.values?.resolveValue('Test Email', true))}>
+                        Gmail
+                    </Button>
+                    <Anchor href={'message://'} target="_blank">
+                        <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10}>
+                            Apple Mail
+                        </Button>
+                    </Anchor>
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="filled" color="blue.5" h={40} rightSection={<IconExternalLink />} mt={10}>
+                            Open Checklist
+                        </Button>
+                    </Anchor>
+                </Flex>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Reviewing Test Email',
+            subtitle: 'Reviewing email against Notion QA Checklist.',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconPlaylistX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Error Marking Test Email Reviewed',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Reviewed Test Email',
+            subtitle: 'Reviewed email against Notion QA Checklist.',
+            rightContent: null
+        }
+    };
+    //
+    const isReady = () => {
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
+            && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.campaignId
+            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId === editorState.email?.campaignId
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0
+            && editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0;
+    }
+
+    const isDone = () => {
+        return editorState.email?.isDevReviewed !== undefined && editorState.email?.isDevReviewed === true;
+    }
+
+    const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isDevReviewed: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isDevReviewed: true,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo={true}
         />
     )
 }
@@ -802,6 +1105,9 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
             && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.campaignId
             && editorState.email?.campaignId !== undefined && editorState.email?.campaignId === editorState.email?.campaignId
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0
+            && editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0
+            && editorState.email?.isDevReviewed !== undefined && editorState.email?.isDevReviewed === true
     }
 
     const isDone = () => {

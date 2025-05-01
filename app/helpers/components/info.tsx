@@ -21,7 +21,7 @@ export function EditorHelpIcon() {
 
     return (
         <PopoverIcon
-            icon={<ThemeIcon variant="light" bg="none" color="gray" opacity={0.6} size={36}><IconCodeCircle2 size={36} strokeWidth={2} /></ThemeIcon>}
+            icon={<ThemeIcon variant="light" bg="none" color="gray" opacity={0.6} size={36}><IconCodeCircle2 size={36} strokeWidth={1.5} /></ThemeIcon>}
             body={
                 <div className="p-1 w-[28rem]">
                     <p className="text-lg mb-1.5 font-medium">{editorState.email?.values?.resolveValue('Email Name')}</p>

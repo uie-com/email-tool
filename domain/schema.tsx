@@ -27,7 +27,7 @@ export type EditorState = {
     step: number;
 }
 
-export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>]>([{ step: 0 }, () => { }]);
+export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>, boolean, (state: EditorState) => void]>([{ step: 0 }, () => { }, true, () => { }]);
 
 export type Saves = EditorState[];
 
@@ -47,12 +47,15 @@ export class Email {
     campaignId?: string; // Campaign ID in Active Campaign
 
     referenceDocURL?: string;
+    notionURL?: string; // URL of the Notion card
+    notionId?: string; // ID of the Notion card
 
     sentTest?: string; // Whether the test email has been sent
     hasRendered?: string; // Whether the template in Active Campaign has been rendered by Save + Exiting
     hasPostmarkAction?: string; // Whether the email has been sent to Postmark
     hasWaitAction?: boolean; // Whether the email has a wait action
     hasSentReview?: boolean; // Whether the email has a pending review ticket
+    isDevReviewed?: boolean; // Whether the email has been reviewed
     isReviewed?: boolean; // Whether the email has been reviewed
     isSentOrScheduled?: string; // Whether the email template has been marked done
 

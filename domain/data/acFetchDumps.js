@@ -1090,3 +1090,58 @@ fetch("https://centercentre.activehosted.com/api/3/integrationLayer/elements/35e
     "referrer": "https://centercentre.activehosted.com/series/255",
     "referrerPolicy": "strict-origin-when-cross-origin"
 })
+
+fetch("https://content-content-api.cluster.app-us1.com/files?sort=added,desc&mimeTypes=image%2Fjpeg,image%2Fpng,image%2Fgif,application%2Fpdf", {
+    "cache": "default",
+    "credentials": "include",
+    "headers": {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Authorization": "Bearer eyJraWQiOiI2M2Q1OTBkYzBiMTk5NjhkMDkyZWYwMTBlY2M5YThmZmUzYzA5OWZlIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJhdWQiOiJhY3RpdmVob3N0ZWQiLCJzdWIiOiJhY2NvdW50c0BjZW50ZXJjZW50cmUuY29tIiwiYWNjb3VudElkIjozMjkzMDcyLCJhY2NvdW50TmFtZSI6ImNlbnRlcmNlbnRyZS5hY3RpdmVob3N0ZWQuY29tIiwicmVxdWVzdElkIjoiZTIyOWMyN2QtZDFhZi00NDhhLWFiODctZmZkNzVkMGEyODc1IiwiaXNzIjoiYWMtc2VjdXJpdHktdG9rZW4tc2VydmljZSIsInBsYW5UaWVyIjo1LCJleHAiOjE3NDYwNDIzOTgsImlhdCI6MTc0NjAyMDc5OCwidXNlcklkIjoxLCJwbGFuIjowLCJqdGkiOiJiYTUwN2RkNy00ZTU4LTQ0NDItYTdlZi1kNmIwZjUwMmNjZjkifQ.a9-oBCe7RRHpIF4YWMVAuk76xuhD1JVOUpW_M8ZJPfkuOKgF76dVUPL9NurLkUfgSL2-ZmoikW7xPtgD4YoAcDGUCXtWUA8tB1Uz-jq6LwwHYUPshBND7EqRUBSlbQGXepGhIHV_Zdffwd2G1Y0Z2VLKt2K8LRZbhbkZugZ_mZliVNI4xIVWNV_wapLPZwIvKPABmxdauosMy8Kb4_nxRYWdlpMkE8e0d5Yff9d5d7MPNgELSBI6nnX_fR3as7oxdv4oxTZ6PBjrqvpCHX6GVUbK9gXBDDjKX0DhYYPrmtoFMNYCJS8k8ufsbaELLnKC7pJj70KDNyGxy6Lzoj7uUQ",
+        "Priority": "u=3, i",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15"
+    },
+    "method": "GET",
+    "mode": "cors",
+    "redirect": "follow",
+    "referrer": "https://centercentre.activehosted.com/",
+    "referrerPolicy": "strict-origin-when-cross-origin"
+})
+
+fetch("https://content-content-api.cluster.app-us1.com/files", {
+    "body": "------WebKitFormBoundarymz8iBf6AwX9ULlMr\r\nContent-Disposition: form-data; name=\"file\"; filename=\"67b4c29c7d38ab46a5ee8944_symbol.png\"\r\nContent-Type: image/png\r\n\r\n\r\n------WebKitFormBoundarymz8iBf6AwX9ULlMr\r\nContent-Disposition: form-data; name=\"fileAttributes\"\r\n\r\n{\"name\":\"67b4c29c7d38ab46a5ee8944_symbol.png\",\"altText\":\"\",\"mimeType\":\"image/png\",\"tags\":[],\"folders\":[],\"size\":14518}\r\n------WebKitFormBoundarymz8iBf6AwX9ULlMr--\r\n",
+    "cache": "default",
+    "credentials": "include",
+    "headers": {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Authorization": "Bearer eyJraWQiOiI2M2Q1OTBkYzBiMTk5NjhkMDkyZWYwMTBlY2M5YThmZmUzYzA5OWZlIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYifQ.eyJhdWQiOiJhY3RpdmVob3N0ZWQiLCJzdWIiOiJhY2NvdW50c0BjZW50ZXJjZW50cmUuY29tIiwiYWNjb3VudElkIjozMjkzMDcyLCJhY2NvdW50TmFtZSI6ImNlbnRlcmNlbnRyZS5hY3RpdmVob3N0ZWQuY29tIiwicmVxdWVzdElkIjoiZTIyOWMyN2QtZDFhZi00NDhhLWFiODctZmZkNzVkMGEyODc1IiwiaXNzIjoiYWMtc2VjdXJpdHktdG9rZW4tc2VydmljZSIsInBsYW5UaWVyIjo1LCJleHAiOjE3NDYwNDIzOTgsImlhdCI6MTc0NjAyMDc5OCwidXNlcklkIjoxLCJwbGFuIjowLCJqdGkiOiJiYTUwN2RkNy00ZTU4LTQ0NDItYTdlZi1kNmIwZjUwMmNjZjkifQ.a9-oBCe7RRHpIF4YWMVAuk76xuhD1JVOUpW_M8ZJPfkuOKgF76dVUPL9NurLkUfgSL2-ZmoikW7xPtgD4YoAcDGUCXtWUA8tB1Uz-jq6LwwHYUPshBND7EqRUBSlbQGXepGhIHV_Zdffwd2G1Y0Z2VLKt2K8LRZbhbkZugZ_mZliVNI4xIVWNV_wapLPZwIvKPABmxdauosMy8Kb4_nxRYWdlpMkE8e0d5Yff9d5d7MPNgELSBI6nnX_fR3as7oxdv4oxTZ6PBjrqvpCHX6GVUbK9gXBDDjKX0DhYYPrmtoFMNYCJS8k8ufsbaELLnKC7pJj70KDNyGxy6Lzoj7uUQ",
+        "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundarymz8iBf6AwX9ULlMr",
+        "Priority": "u=3, i",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15"
+    },
+    "method": "POST",
+    "mode": "cors",
+    "redirect": "follow",
+    "referrer": "https://centercentre.activehosted.com/",
+    "referrerPolicy": "strict-origin-when-cross-origin"
+})
+
+const res = {
+    "file": {
+        "id": 39074261,
+        "userId": 1,
+        "name": "CleanShot 2025-04-28 at 16.25.59@2x.png",
+        "altText": "",
+        "mimeType": "image/png",
+        "size": 574545,
+        "height": -1,
+        "width": -1,
+        "s3Key": "O8aW3/2025/04/30/eac2880e-2657-4a0c-9acc-b26a6eab3a3c.png",
+        "thumbnailS3Key": "cdn-cgi/image/height=100,format=auto/O8aW3/2025/04/30/eac2880e-2657-4a0c-9acc-b26a6eab3a3c.png",
+        "campaignS3Key": "",
+        "added": "2025-04-30T14:05:48.121408",
+        "contentTypeFromMime": "png"
+    },
+    "baseUrl": "https://content.app-us1.com/"
+}

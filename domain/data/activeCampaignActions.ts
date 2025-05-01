@@ -274,6 +274,84 @@ export async function del(url: string, params?: URLSearchParams, token?: string)
     }
 }
 
+
+// import fs from 'fs';
+// import path from 'path';
+// import FormData from 'form-data';
+
+// export async function uploadImage(url: string, token: string): Promise<any> {
+//     const imagePath = path.resolve(process.cwd(), 'public', url.replace(/^\.\/+/, ''));
+
+//     if (!fs.existsSync(imagePath)) {
+//         throw new Error(`File not found: ${imagePath}`);
+//     }
+
+//     const fileStream = fs.createReadStream(imagePath);
+//     const fileStats = fs.statSync(imagePath);
+//     const fileName = path.basename(imagePath);
+//     const mimeType = 'image/png';
+
+//     const form = new FormData();
+//     form.append('file', fileStream, {
+//         filename: fileName,
+//         contentType: mimeType,
+//     });
+
+//     form.append('fileAttributes', JSON.stringify({
+//         name: fileName,
+//         altText: '',
+//         mimeType,
+//         tags: [],
+//         folders: [],
+//         size: fileStats.size,
+//     }));
+
+//     const res = await fetch('https://content-content-api.cluster.app-us1.com/files', {
+//         method: 'POST',
+//         headers: {
+//             ...form.getHeaders(),
+//             Authorization: `Bearer ${token}`,
+//             Accept: 'application/json',
+//         },
+//         body: form as any,
+//     });
+
+//     if (!res.ok) {
+//         const err = await res.text();
+//         console.error('Upload failed:', res.status, res.statusText, err);
+//         throw new Error(`Upload failed: ${res.status}`);
+//     }
+
+//     const data = await res.json();
+//     console.log('Upload success:', data);
+//     return data;
+
+
+// }
+
+// import util from 'node:util';
+// import child_process from 'node:child_process';
+// const exec = util.promisify(child_process.exec);
+
+// export async function uploadImageCURL(url: string, token: string): Promise<any> {
+//     console.log("Uploading image", url);
+//     console.log("Command:", `curl -X POST "https://content-content-api.cluster.app-us1.com/files" \
+//   -H "Authorization: Bearer ${token}" \
+//   -H "Accept: application/json, text/plain, */*" \
+//   -F "file=@./public${url.replace('./', '/')};type=image/png" \
+//   -F "fileAttributes=${JSON.stringify(`{\"name\":\"${url.split('/').pop()}\",\"altText\":\"\",\"mimeType\":\"image/png\",\"tags\":[],\"folders\":[],\"size\":$(stat -f%z ./public${url.replace('./', '/')})}`)}"`);
+//     const res = await exec(`curl -X POST "https://content-content-api.cluster.app-us1.com/files" \
+//   -H "Authorization: Bearer ${token}" \
+//   -H "Accept: application/json, text/plain, */*" \
+//   -F "file=@./public${url.replace('./', '/')};type=image/png" \
+//   -F "fileAttributes=${(`{\"name\":\"${url.split('/').pop()}\",\"altText\":\"\",\"mimeType\":\"image/png\",\"tags\":[],\"folders\":[],\"size\":$(stat -f%z ./public${url.replace('./', '/')})}`)}"`);
+//     console.log("Upload image response", res);
+//     return res;
+// }
+
+
+
+
 const testTemplateHTML = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="en">
 

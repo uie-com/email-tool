@@ -11,6 +11,10 @@ const CURRENT_EMAIL_NAME_KEY = 'currentEmail';
 const EMAILS_KEY = 'emails';
 const REMOTE_SAVE_SNAPSHOT_KEY = 'remoteEmails';
 
+export async function saveScheduleOpen() {
+    saveCurrentEmailName('');
+}
+
 
 export async function recoverCurrentEditorState() {
     const currentEmailName = getCurrentEmailName();

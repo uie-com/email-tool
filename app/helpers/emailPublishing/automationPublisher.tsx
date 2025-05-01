@@ -5,12 +5,12 @@ import { ActionIcon, Anchor, Box, Button, Flex, Group, HoverCard, Image, Loader,
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
-import { IconAlertCircle, IconArrowBackUp, IconArrowRight, IconCalendarCheck, IconCalendarEvent, IconCalendarX, IconCheck, IconChecklist, IconClipboardCheck, IconClipboardText, IconClipboardX, IconConfetti, IconCopy, IconExternalLink, IconFile, IconFileCheck, IconFileExport, IconFileX, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMailX, IconMessageCheck, IconMessageSearch, IconMessageX, IconProgressX, IconRefresh, IconRosetteDiscountCheck, IconRosetteDiscountCheckFilled, IconRosetteDiscountCheckOff, IconSend, IconSendOff, IconTextCaption, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowBackUp, IconArrowLeft, IconArrowRight, IconCalendarCheck, IconCalendarEvent, IconCalendarX, IconCheck, IconChecklist, IconClipboardCheck, IconClipboardText, IconClipboardX, IconConfetti, IconCopy, IconExternalLink, IconFile, IconFileCheck, IconFileExport, IconFileX, IconLink, IconListCheck, IconListDetails, IconMail, IconMailbox, IconMailCheck, IconMailPlus, IconMailQuestion, IconMailX, IconMessageCheck, IconMessageSearch, IconMessageX, IconPlaylistX, IconProgressX, IconRefresh, IconRosetteDiscountCheck, IconRosetteDiscountCheckFilled, IconRosetteDiscountCheckOff, IconSend, IconSendOff, IconTextCaption, IconTrash, IconUpload, IconX } from "@tabler/icons-react";
 import { delCampaign, delTemplate, getCampaign, getMessage, getTemplate, populateCampaignMessageWithTemplate, postCampaign, postCampaignMessage, postTemplate, putCampaign, putCampaignInternal, putMessage, testCampaign } from "@/domain/data/activeCampaignActions";
-import { createAutomationLink, createCampaignLink, createGoogleDocLink, createTemplateLink } from "@/domain/parse/parseIds";
+import { createAutomationLink, createCampaignLink, createGoogleDocLink, createNotionUri, createTemplateLink } from "@/domain/parse/parseLinks";
 import { HadIssue, RemoteStep, StateContent } from "../components/remote";
 import moment from "moment-timezone";
-import { copy } from "@/domain/parse/parse";
+import { copy, openPopup } from "@/domain/parse/parse";
 import { AuthStatus } from "./emailPublisher";
 import { CopyOverlay } from "../components/clipboard";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
@@ -18,15 +18,20 @@ import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWER_IDS, MARKETI
 import { createEmailInSlack, deleteEmailInSlack } from "@/domain/data/slackActions";
 import { isEmailReviewed } from "@/domain/data/airtableActions";
 import { Values } from "@/domain/schema/valueCollection";
-
-const openPopup = (url: string) => {
-    if (!url || window === undefined) return;
-    return window.open(url, '_blank', 'noopener,noreferrer,popup');
-}
+import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
+import { saveScheduleOpen } from "@/domain/data/saveData";
 
 export function AutomationPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [hadIssue, setHadIssue] = useState(false);
+
+    const handleOpenSchedule = () => {
+        saveScheduleOpen();
+        setEditorState({
+            step: 0
+        })
+    }
 
     return (
         <HadIssue.Provider value={[hadIssue, setHadIssue]}>
@@ -34,17 +39,26 @@ export function AutomationPublisher() {
             <EmailViewCard />
             <AuthStatus />
             <CreateTemplate shouldAutoStart={false} />
-            <RenderTemplate shouldAutoStart={!hadIssue} />
+            <RenderTemplate shouldAutoStart={false} />
             <CreateReferenceDoc shouldAutoStart={!hadIssue} />
             <CreatePostmarkAction shouldAutoStart={false} />
             <CreateWaitAction shouldAutoStart={false} />
-            <TestTemplate shouldAutoStart={false} />
+            <TestTemplate shouldAutoStart={!hadIssue} />
+            <GetNotionPage shouldAutoStart={!hadIssue} />
+            <ReviewTestEmail shouldAutoStart={false} />
+
             <SendReview shouldAutoStart={editorState.email?.hasSentReview ?? false} />
             <MarkComplete shouldAutoStart={false} />
             {
                 editorState.email?.isSentOrScheduled ?
                     <Flex gap={10} direction="row" align="center" justify="end" w='100%' px='24' mt={6}>
-                        <Button variant="filled" color="green" h={40} rightSection={<IconArrowRight strokeWidth={2} />} >Return to Schedule</Button>
+                        <Button variant="filled" color="green" h={40} rightSection={<IconArrowRight strokeWidth={2} />} onClick={handleOpenSchedule} >Return to Schedule</Button>
+                    </Flex>
+                    : null
+            }{
+                editorState.email?.hasSentReview && !editorState.email?.isSentOrScheduled ?
+                    <Flex gap={10} direction="row" align="center" justify="end" w='100%' px='24' mt={6}>
+                        <Button variant="outline" color="blue" h={40} rightSection={<IconArrowRight strokeWidth={2} />} onClick={handleOpenSchedule} >Return to Schedule</Button>
                     </Flex>
                     : null
             }
@@ -196,18 +210,18 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             title: 'Review Template',
             subtitle: 'Review template, then save and exit.',
             rightContent:
-                <Anchor href={createTemplateLink(editorState.email?.templateId)} target="_blank">
-                    <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} onClick={() => openPopup(createTemplateLink(editorState.email?.templateId))} >Open Template</Button>
-                </Anchor>,
+                // <Anchor href={createTemplateLink(editorState.email?.templateId)} target="_blank">
+                <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} onClick={() => openPopup(createTemplateLink(editorState.email?.templateId))} >Open Template</Button>
+            // </Anchor>,
         },
         manual: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconFile size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Review Template',
             subtitle: 'Review template, then save and exit.',
             rightContent:
-                <Anchor href={createTemplateLink(editorState.email?.templateId)} target="_blank">
-                    <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} onClick={() => openPopup(createTemplateLink(editorState.email?.templateId))} >Open Template</Button>
-                </Anchor>,
+                // <Anchor href={createTemplateLink(editorState.email?.templateId)} target="_blank">
+                <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} onClick={() => openPopup(createTemplateLink(editorState.email?.templateId))} >Open Template</Button>
+            // </Anchor>,
         },
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconFile size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -231,7 +245,7 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             rightContent: null
         }
     };
-    //
+
     const isReady = () => {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0;
     }
@@ -240,9 +254,6 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0 &&
             editorState.email?.hasRendered !== undefined && editorState.email?.hasRendered === editorState.email?.templateId;
     }
-
-    useEffect(() => { }, [JSON.stringify(editorState.email?.templateId)]);
-
 
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
 
@@ -258,7 +269,7 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
-        openPopup(createTemplateLink(editorState.email?.templateId));
+        // openPopup(createTemplateLink(editorState.email?.templateId));
 
         await new Promise((resolve) => setTimeout(resolve, 10000));
 
@@ -307,7 +318,7 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Create Reference Document',
             subtitle: 'Create a Google Doc for content reference',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Create Doc</Button>
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Create Doc</Button>,
         },
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -316,15 +327,41 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             rightContent: <Loader variant="bars" color="blue.5" size={30} />
         },
         failed: {
-            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Couldn\'t Create Reference Doc',
-            subtitle: 'You may need to duplicate this Doc manually.',
+            icon: <ThemeIcon w={50} h={50} color="gray.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Find Reference Doc',
+            subtitle: 'Input a document manually.',
             rightContent:
                 <Anchor href={(editorState.email?.values?.resolveValue('Source Reference Doc', true))} target="_blank">
-                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
+                    <Button variant="light" color="gray.9" h={40} rightSection={<IconExternalLink />} >
                         Open Source
                     </Button>
-                </Anchor>
+                </Anchor>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
+                    <Text size="xs">Either input a source document to duplicate and retry, <br />or input a completed reference document below and continue.</Text>
+                    <TextInput description='Link to Source Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            const newValues = new Values(editorState.email?.values?.initialValues);
+                            newValues.setValue('Source Reference Doc', { value: e.target.value, source: 'user' });
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    values: newValues,
+                                }
+                            }));
+                        }} />
+                    <TextInput description='Link to Final Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    referenceDocURL: e.target.value,
+                                }
+                            }));
+                        }} />
+                </Flex>
         },
         succeeded: {
             icon: <ThemeIcon w={50} h={50} color="green.6"><IconClipboardCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -454,6 +491,11 @@ function CreatePostmarkAction({ shouldAutoStart }: { shouldAutoStart: boolean })
                     <Box px={10}>
                         {/* <Text size="xs" c="dimmed">Use Cmd + Shift + Option + Click to open the Automation in new window.</Text> */}
                         <Text size="xs">Make sure to create an exit preventer at the end of the automation.</Text>
+                        {
+                            editorState.email?.values?.resolveValue('Program', true) === 'Stand Out' ?
+                                <Text size="xs">For Stand Out, always clean up past email sends.</Text>
+                                : null
+                        }
                         <Text size="xs" c="dimmed">Allow pop-ups to open links in new window.</Text>
                         <Text size="xs" c="dimmed" >Remember to screenshot the final action for review.</Text>
                     </Box>
@@ -591,8 +633,8 @@ function CreateWaitAction({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                                     <CopyOverlay name="Month" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('MMMM')} />
                                 </Box>
                                 <Box className=" relative w-full mt-2">
-                                    <TextInput description='Date' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('DD')} onChange={() => { }} />
-                                    <CopyOverlay name="Date" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('DD')} />
+                                    <TextInput description='Date' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('D')} onChange={() => { }} />
+                                    <CopyOverlay name="Date" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('D')} />
                                 </Box>
                                 <Box className=" relative w-full mt-2">
                                     <TextInput description='Year' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('YYYY')} onChange={() => { }} />
@@ -634,8 +676,8 @@ function CreateWaitAction({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                                     <CopyOverlay name="Month" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('MMMM')} />
                                 </Box>
                                 <Box className=" relative w-full mt-2">
-                                    <TextInput description='Date' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('DD')} />
-                                    <CopyOverlay name="Date" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('DD')} />
+                                    <TextInput description='Date' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('D')} />
+                                    <CopyOverlay name="Date" value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('D')} />
                                 </Box>
                                 <Box className=" relative w-full mt-2">
                                     <TextInput description='Year' value={moment(editorState.email?.values?.resolveValue('Send Date', true)).format('YYYY')} />
@@ -926,6 +968,298 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     )
 }
 
+function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const [didCreate, setDidCreate] = useState(false);
+    const [updatingCard, setUpdatingCard] = useState(false);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: '',
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Link Notion Card',
+            subtitle: 'Finds or creates a Notion card for the email.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Find Card</Button>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: (updatingCard ? 'Adding Ref Doc to ' : (didCreate ? 'New' : 'Found')) + ' Notion Card',
+            subtitle: (didCreate ? 'Created' : 'Found') + ' a Notion card for the email....',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconPlaylistX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Couldn\'t Create Notion Card',
+            subtitle: 'Couldn\'t find or create a Notion card.',
+            rightContent:
+                <Anchor href={(NOTION_CALENDAR)} target="_blank">
+                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
+                        Open Notion
+                    </Button>
+                </Anchor>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
+                    <Text size="xs">Input the Link to the Notion Card to Continue</Text>
+                    <TextInput description='Link to Notion Card' value={editorState.email?.notionURL} w='100%' rightSection={<IconLink />}
+                        onChange={(e) => {
+                            setEditorState((prev) => ({
+                                ...prev,
+                                email: {
+                                    ...prev.email,
+                                    notionURL: e.target.value,
+                                }
+                            }));
+                        }} />
+
+                </Flex>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: (didCreate ? 'Created' : 'Found') + ' Notion Card',
+            subtitle: 'Notion card ' + (didCreate ? 'created' : 'found') + ' and linked.',
+            rightContent:
+                <Flex gap={10}>
+                    <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.notionURL ?? ''))}>
+                        <IconCopy />
+                    </ActionIcon>
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
+                            Open Card
+                        </Button>
+                    </Anchor>
+                </Flex>
+
+        }
+    };
+
+    const isReady = () => {
+        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
+            && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
+            && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
+            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+    }
+
+    const isDone = () => {
+        return editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        const email = editorState.email;
+        const values = email?.values;
+
+        if (!email || !values) return setMessage('No email found.');
+
+        const emailName = values.resolveValue("Email Name", true) ?? '';
+        const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
+        const referenceDocURL = email?.referenceDocURL ?? '';
+
+        setDidCreate(false);
+
+        let res = await findNotionCard(sendDate, emailName);
+        if (!res || !res.success) {
+            console.log("Error querying Notion", res);
+            setMessage(res?.error ?? 'Error searching Notion: ' + res?.error);
+        }
+
+        if (!res.url) {
+            setDidCreate(true);
+
+            const notionCard = await createNotionCard(sendDate, emailName);
+            if (notionCard && notionCard.success && notionCard.url && notionCard.id) {
+                res = notionCard;
+            } else {
+                return setMessage('Error creating Notion card: ' + notionCard?.error);
+            }
+        }
+
+        setUpdatingCard(true);
+
+        const notionId = res.id;
+        const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false);
+        if (!updateRes.success) {
+            console.log("Error updating Notion card", updateRes.error);
+            return setMessage('Error updating Notion card: ' + updateRes.error);
+        }
+        console.log("Updated Notion card", updateRes);
+
+        setUpdatingCard(false);
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                notionURL: res.url,
+                notionId: res.id,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryUndo = async () => {
+        const notionId = editorState.email?.notionId;
+        if (!notionId) return true;
+
+        console.log("Deleting notion card", notionId);
+        const res = await deleteNotionCard(notionId);
+        if (!res.success) {
+            console.log("Error deleting notion card", res.error);
+            return true;
+        }
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                notionURL: undefined,
+                notionId: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo
+        />
+    )
+}
+
+function ReviewTestEmail({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+
+    const stateContent: StateContent = {
+        waiting: {
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: '',
+        },
+        ready: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
+            expandedContent:
+                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' className="">
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} mt={5}>
+                            Open Checklist
+                        </Button>
+                    </Anchor>
+                </Flex>
+        },
+        manual: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Review Test Email',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
+            expandedContent:
+                <Flex gap={20} direction="row" align="start" justify="end" w='100%' className="">
+                    <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10} onClick={() => openPopup('https://mail.google.com/mail/u/0/#search/' + editorState.email?.values?.resolveValue('Test Email', true))}>
+                        Gmail
+                    </Button>
+                    <Anchor href={'message://'} target="_blank">
+                        <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10}>
+                            Apple Mail
+                        </Button>
+                    </Anchor>
+                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                        <Button variant="filled" color="blue.5" h={40} rightSection={<IconExternalLink />} mt={10}>
+                            Open Checklist
+                        </Button>
+                    </Anchor>
+                </Flex>
+        },
+        pending: {
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Reviewing Test Email',
+            subtitle: 'Reviewing email against Notion QA Checklist.',
+            rightContent: <Loader variant="bars" color="blue.5" size={30} />
+        },
+        failed: {
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconPlaylistX size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Error Marking Test Email Reviewed',
+            subtitle: 'Review email against Notion QA Checklist.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>
+        },
+        succeeded: {
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
+            title: 'Reviewed Test Email',
+            subtitle: 'Reviewed email against Notion QA Checklist.',
+            rightContent: null
+        }
+    };
+    //
+    const isReady = () => {
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
+            && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
+            && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
+            && editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0;
+    }
+
+    const isDone = () => {
+        return editorState.email?.isDevReviewed !== undefined && editorState.email?.isDevReviewed === true;
+    }
+
+    const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isDevReviewed: undefined,
+            }
+        }));
+
+        return true;
+    }
+
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                isDevReviewed: true,
+            }
+        }));
+
+        return true;
+    }
+
+    return (
+        <RemoteStep
+            shouldAutoStart={shouldAutoStart}
+            stateContent={stateContent}
+            isReady={isReady}
+            isDone={isDone}
+            tryAction={tryAction}
+            tryUndo={tryUndo}
+            allowsUndo={true}
+        />
+    )
+}
+
 function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
@@ -942,8 +1276,9 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
         const priorityFlag = PRIORITY_FLAGS[PRIORITY_ICONS.indexOf(priority ?? '')] ?? defaultPriority;
         const userId = MARKETING_REVIEWER_IDS[MARKETING_REVIEWERS.indexOf(reviewer)] ?? MARKETING_REVIEWER_IDS[0];
+        const notionUrl = editorState.email?.notionURL ?? '';
 
-        const res = await createEmailInSlack(undefined, editorState.email?.referenceDocURL ?? '', editorState.email?.values?.resolveValue('Subject', true), editorState.email?.values?.resolveValue('Email ID', true), userId, priorityFlag);
+        const res = await createEmailInSlack(notionUrl, editorState.email?.referenceDocURL ?? '', editorState.email?.values?.resolveValue('Subject', true), editorState.email?.values?.resolveValue('Email ID', true), userId, priorityFlag);
         console.log("Created email in slack", res);
 
         setHasPosted(true);
@@ -1069,7 +1404,7 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Waiting for Reviews',
-            subtitle: 'Sent review ticket to ' + reviewer + '.',
+            subtitle: 'Sent review ticket to ' + (reviewer ?? MARKETING_REVIEWER_IDS[0]) + '.',
             rightContent: <Loader variant="bars" color="blue.5" size={30} />,
             expandedContent:
                 <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
@@ -1114,6 +1449,7 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
             && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
             && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
+            && editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0
     }
 
     const isDone = () => {

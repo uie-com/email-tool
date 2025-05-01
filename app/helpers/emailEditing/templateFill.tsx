@@ -45,7 +45,7 @@ export function TemplateFill() {
                         <Button variant="light" color="green" className=" min-h-10 max-w-48 ml-auto" onClick={switchEditorMode}>Return to Variables</Button>
                         : null
                 }
-                <TemplateView setVariables={setVariables} className={" w-full h-full !min-w-[28rem]   "} />
+                <TemplateView setVariables={setVariables} className={" w-full h-full !min-w-[28rem]   "} showToggle />
             </Flex>
             {
                 editorMode === 'variables' ?

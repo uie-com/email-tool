@@ -14,3 +14,7 @@ export function createAutomationLink(id?: string) {
 export function createGoogleDocLink(id?: string) {
     return `https://docs.google.com/document/d/${id ?? ''}/edit`;
 }
+
+export function createNotionUri(url?: string) {
+    return url?.replaceAll('https://', 'notion://') ?? '';
+}

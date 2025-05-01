@@ -24,7 +24,7 @@ export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) 
     return (
         <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 overflow-hidden relative" gap={25}>
             <div className={" relative w-[9rem] h-[16rem]"}>
-                <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" />
+                <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" showToggle={false} />
             </div>
             <Flex align="start" justify="start" direction='column' className=" h-[16rem] relative " gap={0}>
                 <ScrollArea className="" >
@@ -109,7 +109,7 @@ export function EmailViewCard() {
             <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-full border-1 overflow-hidden relative" gap={25}>
 
                 <div className={" relative w-[9rem] h-[16rem]"}>
-                    <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" />
+                    <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" showToggle={false} />
                     <CopyOverlay name="HTML" value={editorState.email?.HTML} />
                 </div>
                 <Flex align="start" justify="start" direction='column' className=" h-[16rem] relative w-full px-1.5 " gap={0}>
@@ -124,16 +124,16 @@ export function EmailViewCard() {
                         </Flex>
 
                         <Box className=" relative w-full mt-3">
-                            <Title fw={600} className=" text-2xl ">{emailValues?.resolveValue('Email Name Shorthand', true)}</Title>
+                            <Title fw={600} className=" !text-3xl ">{emailValues?.resolveValue('Email Name Shorthand', true)}</Title>
                             <CopyOverlay name="Email Name Shorthand" />
                         </Box>
 
-                        <Box className=" relative w-full mt-3 ml-0.5">
+                        <Box className=" relative w-full mt-3 ml-[1px]">
                             <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Subject', true)}</Text>
                             <CopyOverlay name="Subject" />
                         </Box>
 
-                        <Box className=" relative w-full mt-4 ml-0.5">
+                        <Box className=" relative w-full mt-4  ml-[1px]">
                             <Text fw={500} className=" !text-md">{emailValues?.resolveValue('Preview', true)}</Text>
                             <CopyOverlay name="Preview" />
                         </Box>

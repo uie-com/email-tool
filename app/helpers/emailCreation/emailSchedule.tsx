@@ -100,32 +100,36 @@ export function EmailSchedule() {
     }, [savedStates]);
 
     const sessionsByEmail = useMemo(() => {
-        const sessionEmails = loadedSessions.current?.map((session) => {
+        if (!loadedSessions.current) return null;
+        let sessionEmails: { email?: Email, session?: Session, emailType?: string }[] = [];
+
+        sessionEmails = loadedSessions.current?.map((session) => {
             const emails = createEmailsFromSession(session);
-            Object.keys(emails).filter((key) => {
+            const filteredKeys = Object.keys(emails).filter((key) => {
                 const email = emails[key];
                 const sendDate = email.values?.resolveValue('Send Date', true);
                 const daysAway = sendDate ? moment(sendDate).dayOfYear() - moment().dayOfYear() : null;
                 if (daysAway !== null && daysAway < -1 * DAYS_IN_PAST) {
-                    delete emails[key];
+                    return false;
                 }
+                return true;
             });
-            return Object.keys(emails).map((key) => ({
+            return filteredKeys.map((key) => ({
                 email: emails[key],
                 emailType: key,
                 session: session,
             } as { email?: Email, session?: Session, emailType?: string }));
-        }).flat();
+        }).flat() ?? [];
+
         const allEmailsBySession = sessionEmails?.concat(manualEmails) ?? manualEmails ?? [];
 
         const sortedEmailsBySession = allEmailsBySession.sort((a, b) => {
-            const dateA = moment((a.email as Email)?.values?.resolveValue('Send Date'));
-            const dateB = moment((b.email as Email)?.values?.resolveValue('Send Date'));
+            const dateA = moment((a.email as Email)?.values?.resolveValue('Send Date', true));
+            const dateB = moment((b.email as Email)?.values?.resolveValue('Send Date', true));
             return dateA.diff(dateB);
         });
-
         return sortedEmailsBySession;
-    }, [loadedSessions.current, manualEmails]);
+    }, [loadedSessions.current, manualEmails, refresh]);
 
     return (
         <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] bg-gray-50 border-1" h={920} gap={20} pr={15}>
@@ -222,13 +226,65 @@ function SessionEntry({ session, filter, savedStates, email, emailType }: { sess
                     </Badge>
                 ) : ''}
 
-                <Text size="sm" fw={600} ml={'auto'} opacity={0.75} >
-                    {
-                        moment(session["Session Date"]).format('ddd, MMMM D • h:mma') +
-                        (session["Is Combined Workshop Session"] !== undefined ? (' • ' + moment(session["Coaching Date"]).format('h:mma')) : '') +
-                        (session["Is Combined Options Session"] !== undefined ? (' • ' + moment(session["Second Date"]).format('h:mma')) : '')
-                    }
-                </Text>
+                <Pill fw={700} bg={DAY_OF_WEEK_COLOR[moment(session["Session Date"])?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.2'} radius={5} mr={1} ml={'auto'} >
+                    <Flex pt={2.5} gap={6}>
+                        <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[moment(session["Session Date"])?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>
+                            {moment(session["Session Date"])?.format('ddd, MMM D')}
+                        </Text>
+                    </Flex>
+                </Pill>
+                {
+                    session["Is Combined Workshop Session"] === undefined
+                        && session["Is Combined Options Session"] === undefined ?
+                        <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                            <Flex pt={2.5} gap={6}>
+                                <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                    {moment(session["Session Date"])?.format('h:mma').replace(':00', '')}
+                                </Text>
+                            </Flex>
+                        </Pill>
+                        : null
+                }
+                {
+                    session["Is Combined Workshop Session"] !== undefined ?
+                        <>
+                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                                <Flex pt={2.5} gap={6}>
+                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                        {moment(session["Lecture Date"])?.format('h:mma').replace(':00', '')}
+                                    </Text>
+                                </Flex>
+                            </Pill>
+                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                                <Flex pt={2.5} gap={6}>
+                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                        {moment(session["Coaching Date"])?.format('h:mma').replace(':00', '')}
+                                    </Text>
+                                </Flex>
+                            </Pill>
+                        </>
+                        : null
+                }
+                {
+                    session["Is Combined Options Session"] !== undefined ?
+                        <>
+                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                                <Flex pt={2.5} gap={6}>
+                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                        {moment(session["First Date"])?.format('h:mma').replace(':00', '')}
+                                    </Text>
+                                </Flex>
+                            </Pill>
+                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                                <Flex pt={2.5} gap={6}>
+                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                        {moment(session["Second Date"])?.format('h:mma').replace(':00', '')}
+                                    </Text>
+                                </Flex>
+                            </Pill>
+                        </>
+                        : null
+                }
             </Flex>
             {Object.keys(filteredEmails).length > 0 ? <Flex direction='column' align='start' justify='start' className="w-full" gap={10} mb={10} pl={15}>
                 {Object.keys(filteredEmails).map((key, i) => {
@@ -272,7 +328,6 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
         return saveState;
     }, [email, savedStates]);
 
-    console.log('Email saves found: ', savedStates);
 
     const handleSubmit = async () => {
         if (!emailSave) {

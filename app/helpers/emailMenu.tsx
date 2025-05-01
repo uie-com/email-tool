@@ -1,9 +1,9 @@
 "use client";
 
-import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/parse/parseIds";
+import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/parse/parseLinks";
 import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
-import { SavedEmailsContext } from "@/domain/data/saveData";
-import { parseVariableName } from "@/domain/parse/parse";
+import { SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
+import { openPopup, parseVariableName } from "@/domain/parse/parse";
 import { EditorContext, EditorState, Email, getStatusFromEmail, GlobalSettingsContext, MessageContext, STATUS_COLORS } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
@@ -12,11 +12,6 @@ import { useClickOutside } from "@mantine/hooks";
 import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, IconBackspace, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCheck, IconCheckbox, IconDots, IconEdit, IconExternalLink, IconFile, IconFileX, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMailX, IconMessageQuestion, IconPlus, IconRoute, IconRouteOff, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
-
-const openPopup = (url: string) => {
-    if (!url || window === undefined) return;
-    return window.open(url, '_blank', 'noopener,noreferrer,popup');
-}
 
 export function EmailMenuWrapper() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -35,6 +30,7 @@ function ScheduleButton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
     const handleOpenSchedule = () => {
+        saveScheduleOpen();
         setEditorState({
             step: 0
         })
@@ -63,10 +59,6 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
     const [isLoaded, setIsLoaded] = useState(false);
 
     const [showFinished, setShowFinished] = useState(false);
-
-    if (selectedEmail !== editorState.email?.name) {
-        setSelectedEmail(editorState.email?.name);
-    }
 
     const sortedEmailStates = useMemo(() => {
         let sorted = emailStates.sort((a, b) => {
@@ -99,6 +91,8 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
             setEditorState({ step: 0 });
         }
     }
+
+    console.log('Sidebar is rendering with selected email:', selectedEmail);
 
     if (!isLoaded)
         return null;
@@ -140,14 +134,14 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
 }
 
 function NewEmailButton() {
-    const [_, setEditorState] = useContext(EditorContext);
+    const [_, setEditorState, isLoaded, setEditorStateDelayed] = useContext(EditorContext);
 
     return (
         <Button className=" !w-full h-12 mt-2.5" color="blue.5" size="md" leftSection={<IconPlus />} onClick={() => {
-            setEditorState({
+            setEditorStateDelayed({
                 step: 0,
                 email: new Email(new Values([])),
-            });
+            },);
         }
         }>
             New Email
@@ -157,7 +151,7 @@ function NewEmailButton() {
 }
 
 function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPinSidebar, setIsSidebarOpen }: { editorState: EditorState, selected: boolean, deleteEmail: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void }) {
-    const [_, setEditorState] = useContext(EditorContext);
+    const [_, setEditorState, isLoaded, setEditorStateDelayed] = useContext(EditorContext);
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
 
 
@@ -274,7 +268,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
             setNewlySelected(true);
             setSelectedEmail(emailId);
 
-            setEditorState({
+            setEditorStateDelayed({
                 ...editorState,
                 email: {
                     ...email,

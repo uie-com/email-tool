@@ -1,14 +1,12 @@
 "use client";
 
 import { EditorContext, EditorState } from "@/domain/schema";
-import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "@/domain/data/airtableActions";
-import { } from "@/domain/data/localStorage";
 import { SavedEmailsContext, recoverCurrentEditorState, saveStateLocally, saveLocally, loadLocally, saveRemotely, deleteState, loadRemotely } from "@/domain/data/saveData";
 import { Saves } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
 import { LOCAL_SAVE_INTERVAL, REMOTE_SAVE_INTERVAL } from "@/domain/settings/save";
-import { Box, Flex, Loader } from "@mantine/core";
+import { Box, Flex, Loader, Text } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
 
 
@@ -23,7 +21,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
     const remoteTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
-
+    const [saveStatus, setSaveStatus] = useState<'' | 'Loading...' | 'Loaded' | '...' | 'Saving...' | 'Saved'>('');
 
     // Load last editor state on load
     useEffect(() => {
@@ -38,8 +36,14 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         }
 
         const loadSaves = async () => {
+            setSaveStatus('Loading...');
             const saves = await loadRemotely();
             setSaves(saves);
+            setSaveStatus('Loaded');
+            setTimeout(() => {
+                setSaveStatus('');
+            }, 4000);
+
         }
 
         loadSaves();
@@ -49,6 +53,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
     // Save on any edit
     useEffect(() => {
         if (!editorState.email || editorState.step === 0) return;
+        setSaveStatus((p) => p === 'Loading...' ? 'Loading...' : '...');
 
         if (localTimeoutId.current)
             clearTimeout(localTimeoutId.current);
@@ -60,8 +65,15 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         if (remoteTimeoutId.current)
             clearTimeout(remoteTimeoutId.current);
         remoteTimeoutId.current = setTimeout(async () => {
+            setSaveStatus('Saving...');
+
             await saveRemotely();
             setSaves(loadLocally());
+            setSaveStatus('Saved');
+
+            // setTimeout(() => {
+            //     setSaveStatus('');
+            // }, 4000);
         }, REMOTE_SAVE_INTERVAL);
 
         if (lastEditorState.current?.email?.name !== editorState.email?.name) {
@@ -77,6 +89,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
 
     const handleEmailDelete = async (id?: string) => {
         if (!id) return false;
+        setSaveStatus('Saving...');
 
         console.log('[SAVE] Deleting email:', id, ' from state:', editorState);
         if (id === editorState.email?.airtableId || id === editorState.email?.name) {
@@ -88,12 +101,10 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         const done = await deleteState(id);
 
         setSaves(loadLocally());
+        setSaveStatus('Saved');
 
         return done;
     }
-
-    console.log('[SAVE] Saves:', saves);
-    console.log('[SAVE] Editor state:', editorState);
 
     return (
         <SavedEmailsContext.Provider value={[saves, handleEmailDelete]}>
@@ -105,7 +116,12 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
                         </Flex>
                     )
                     :
-                    children
+                    <>
+                        {children}
+                        <Text className="absolute bottom-5 right-5 p-0 block" c='dimmed' size="sm">
+                            {saveStatus}
+                        </Text>
+                    </>
             }
         </SavedEmailsContext.Provider>
     );
