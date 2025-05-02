@@ -13,7 +13,7 @@ export default function Home() {
     }, [editorState.step]);
 
     return (
-        <EditorContext.Provider value={[editorState, setEditorState]}>
+        <EditorContext.Provider value={[editorState, setEditorState, false, () => { }]}>
             <div className="font-[family-name:var(--font-dm-sans)]">
                 <main className="h-screen max-h-screen overflow-scroll">
                     {currentHelper}

@@ -29,7 +29,7 @@ export default function Page() {
     }
 
     const tryCreateCampaign = async () => {
-        const response = await createCampaign(email);
+        const response = await createCampaign(email, process.env.AC_TOKEN ?? '');
         setCampaignResponse(response);
     }
 
