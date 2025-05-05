@@ -136,7 +136,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         },
         'Is Before Break': {
             emails: {
-                'Before Break': {
+                'Homework': {
                     'Send Date': '{Session Date(Friday After)(2:00pm)}',
                 }
             }

@@ -39,7 +39,7 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
                 await templateValue?.populateRemote(values);
 
                 if (DEBUG) console.log('[TEMPLATE] Fetched template', templateValue);
-                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: fixTemplate(templateValue.source('remote').currentValue), template: templateObject.source('user', 'settings').currentValue } });
+                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } });
             } catch {
                 console.error('Error fetching template', templateValue);
                 setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: templateObject.source('user', 'settings').currentValue } });
@@ -55,7 +55,7 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
     }, [JSON.stringify(values.getValueObj('template'))]);
 
     useEffect(() => {
-        const templateHTML = editorState.email?.templateHTML;
+        const templateHTML = fixTemplate(editorState.email?.templateHTML, values);
         if (!templateHTML) return;
         if (templateHTML.includes('data-mantine-color-scheme')) {
             return setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: '' } });

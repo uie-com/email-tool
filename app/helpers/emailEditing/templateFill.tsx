@@ -7,6 +7,7 @@ import { TemplateEditor, TemplateView } from "../components/template";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
 import { VariableForm } from "../components/form";
+import { fixTemplate } from "@/domain/parse/parseTemplates";
 
 
 const DEBUG = true;
@@ -28,8 +29,8 @@ export function TemplateFill() {
     }
 
     const handleSubmit = async () => {
-        console.log('Approved template. Editor state: ', { ...editorState, step: 3, email: { ...editorState.email, HTML: new Variables(editorState.email?.templateHTML ?? '').resolveWith(editorState.email?.values ?? new Values()) } });
-        setEditorState((prev) => ({ ...prev, step: 3, email: { ...prev.email, HTML: new Variables(prev.email?.templateHTML ?? '').resolveWith(prev.email?.values ?? new Values()) } }));
+        console.log('Approved template. Editor state: ', { ...editorState, step: 3, email: { ...editorState.email, HTML: new Variables(fixTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } });
+        setEditorState((prev) => ({ ...prev, step: 3, email: { ...prev.email, HTML: new Variables(fixTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } }));
     }
 
     const switchEditorMode = () => {

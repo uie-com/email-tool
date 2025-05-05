@@ -39,7 +39,7 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Metrics': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
         },
         'Today\'s Session': {
             options: {
@@ -59,12 +59,28 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
         'Vessel': {
             options: {
                 'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Receipt': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+                'Price Type': ['Unemployed', 'Individual', 'Team'],
+            },
+        },
+        'Confirmation': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
             },
         }
     },
     'Research': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
         },
         'Today\'s Session': {
             options: {
@@ -84,12 +100,29 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
         'Vessel': {
             options: {
                 'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Receipt': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+
+                'Price Type': ['Unemployed', 'Individual', 'Team'],
+            },
+        },
+        'Confirmation': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
             },
         }
     },
     'Visions': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
         },
         'Today\'s Session': {
             options: {
@@ -110,11 +143,28 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             options: {
                 'Send To': ['LoA', 'BL'],
             },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Receipt': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+
+                'Price Type': ['Unemployed', 'Individual', 'Team'],
+            },
+        },
+        'Confirmation': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+            },
         }
     },
     'Win': {
         options: {
-            'Email Type': ['Homework', 'Vessel'],
+            'Email Type': ['Homework', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
         },
         'Homework': {
             options: {
@@ -126,6 +176,22 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
         'Vessel': {
             options: {
                 'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Receipt': {
+            options: {
+                'Cohort': generateMonthOptions(),
+                'Price Type': ['Unemployed', 'Individual', 'Team'],
+            },
+        },
+        'Confirmation': {
+            options: {
+                'Cohort': generateMonthOptions(),
             },
         }
     },

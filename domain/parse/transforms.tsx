@@ -6,6 +6,7 @@ import { Markdown } from "@react-email/markdown";
 import { renderToString } from 'react-dom/server';
 import { Values } from "../schema/valueCollection";
 import { Variables } from "../schema/variableCollection";
+import { parse } from "path";
 
 
 
@@ -122,6 +123,21 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                 value = repeatedText;
         }
         remainingTransforms = remainingTransforms.filter(transform => transform !== iterateTransform);
+
+
+        // Add to number ex. (+1)
+        const addToNumberTransform = remainingTransforms.find(transform =>
+            transform.includes('+')
+            && !Number.isNaN(parseInt(transform.substring(1, transform.length)))
+        );
+        if (addToNumberTransform) {
+            const numberToAdd = parseInt(addToNumberTransform.substring(1, addToNumberTransform.length));
+            const number = parseInt(value.split(' ')[value.split(' ').length - 1]);
+            if (!isNaN(number)) {
+                value = value.replaceAll(number.toString(), (number + numberToAdd).toString());
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== addToNumberTransform);
 
 
         // Remove :00 ex. (-:00)

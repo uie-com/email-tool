@@ -39,6 +39,9 @@ export type Session = {
     "Collab Notes Link"?: string;
     "Collab PDF Link"?: string;
 
+    // For TUXS
+    "Topic Type"?: string;
+
     "Session of Week"?: string;
     "Sessions in Week"?: string;
     "Sessions in Next Week"?: string;
@@ -97,10 +100,12 @@ export async function getSessionSchedule() {
             const splitTitle = record.fields["Calendar Title"].split("•");
             let topic = (splitTitle.length === 3) ? splitTitle[1].trim() : undefined;
             let sessionType: string | undefined = (splitTitle.length === 3) ? splitTitle[2].trim() : splitTitle[1].trim();
+            let topicType: string | undefined = undefined
 
             if (program === 'TUXS') {
                 [topic, sessionType] = [sessionType, topic];
                 sessionType = sessionType + ' Topic';
+                topicType = sessionType;
             }
 
             if (cohorts && cohorts.length >= 1)
@@ -112,6 +117,8 @@ export async function getSessionSchedule() {
                         Topic: topic,
                         "Session Type": sessionType,
                         Cohort: cohort,
+
+                        TopicType: topicType,
 
                         "Title": record.fields["Title"],
                         Description: record.fields["Description"],
@@ -132,6 +139,8 @@ export async function getSessionSchedule() {
                     Program: program,
                     Topic: topic,
                     "Session Type": sessionType,
+
+                    TopicType: topicType,
 
                     "Title": record.fields["Title"],
                     Description: record.fields["Description"],
@@ -207,7 +216,7 @@ function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
                 && session.Program === program
             ));
 
-            programSessions.forEach((session) => {
+            programSessions.forEach((session, i) => {
                 const weekName = session["Week"];
                 const sessionOfWeek = session["Session of Week"];
                 let prefix = weekName + ' ' + sessionOfWeek + ' ';
@@ -217,7 +226,18 @@ function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
                     if (key === "Cohort") return;
                     weeklySessionContext[prefix + key.replaceAll('Sessions', '').replaceAll('Session', '')] = session[key];
                 });
-            })
+
+                if (i === 0)
+                    Object.keys(session).forEach((key) => {
+                        weeklySessionContext['First Session' + key.replaceAll('Sessions', '').replaceAll('Session', '')] = session[key];
+                    });
+
+                if (i === programSessions.length - 1)
+                    Object.keys(session).forEach((key) => {
+                        weeklySessionContext['Last Session' + key.replaceAll('Sessions', '').replaceAll('Session', '')] = session[key];
+                    });
+
+            });
 
             sessions.forEach((session) => {
                 if (session.Cohort === cohort && session.Program === program) {

@@ -40,14 +40,21 @@ export function CampaignPublisher() {
             <CreateTemplate shouldAutoStart={false} />
             <CreateCampaign shouldAutoStart={!hadIssue} />
             <CreateReferenceDoc shouldAutoStart={!hadIssue} />
-            <GetNotionPage shouldAutoStart={false} />
+            <GetNotionPage shouldAutoStart={!hadIssue} />
             <TestTemplate shouldAutoStart={false} />
+            <ReviewTestEmail shouldAutoStart={false} />
             <SendReview shouldAutoStart={false} />
             <MarkComplete shouldAutoStart={false} />
             {
                 editorState.email?.isSentOrScheduled ?
                     <Flex gap={10} direction="row" align="center" justify="end" w='100%' px='24' mt={6}>
                         <Button variant="filled" color="green" h={40} rightSection={<IconArrowRight strokeWidth={2} />} onClick={handleOpenSchedule} >Return to Schedule</Button>
+                    </Flex>
+                    : null
+            }{
+                editorState.email?.hasSentReview && !editorState.email?.isSentOrScheduled ?
+                    <Flex gap={10} direction="row" align="center" justify="end" w='100%' px='24' mt={6}>
+                        <Button variant="outline" color="blue" h={40} rightSection={<IconArrowRight strokeWidth={2} />} onClick={handleOpenSchedule} >Return to Schedule</Button>
                     </Flex>
                     : null
             }
@@ -585,10 +592,7 @@ function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     };
 
     const isReady = () => {
-        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
-            && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
-            && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
-            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+        return editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
     }
 
     const isDone = () => {
@@ -968,6 +972,32 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         }
     }
 
+    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        return await new Promise(async (resolve) => {
+            const checkForReview = async () => {
+                if (!editorState.email?.hasSentReview)
+                    resolve(false);
+
+                const isReviewed = await isEmailReviewed(editorState.email?.values?.resolveValue('Email ID', true));
+                console.log('isReviewed', isReviewed);
+                if (isReviewed) {
+                    setEditorState((prev) => ({
+                        ...prev,
+                        email: {
+                            ...prev.email,
+                            isReviewed: true,
+                            hasSentReview: true,
+                        }
+                    }));
+                    resolve(true);
+                }
+            }
+
+            checkForReview();
+            setInterval(async () => checkForReview, 15000)
+        });
+    }
+
 
     const stateContent: StateContent = {
         waiting: {
@@ -987,7 +1017,8 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             title: 'Create Review Ticket',
             subtitle: 'Create email review item in Slack.',
             rightContent:
-                !hasPosted ? null :
+                !hasPosted ? <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending}>Already has Ticket</Button>
+                    :
                     <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
             ,
             expandedContent:
@@ -1037,7 +1068,9 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                         </Flex>
                         {
                             !hasPosted ?
-                                <Button variant="outline" color="blue.5" mt={10} h={40} onClick={handleCreateTicket} disabled={isPostPending} loading={isPostPending}>Create Ticket</Button>
+                                <Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={15}>
+                                    <Button variant="outline" color="blue.5" mt={10} h={40} onClick={handleCreateTicket} disabled={isPostPending} loading={isPostPending}>Create Ticket</Button>
+                                </Flex>
                                 :
                                 <Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={20}>
                                     <Anchor href={SLACK_LIST_URL} target="_blank">
@@ -1129,29 +1162,6 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         return true;
     }
 
-    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
-        return await new Promise((resolve) => {
-            setInterval(async () => {
-                if (!editorState.email?.hasSentReview)
-                    resolve(false);
-
-                const isReviewed = await isEmailReviewed(editorState.email?.values?.resolveValue('Email ID', true));
-                console.log('isReviewed', isReviewed);
-                if (isReviewed) {
-                    setEditorState((prev) => ({
-                        ...prev,
-                        email: {
-                            ...prev.email,
-                            isReviewed: true,
-                            hasSentReview: true,
-                        }
-                    }));
-                    resolve(true);
-                }
-            }, 15000)
-        });
-    }
-
     return (
         <RemoteStep
             shouldAutoStart={shouldAutoStart}
@@ -1215,11 +1225,7 @@ function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     };
     //
     const isReady = () => {
-        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
-            && editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
-            && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0
-            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0
-            && editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
+        return editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
     }
 
     const isDone = () => {
