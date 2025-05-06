@@ -1,4 +1,4 @@
-import { EditorContext, getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
+import { getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
 import { Badge, Box, Button, Flex, Group, Pill, ScrollArea, Text, Title } from "@mantine/core";
 import { JSX, use, useContext, useEffect, useMemo, useState } from "react";
 import { VariableInput } from "./form";
@@ -8,6 +8,7 @@ import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, 
 import moment from "moment-timezone";
 import { CopyOverlay } from "./clipboard";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
+import { EditorContext } from "@/domain/schema/context";
 
 
 export const EMAIL_EDIT_VALUES = ['Email Name', 'Send Date', 'Send Type', 'Subject', 'Preview'];

@@ -4,7 +4,8 @@
 "use client";
 
 import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
-import { ShowMessage, MessageContext, EditorContext, GlobalSettingsContext } from "@/domain/schema";
+import { ShowMessage } from "@/domain/schema";
+import { GlobalSettingsContext, MessageContext } from "@/domain/schema/context";
 import { Anchor, Box, Button, Flex, Loader, Modal, Text, TextInput, Title } from "@mantine/core";
 import { IconBrandGoogleDrive, IconExternalLink } from "@tabler/icons-react";
 import { ChangeEvent, JSX, useContext, useEffect, useState } from "react";

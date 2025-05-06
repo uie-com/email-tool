@@ -7,11 +7,12 @@ import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
 import { getSessionSchedule } from "@/domain/data/sessions";
-import { GlobalSettings, GlobalSettingsContext } from "@/domain/schema";
+import { GlobalSettings } from "@/domain/schema";
 import { findNotionCard } from "@/domain/data/notionActions";
 
 export default function ProgramSchema() {
     const [result, setResult] = useState<any>(null);
+    const [getResult, setGetResult] = useState<any>(null);
 
     const [settings, setSettings] = useState<GlobalSettings>({});
 
@@ -23,8 +24,13 @@ export default function ProgramSchema() {
     }, []);
 
     const handleTry = async () => {
-        const res = await findNotionCard('2025-04-30', 'Win Content');
+        const res = await findNotionCard('2025-05-06', 'Win First');
         setResult(res);
+    };
+
+    const tryGet = async () => {
+        const res = await findNotionCard('2025-05-06', 'Win First');
+        setGetResult(res);
     };
 
 

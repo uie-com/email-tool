@@ -3,10 +3,10 @@ import { shortenIdentifier } from "./parsePrograms";
 
 import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
-import { renderToString } from 'react-dom/server';
 import { Values } from "../schema/valueCollection";
 import { Variables } from "../schema/variableCollection";
 import { parse } from "path";
+const renderToString = require('react-dom/server').renderToStaticMarkup;
 
 
 
@@ -232,7 +232,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         );
         if (tuxsTransform) {
             value = value
-                .replaceAll('Jared Spool', 'I')
+                .replaceAll('Jared Spool', 'me')
                 .replaceAll(' he ', ' I ')
                 .replaceAll(' explores ', ' explore ')
                 .replaceAll(' his ', ' my ')
@@ -263,7 +263,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             'lineHeight': '24px',
             'fontSize': '16px',
         };
-        if (markdownTransform)
+        if (markdownTransform) {
             value = renderToString((<Markdown
                 markdownCustomStyles={{
                     p: {
@@ -284,6 +284,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             >{value as string}</Markdown >))
                 .replaceAll('<li', '<li><p')
                 .replaceAll('/li>', '/p></li>')
+        }
         remainingTransforms = remainingTransforms.filter(transform => transform !== markdownTransform);
     }
 

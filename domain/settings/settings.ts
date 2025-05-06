@@ -74,10 +74,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Workshop Materials Link': { value: '{Airtable Settings Query}&fields[]=Workshop Materials Link', fetch: 'airtable' },
         'Community Join Link': { value: '{Airtable Settings Query}&fields[]=Community Join Link', fetch: 'airtable' },
         'Calendar Instructions Link': { value: '{Airtable Settings Query}&fields[]=Calendar Instructions Link', fetch: 'airtable', hide },
-
-        'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
-
-
     },
     'Program:Stand Out': {
         settings: {
@@ -165,6 +161,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
             'Topic Table ID': { value: 'tbl9BuLUVFytMYJeq', hide },
 
+            'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
+
+
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/e39a43ca-d9bb-45e7-9d77-98b74c760132.png?id=39152004' },
             'Promo Banner': { value: '{CC Banner}' },
 
@@ -248,6 +247,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
             'Topic Table ID': { value: 'tbl60eXcCEU581e7v', hide },
 
+            'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
+
+
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/21e7b6b8-1f65-4979-b0ee-53a27fd4397d.png?id=39152005' },
             'Promo Banner': { value: '{CC Banner}' },
 
@@ -329,6 +331,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },
             'Topic Table ID': { value: 'tbldSCPFTa8UD58WI', hide },
 
+            'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
+
+
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/456eae66-13b7-4fd1-b959-8d5a9c35e40a.png?id=39152003' },
             'Promo Banner': { value: '{CC Banner}' },
 
@@ -409,6 +414,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002' },
             'Promo Banner': { value: '{Rocket Banner}' },
+
+            'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
+
 
             'Star Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/dec3bec9-f5a4-44f1-abdb-a256bd168d7a.png?id=39155998' },
             'Join Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/4756c528-8308-4f1b-a870-2a9c8dd8aa1b.png?id=39155999' },
@@ -578,6 +586,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'List ID': { value: '{LoA ID}', hide },
             'Segment ID': { value: '{LoA Segment ID}', hide },
+
+            'Link Text Decoration': { value: 'none' },
 
             'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz', hide },
             'Session Title': { value: '{Airtable Session Query}&fields[]=Title', fetch: 'airtable' },

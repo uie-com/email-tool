@@ -1,6 +1,7 @@
 "use client";
 
-import { GlobalSettings, GlobalSettingsContext } from "@/domain/schema";
+import { GlobalSettings } from "@/domain/schema";
+import { GlobalSettingsContext } from "@/domain/schema/context";
 import { useEffect, useState } from "react";
 
 export function GlobalSettingsProvider({ children }: { children: React.ReactNode }) {

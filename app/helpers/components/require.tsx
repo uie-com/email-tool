@@ -1,4 +1,4 @@
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 import { useDisclosure } from '@mantine/hooks';

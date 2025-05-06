@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContext, EditorState } from "@/domain/schema";
+import { EditorState } from "@/domain/schema";
 import { SavedEmailsContext, recoverCurrentEditorState, saveStateLocally, saveLocally, loadLocally, saveRemotely, deleteState, loadRemotely } from "@/domain/data/saveData";
 import { Saves } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
@@ -8,6 +8,7 @@ import { Variables } from "@/domain/schema/variableCollection";
 import { LOCAL_SAVE_INTERVAL, REMOTE_SAVE_INTERVAL } from "@/domain/settings/save";
 import { Box, Flex, Loader, Text } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
+import { EditorContext } from "@/domain/schema/context";
 
 
 const DEBUG = false;

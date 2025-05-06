@@ -1,4 +1,5 @@
-import { EditorContext, Email } from "@/domain/schema";
+import { Email } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { Accordion, Popover, ThemeIcon } from "@mantine/core";
 import { IconCodeCircle, IconCodeCircle2, IconHelpCircle } from "@tabler/icons-react";
 import { useContext, useMemo } from "react";

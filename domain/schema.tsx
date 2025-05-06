@@ -3,7 +3,6 @@ import moment from "moment-timezone";
 import { initializeSettings } from "./parse/parseSettings";
 import { Values } from "./schema/valueCollection";
 import { Variables } from "./schema/variableCollection";
-import { Dispatch, SetStateAction, createContext } from "react";
 import { IconBrandTelegram, IconCalendarCheck, IconEdit, IconFileText, IconMailCheck, IconMessageQuestion } from "@tabler/icons-react";
 import { MessageType } from "@/app/helpers/contexts/messageContext";
 
@@ -16,10 +15,8 @@ export type GlobalSettings = {
     googleRefreshTime?: number;
 
 }
-export const GlobalSettingsContext = createContext<[GlobalSettings, Dispatch<SetStateAction<GlobalSettings>>]>([{}, () => { }]);
 
 export type ShowMessage = (messageType: MessageType, options: any) => void;
-export const MessageContext = createContext<ShowMessage>(() => { });
 
 export type EditorState = {
     email?: Email;
@@ -27,7 +24,6 @@ export type EditorState = {
     step: number;
 }
 
-export const EditorContext = createContext<[EditorState, Dispatch<SetStateAction<EditorState>>, boolean, (state: EditorState) => void]>([{ step: 0 }, () => { }, true, () => { }]);
 
 export type Saves = EditorState[];
 

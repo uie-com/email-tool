@@ -7,7 +7,7 @@ import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
 import { getSessionSchedule } from "@/domain/data/sessions";
-import { GlobalSettings, GlobalSettingsContext } from "@/domain/schema";
+import { GlobalSettings } from "@/domain/schema";
 
 export default function ProgramSchema() {
     const [result, setResult] = useState<any>(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContext, GlobalSettingsContext } from "@/domain/schema";
+import { EditorContext, GlobalSettingsContext } from "@/domain/schema/context";
 import { ActionIcon, Anchor, Box, Button, Flex, Group, HoverCard, Image, Loader, Select, Stack, Text, Textarea, TextInput, ThemeIcon } from "@mantine/core";
 import { useContext, useEffect, useState, createContext, useMemo } from "react";
 import { RequireValues } from "../components/require";
@@ -15,7 +15,7 @@ import { AuthStatus } from "./emailPublisher";
 import { CopyOverlay } from "../components/clipboard";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
 import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWER_IDS, MARKETING_REVIEWERS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/domain/settings/slack";
-import { createEmailInSlack, deleteEmailInSlack } from "@/domain/data/slackActions";
+import { createEmailInSlack, deleteEmailInSlack, markEmailSentInSlack, markEmailUnsentInSlack } from "@/domain/data/slackActions";
 import { isEmailReviewed } from "@/domain/data/airtableActions";
 import { Values } from "@/domain/schema/valueCollection";
 import { NOTION_CALENDAR } from "@/domain/settings/notion";
@@ -271,7 +271,7 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
         // openPopup(createTemplateLink(editorState.email?.templateId));
 
-        await new Promise((resolve) => setTimeout(resolve, 10000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
         setEditorState((prev) => ({
             ...prev,
@@ -383,7 +383,7 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     };
 
     const isReady = () => {
-        return editorState.email?.hasRendered !== undefined && editorState.email?.hasRendered === editorState.email?.templateId;
+        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0;
     }
 
     const isDone = () => {
@@ -1046,8 +1046,7 @@ function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     };
 
     const isReady = () => {
-        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId
-            && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
+        return editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
             && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
             && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
     }
@@ -1071,7 +1070,10 @@ function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         let res = await findNotionCard(sendDate, emailName);
         if (!res || !res.success) {
             console.log("Error querying Notion", res);
-            setMessage(res?.error ?? 'Error searching Notion: ' + res?.error);
+            if (res.error)
+                setMessage(res?.error ?? 'Error searching Notion: ' + res?.error);
+            else
+                setMessage('No Notion card found. Created one called ' + emailName + ' for ' + sendDate);
         }
 
         if (!res.url) {
@@ -1176,14 +1178,10 @@ function ReviewTestEmail({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
             expandedContent:
                 <Flex gap={20} direction="row" align="start" justify="end" w='100%' className="">
-                    <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10} onClick={() => openPopup('https://mail.google.com/mail/u/0/#search/' + editorState.email?.values?.resolveValue('Test Email', true))}>
-                        Gmail
+
+                    <Button variant="light" color="blue.6" h={40} rightSection={<IconCopy />} mt={10} onClick={() => copy(editorState.email?.values?.resolveValue('Subject', true) ?? '')}>
+                        Copy Subject
                     </Button>
-                    <Anchor href={'message://'} target="_blank">
-                        <Button variant="light" color="blue.6" h={40} rightSection={<IconExternalLink />} mt={10}>
-                            Apple Mail
-                        </Button>
-                    </Anchor>
                     <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
                         <Button variant="filled" color="blue.5" h={40} rightSection={<IconExternalLink />} mt={10}>
                             Open Checklist
@@ -1560,7 +1558,6 @@ function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     //
     const isReady = () => {
         return editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
-
     }
 
     const isDone = () => {
@@ -1568,6 +1565,23 @@ function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
+        const slackRes = await markEmailUnsentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+
+        if (!slackRes.success) {
+            console.log("Error marking email unsent in slack", slackRes.error);
+            return setMessage('Error marking email unsent in slack: ' + slackRes.error);
+        }
+        console.log("Marked email unsent in slack", slackRes);
+
+        const notionRes = await updateNotionCard(editorState.email?.notionId ?? '', editorState.email?.referenceDocURL ?? '', false);
+        if (!notionRes.success) {
+            console.log("Error marking email unsent in notion", notionRes.error);
+            return setMessage('Error marking email unsent in notion: ' + notionRes.error);
+        }
+        console.log("Marked email unsent in notion", notionRes);
+
+
         setEditorState((prev) => ({
             ...prev,
             email: {
@@ -1580,6 +1594,21 @@ function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
+        const slackRes = await markEmailSentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+
+        if (!slackRes.success) {
+            console.log("Error marking email sent in slack", slackRes.error);
+            return setMessage('Error marking email sent in slack: ' + slackRes.error);
+        }
+        console.log("Marked email sent in slack", slackRes);
+
+        const notionRes = await updateNotionCard(editorState.email?.notionId ?? '', editorState.email?.referenceDocURL ?? '', true);
+        if (!notionRes.success) {
+            console.log("Error marking email sent in notion", notionRes.error);
+            return setMessage('Error marking email sent in notion: ' + notionRes.error);
+        }
+        console.log("Marked email sent in notion", notionRes);
 
         setEditorState((prev) => ({
             ...prev,

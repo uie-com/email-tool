@@ -1,5 +1,5 @@
 
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { Values } from "@/domain/schema/valueCollection";
 import { Flex, Box, Badge } from "@mantine/core";
 import { IconCopyCheckFilled, IconCopy } from "@tabler/icons-react";

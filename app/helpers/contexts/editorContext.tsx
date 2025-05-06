@@ -1,9 +1,10 @@
 "use client";
 
-import { EditorState, EditorContext } from "@/domain/schema";
+import { EditorState } from "@/domain/schema";
 import { useEffect, useState } from "react";
 import { EditorHelpIcon } from "../components/info";
 import { Loader } from "@mantine/core";
+import { EditorContext } from "@/domain/schema/context";
 
 export function EditorStateProvider({ children }: { children: React.ReactNode }) {
     const [editorState, setEditorState] = useState<EditorState>({ step: 0 });

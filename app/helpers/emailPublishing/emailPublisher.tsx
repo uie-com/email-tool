@@ -1,6 +1,5 @@
 "use client";
 
-import { EditorContext, getStatusFromEmail, GlobalSettingsContext, MessageContext, STATUS_COLORS, STATUS_MESSAGES } from "@/domain/schema";
 import { Box, Button, DefaultMantineColor, Flex, Group, Image, ThemeIcon } from "@mantine/core";
 import { ChangeEvent, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RequireValues } from "../components/require";
@@ -12,6 +11,8 @@ import { IconLink, IconMail, IconMailFilled } from "@tabler/icons-react";
 import { testActiveCampaignToken } from "@/domain/data/activeCampaignActions";
 import { useSearchParams } from "next/navigation";
 import { getToken, testGoogleToken } from "@/domain/data/googleActions";
+import { getStatusFromEmail, STATUS_COLORS, STATUS_MESSAGES } from "@/domain/schema";
+import { EditorContext, MessageContext, GlobalSettingsContext } from "@/domain/schema/context";
 
 
 export function EmailPublisher() {

@@ -1,6 +1,6 @@
 import { fixTemplate } from "@/domain/parse/parseTemplates";
 import { resolveTemplateRemotely } from "@/domain/parse/remoteParse";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { Value, Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";
 import { Anchor, Flex, Loader, Text, Textarea } from "@mantine/core";
@@ -10,7 +10,7 @@ import { IconFileUnknown } from "@tabler/icons-react";
 import React, { useState, useMemo, useEffect, useContext, useRef } from "react";
 
 const DEBUG = true;
-
+const RENDER_DELAY = 1000;
 export function TemplateView({ setVariables, className, showToggle }: { setVariables: (v: Variables) => void, className?: string, showToggle: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [filledTemplate, setFilledTemplate] = useState<string>('');
@@ -55,25 +55,25 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
     }, [JSON.stringify(values.getValueObj('template'))]);
 
     useEffect(() => {
-        const templateHTML = fixTemplate(editorState.email?.templateHTML, values);
-        if (!templateHTML) return;
-        if (templateHTML.includes('data-mantine-color-scheme')) {
-            return setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: '' } });
-        }
-        const variables = new Variables(templateHTML);
-        setVariables(variables);
-        if (DEBUG) console.log('[TEMPLATE] Filling template', templateHTML);
-        const filled = variables.resolveWith(values);
-        if (DEBUG) console.log('[TEMPLATE] Filled template', filled);
-
-        currentFilled.current = (filled);
-
         if (waitingTimeout.current)
             clearTimeout(waitingTimeout.current);
 
         waitingTimeout.current = setTimeout(() => {
-            if (DEBUG) console.log('[TEMPLATE] Waited for template to be filled');
             waitingTimeout.current = null;
+
+            const templateHTML = fixTemplate(editorState.email?.templateHTML, values);
+            if (!templateHTML) return;
+            if (templateHTML.includes('data-mantine-color-scheme')) {
+                return setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: '' } });
+            }
+            const variables = new Variables(templateHTML);
+            setVariables(variables);
+            if (DEBUG) console.log('[TEMPLATE] Filling template', templateHTML);
+            const filled = variables.resolveWith(values);
+            if (DEBUG) console.log('[TEMPLATE] Filled template', filled);
+
+            currentFilled.current = (filled);
+
             currentlyRenderedEmail.current = editorState.email?.template ?? '';
 
             if (currentFilled.current !== filledTemplate)
@@ -81,7 +81,7 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
             else
                 forceUpdate();
 
-        }, 1000);
+        }, RENDER_DELAY);
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
     if (DEBUG) console.log('[TEMPLATE] Rendering template view of ' + editorState.email?.template + ' with ' + ((currentlyRenderedEmail.current !== editorState.email?.template) ? 0 : filledTemplate.length) + ' characters');

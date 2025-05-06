@@ -2,8 +2,8 @@ import { loadStringFromLocalStorage, saveStringToLocalStorage } from "../data/lo
 import { Email } from "../schema";
 
 
-export const MARKETING_REVIEWERS = ['Jalia', 'JyMae'];
-export const MARKETING_REVIEWER_IDS = ['U085USDS22K', 'U08GK14AJ87'];
+export const MARKETING_REVIEWERS = ['Jalia', 'JyMae', 'Amy'];
+export const MARKETING_REVIEWER_IDS = ['U085USDS22K', 'U08GK14AJ87', 'U06AE2PB5QD'];
 export const TL_REVIEWERS = ['avelazquez@centercentre.com']
 export const FINAL_REVIEWER = ['jfishman@centercentre.com']
 

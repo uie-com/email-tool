@@ -9,7 +9,7 @@ import 'quill/dist/quill.snow.css';
 import { Flex, Textarea, TextInput } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
 import { IconLink, IconLinkOff } from "@tabler/icons-react";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { Variable, Variables } from "@/domain/schema/variableCollection";
 import { Values } from "@/domain/schema/valueCollection";
 import { VariableForm } from "../components/form";

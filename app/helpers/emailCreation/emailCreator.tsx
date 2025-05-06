@@ -1,6 +1,6 @@
 import { Button, Combobox, Flex, TextInput, useCombobox } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { createProgramForm, Form } from "@/domain/parse/parsePrograms";
 import { focusOnNext, focusOnPrev } from "@/domain/form";
 import { parseVariableName } from "@/domain/parse/parse";

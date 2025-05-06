@@ -20,6 +20,14 @@ export async function updateNotionCard(cardId: string, referenceDoc: string, isD
                     id: 'Checkbox',
                     checkbox: isDone,
                 },
+                'Email Task/Status:': {
+                    id: 'Email Task/Status:',
+                    status: {
+                        id: isDone ? '4438c2fc-a667-469e-b9f1-69227231716c' : ':IMV',
+                        name: isDone ? 'Sent/Scheduled' : 'Review Email FSOEs',
+                        color: isDone ? 'green' : 'pink',
+                    },
+                },
             },
         });
         console.log('Updated Notion card:', response);
@@ -58,7 +66,7 @@ export async function deleteNotionCard(cardId: string) {
 }
 
 
-export async function findNotionCard(date: string, emailName: string): Promise<{ success: boolean; url?: string; id?: string; error?: string | null }> {
+export async function findNotionCard(date: string, emailName: string): Promise<{ success: boolean; url?: string; id?: string; error?: string | null, card?: NotionCard | null }> {
     console.log('Finding Notion card with date:', date, 'and emailName:', emailName);
     const potentialCards = await getNotionCardByDate(date);
     if (!potentialCards.success) {
@@ -90,6 +98,7 @@ export async function findNotionCard(date: string, emailName: string): Promise<{
         success: true,
         url: card.url,
         id: card.id,
+        card: card,
         error: null,
     };
 }

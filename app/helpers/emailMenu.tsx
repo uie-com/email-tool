@@ -4,7 +4,6 @@ import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/
 import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
 import { SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
 import { openPopup, parseVariableName } from "@/domain/parse/parse";
-import { EditorContext, EditorState, Email, getStatusFromEmail, GlobalSettingsContext, MessageContext, STATUS_COLORS } from "@/domain/schema";
 import { Values } from "@/domain/schema/valueCollection";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
 import { ActionIcon, Anchor, Badge, Box, Button, Flex, Loader, Menu, ScrollArea, Switch, Text, ThemeIcon } from "@mantine/core";
@@ -12,6 +11,8 @@ import { useClickOutside } from "@mantine/hooks";
 import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, IconBackspace, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCheck, IconCheckbox, IconDots, IconEdit, IconExternalLink, IconFile, IconFileX, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMailX, IconMessageQuestion, IconPlus, IconRoute, IconRouteOff, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { getStatusFromEmail, Email, EditorState, STATUS_COLORS } from "@/domain/schema";
+import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/schema/context";
 
 export function EmailMenuWrapper() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);

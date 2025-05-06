@@ -83,13 +83,14 @@ export type Session = {
     [key: string]: any;
 }
 
+export const DAYS_IN_PAST = 3;
+export const EMAILS_IN_PAGE = 20;
 
-
-export async function getSessionSchedule() {
+export async function getSessionSchedule(refresh: boolean = false): Promise<Session[] | null> {
     let sessions: Session[] = [];
     try {
-        let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, false);
-        console.log('Initial sessions: ', JSON.stringify(await fetchRecords(undefined, undefined, false)));
+        let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, refresh);
+        // console.log('Initial sessions: ', records);
         moment.tz.setDefault("America/New_York");
 
 
@@ -173,7 +174,7 @@ export async function getSessionSchedule() {
 
 
 
-        console.log('Sessions: ', sessions);
+        // console.log('Sessions: ', sessions);
         return sessions;
 
     } catch (error) {

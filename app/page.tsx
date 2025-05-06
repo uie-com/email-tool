@@ -2,7 +2,6 @@
 
 import { ContentHelper } from "./helpers/emailEditing/contentFill";
 import { useState, createContext, useMemo, SetStateAction, Dispatch, useContext } from "react";
-import { EditorContext, EditorState, Email } from "@/domain/schema";
 import { EmailCreator } from "./helpers/emailCreation/emailCreator";
 import { ValueReview } from "./helpers/valueReview";
 import { TemplateFill } from "./helpers/emailEditing/templateFill";
@@ -14,6 +13,7 @@ import { EmailMenuWrapper } from "./helpers/emailMenu";
 import { GlobalSettingsProvider } from "./helpers/contexts/settingsContext";
 import { MessageContextProvider } from "./helpers/contexts/messageContext";
 import { EditorStateProvider } from "./helpers/contexts/editorContext";
+import { EditorContext } from "@/domain/schema/context";
 
 
 export default function Home() {

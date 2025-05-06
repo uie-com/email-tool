@@ -2,7 +2,7 @@
 
 import { Box, Button, Flex, ScrollArea, Text } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { TemplateEditor, TemplateView } from "../components/template";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables } from "@/domain/schema/variableCollection";

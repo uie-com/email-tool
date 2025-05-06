@@ -79,3 +79,63 @@ export async function deleteEmailInSlack(emailId: string) {
 
     return { success: true };
 }
+
+export async function markEmailSentInSlack(emailId: string) {
+    if (!emailId) {
+        console.error('Email ID is required to mark the email as sent in Slack');
+        return { success: false, error: 'Email ID is required' };
+    }
+
+    const webhookUrl = process.env.SLACK_SENT_WEBHOOK_URL;
+    if (!webhookUrl) {
+        throw new Error('Missing SLACK_SENT_WEBHOOK_URL in environment variables');
+    }
+
+    console.log('Marking email as sent in Slack with ID:', emailId);
+
+    const response = await fetch(webhookUrl, {
+        method: 'POST', // Slack webhooks typically use POST
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailId: emailId }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Slack mark sent webhook error:', errorText);
+        throw new Error('Failed to send mark sent request to Slack');
+    }
+
+    return { success: true };
+}
+
+export async function markEmailUnsentInSlack(emailId: string) {
+    if (!emailId) {
+        console.error('Email ID is required to mark the email as unsent in Slack');
+        return { success: false, error: 'Email ID is required' };
+    }
+
+    const webhookUrl = process.env.SLACK_UNDO_SENT_WEBHOOK_URL;
+    if (!webhookUrl) {
+        throw new Error('Missing SLACK_UNDO_SENT_WEBHOOK_URL in environment variables');
+    }
+
+    console.log('Marking email as unsent in Slack with ID:', emailId);
+
+    const response = await fetch(webhookUrl, {
+        method: 'POST', // Slack webhooks typically use POST
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailId: emailId }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Slack mark unsent webhook error:', errorText);
+        throw new Error('Failed to send mark unsent request to Slack');
+    }
+
+    return { success: true };
+}

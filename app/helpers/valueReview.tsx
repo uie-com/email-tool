@@ -2,7 +2,7 @@
 
 import { Anchor, Button, Flex, Loader, ScrollArea, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { EditorContext, MessageContext } from "@/domain/schema";
+import { EditorContext, MessageContext } from "@/domain/schema/context";
 import moment from "moment-timezone";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";

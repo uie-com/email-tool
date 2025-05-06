@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, createContext, useMemo } from "react";
-import { EditorContext, EditorState } from "@/domain/schema";
+import { EditorState } from "@/domain/schema";
 import { VariableTracker } from "../helpers/templateCreation/variableTracker";
+import { EditorContext } from "@/domain/schema/context";
 
 
 export default function Home() {

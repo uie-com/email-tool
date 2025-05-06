@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 import { EmailCreator } from "./emailCreator";
 import { Button, Flex, Modal, SegmentedControl, Title } from "@mantine/core";
 import { EmailSchedule } from "./emailSchedule";

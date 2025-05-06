@@ -6,7 +6,7 @@ import { EmailViewCard } from "../components/email";
 import { IconAlertCircle, IconArrowBackUp, IconExternalLink, IconFileExport, IconProgressX, IconRefresh, IconUpload, IconX } from "@tabler/icons-react";
 import { postTemplate } from "@/domain/data/activeCampaignActions";
 import { createTemplateLink } from "@/domain/parse/parseLinks";
-import { EditorContext } from "@/domain/schema";
+import { EditorContext } from "@/domain/schema/context";
 
 export const HadIssue = createContext<[boolean, React.Dispatch<React.SetStateAction<boolean>>]>([false, () => { }]);
 export type StepState = 'waiting' | 'ready' | 'manual' | 'pending' | 'failed' | 'succeeded';
