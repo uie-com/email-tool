@@ -252,6 +252,12 @@ export class Value<T> {
         return new Value(this.name, ...values);
     }
 
+    notSource(...source: string[]): Value<T | string> {
+        const values = this.initialValues.filter((part) => !source.includes(part.source ?? ''));
+        if (values.length === 0) return new Value(this.name);
+        return new Value(this.name, ...values);
+    }
+
     getCurrentValue(showOnlyEditable: boolean = false): T | string | undefined {
         if (this.initialValues.length === 0) return undefined;
         else if (this.initialValues.length === 1) return this.initialValues[0].value;
@@ -326,7 +332,7 @@ export class Value<T> {
 
     async populateRemote(values: Values) {
         try {
-            let resolvedValue = this.resolveWith(values), promise = undefined;
+            let resolvedValue = this.notSource('remote').resolveWith(values), promise = undefined;
             if (this.originalRemoteType && typeof resolvedValue === 'string' && this.currentSource !== 'remote' && (this.currentValue as string).length > 0)
                 promise = await this._fetchRemoteValue(resolvedValue);
             if (promise)

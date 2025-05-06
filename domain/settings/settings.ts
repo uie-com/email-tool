@@ -31,7 +31,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Airtable Session Query': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"', hide },
         'Settings Table ID': { value: 'tblDFifdIAEJzKFLS', hide },
         'Airtable Settings Query': { value: '{Airtable URL}/{Settings Table ID}?filterByFormula=SEARCH("{Program}", %7BProgram%7D)', hide },
-        'Airtable Topic Query': { value: '{Airtable URL}/{Topic Table ID}?filterByFormula=SEARCH("{Topic}", %7BName%7D)', hide },
+
 
         'From Name': { value: 'Jared Spool', hide },
         'From Email': { value: 'jared.m.spool@centercentre.com', hide },
@@ -161,6 +161,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
             'Topic Table ID': { value: 'tbl9BuLUVFytMYJeq', hide },
 
+            'Airtable Topic Query': { value: '{Airtable URL}/{Topic Table ID}?filterByFormula=SEARCH("{Topic}", %7BName%7D)', hide },
             'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
 
 
@@ -247,6 +248,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
             'Topic Table ID': { value: 'tbl60eXcCEU581e7v', hide },
 
+            'Airtable Topic Query': { value: '{Airtable URL}/{Topic Table ID}?filterByFormula=SEARCH("{Topic}", %7BName%7D)', hide },
             'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
 
 
@@ -331,6 +333,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },
             'Topic Table ID': { value: 'tbldSCPFTa8UD58WI', hide },
 
+            'Airtable Topic Query': { value: '{Airtable URL}/{Topic Table ID}?filterByFormula=SEARCH("{Topic}", %7BName%7D)', hide },
             'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
 
 
@@ -414,9 +417,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002' },
             'Promo Banner': { value: '{Rocket Banner}' },
-
-            'Description': { value: '{Airtable Topic Query}&fields[]=Description', fetch: 'airtable' },
-
 
             'Star Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/dec3bec9-f5a4-44f1-abdb-a256bd168d7a.png?id=39155998' },
             'Join Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/4756c528-8308-4f1b-a870-2a9c8dd8aa1b.png?id=39155999' },
@@ -738,7 +738,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Program:Win': {
             settings: {
-                'Button': { value: `<td align="left" class="esd-block-button es-p3l es-p3b"> <!--[if mso]><a href="https://winstakeholders.com/" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="https://winstakeholders.com/" style="height:61px; v-text-anchor:middle; width:268px" arcsize="25%" stroke="f"  fillcolor="#8c9b28"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:arial, "helvetica neue", helvetica, sans-serif; font-size:18px; font-weight:700; line-height:18px;  mso-text-raise:1px'>WinStakeholders.com</center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border es-button-border-7035" style="background:#8c9b28;border-color:#8c9b28;border-radius:15px;border-width:0"> <a href="https://winstakeholders.com/" target="_blank" class="es-button es-button-3634" style="font-weight:bold;background:#8c9b28;mso-border-alt:10px solid #8c9b28;border-radius:15px;padding:20px 40px;color:white !important"> WinStakeholders.com </a> </span> <!--<![endif]--> </td>` },
+                'Button': { value: `<!--[if mso]><a href="https://winstakeholders.com/" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="https://winstakeholders.com/" style="height:61px; v-text-anchor:middle; width:268px" arcsize="25%" stroke="f"  fillcolor="#8c9b28"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:arial, "helvetica neue", helvetica, sans-serif; font-size:18px; font-weight:700; line-height:18px;  mso-text-raise:1px; '>WinStakeholders.com</center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border es-button-border-7035" style="background:#8c9b28;border-color:#8c9b28;border-radius:15px;border-width:0"> <a href="https://winstakeholders.com/" target="_blank" class="es-button es-button-3634" style="font-weight:bold;background:#8c9b28;mso-border-alt:10px solid #8c9b28;border-radius:15px;padding:20px 40px;color:white !important;text-decoration:none !important"> WinStakeholders.com </a> </span> <!--<![endif]-->` },
             }
         },
     },

@@ -14,6 +14,8 @@ export type GlobalSettings = {
     googleRefreshToken?: string;
     googleRefreshTime?: number;
 
+    colorScheme?: 'light' | 'dark';
+
 }
 
 export type ShowMessage = (messageType: MessageType, options: any) => void;

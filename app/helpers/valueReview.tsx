@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor, Button, Flex, Loader, ScrollArea, Table, TableData } from "@mantine/core";
+import { Anchor, Box, Button, Flex, Image, Loader, ScrollArea, Table, TableData } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext, MessageContext } from "@/domain/schema/context";
 import moment from "moment-timezone";
@@ -10,8 +10,12 @@ import { Variable, Variables } from "@/domain/schema/variableCollection";
 import { VariableInput } from "./components/form";
 import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
 import { EMAIL_EDIT_VALUES, EmailEditCard } from "./components/email";
-import { EditorState } from "@/domain/schema";
+import { EditorState, Email } from "@/domain/schema";
 import { SavedEmailsContext } from "@/domain/data/saveData";
+import { RemoteSource } from "./components/remote";
+import { openPopup } from "@/domain/parse/parse";
+import { AIRTABLE_LINK } from "@/domain/parse/parseLinks";
+import { getEmailFromSchedule } from "@/domain/data/scheduleActions";
 
 
 export function ValueReview() {
@@ -21,6 +25,11 @@ export function ValueReview() {
     const template = editorState.email?.templateHTML;
 
     const [emailStates, deleteEmail] = useContext(SavedEmailsContext);
+
+    const [refresh, setRefresh] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+
+
     const showMessage = useContext(MessageContext);
 
 
@@ -66,8 +75,11 @@ export function ValueReview() {
             setEditorState((prev) => ({ ...prev, email: { ...prev.email, values: values } }));
             setHasResolvedRemote(true);
         }
-        resolvePromises();
-    }, []);
+        if (refresh)
+            resolvePromises();
+
+        setRefresh(false);
+    }, [refresh]);
 
 
     const templateId = useMemo(() => editorState.email?.templateId, [editorState.email]);
@@ -94,7 +106,22 @@ export function ValueReview() {
                 campaignId: campaignId,
                 deleteEmail: () => handleReset(true),
             });
-        setEditorState({ step: 1, email: editorState.originalEmail });
+
+        if (isLoading) return;
+        setIsLoading(true);
+
+        const emailId = editorState.email?.name;
+        const newEmailStr = await getEmailFromSchedule(emailId);
+        let newEmail = JSON.parse(newEmailStr ?? '{}');
+        if (newEmail) {
+            newEmail = new Email(newEmail.values, newEmail);
+            newEmail.values.setValue('Last Populated', { value: new Date(), source: 'remote' });
+
+            console.log('Refreshing email: ', newEmail, ' from state: ', editorState);
+            setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail } });
+            setIsLoading(false);
+            setRefresh(true);
+        }
     }
 
     // const handleBack = () => {
@@ -114,16 +141,38 @@ export function ValueReview() {
             <ScrollArea type="never" className="w-full" >
                 <Flex align="center" justify="center" direction='column' className="py-20 px-5" gap={20} style={{ position: 'relative' }}>
                     <EmailEditCard />
-                    <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1" gap={20}>
-                        <Table data={tableData} />
-                        <Flex className="w-full" align="center" justify="space-between" gap={10}>
-                            <Button variant="outline" color="red.7" c='red.7' onClick={() => handleDelete()}>Delete</Button>
-                            <Button variant="light" color="gray" onClick={() => handleReset()}>Reset</Button>
-                            <Button variant="filled" className=" ml-auto" onClick={handleSubmit} disabled={!hasResolvedRemote || !template}>{template ? 'Approve Values' : 'Needs Working Template'}</Button>
-                        </Flex>
+                    <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 relative" mt={28} gap={20}>
+                        <Box className=" absolute " top={-35} left={-5} ml={4} >
+                            <RemoteSource
+                                name="Airtable"
+                                icon={<Flex className="" justify='center' align='center' w={16} h={16} mr={-2} ml={-4}><Image src='./interface/airtable.png' h={12} w={12} /></Flex>}
+                                edit={() => openPopup(AIRTABLE_LINK)}
+                                refresh={() => handleReset()}
+                                date={values?.resolveValue('Last Populated', true)}
+                                className="!border-gray-200 !bg-gray-0 border-1 "
+                                refreshMessage="Reset"
+                                isLoading={isLoading}
+                            />
+                        </Box>
+                        {
+
+                            isLoading ?
+                                <Flex className="w-full" align="center" justify="center" gap={10} mih={360}>
+                                    <Loader color="blue" type="bars" />
+                                </Flex>
+                                :
+                                <>
+                                    <Table data={tableData} />
+                                    <Flex className="w-full" align="center" justify="space-between" gap={10}>
+                                        <Button variant="outline" color="red.7" c='red.7' onClick={() => handleDelete()}>Delete</Button>
+                                        <Button variant="light" color="gray" onClick={() => handleReset()}>Reset</Button>
+                                        <Button variant="filled" className=" ml-auto" onClick={handleSubmit} disabled={!hasResolvedRemote || !template}>{template ? 'Approve Values' : 'Needs Working Template'}</Button>
+                                    </Flex>
+                                </>
+                        }
                     </Flex>
                 </Flex>
-            </ScrollArea>
-        </Flex>
+            </ScrollArea >
+        </Flex >
     );
 }

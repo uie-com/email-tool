@@ -89,7 +89,7 @@ export const EMAILS_IN_PAGE = 20;
 export async function getSessionSchedule(refresh: boolean = false): Promise<Session[] | null> {
     let sessions: Session[] = [];
     try {
-        let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, refresh);
+        let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, !refresh);
         // console.log('Initial sessions: ', records);
         moment.tz.setDefault("America/New_York");
 

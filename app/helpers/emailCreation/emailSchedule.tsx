@@ -1,11 +1,11 @@
 import { EditorState, getStatusFromEmail, Saves, STATUS_COLORS } from "@/domain/schema";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, getSessionSchedule, Session } from "@/domain/data/sessions";
-import { parseVariableName } from "@/domain/parse/parse";
+import { openPopup, parseVariableName } from "@/domain/parse/parse";
 import { shortenIdentifier } from "@/domain/parse/parsePrograms";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { Email } from "@/domain/schema";
 import { DAY_OF_WEEK_COLOR, HOURS_TO_COLOR, PROGRAM_COLORS } from "@/domain/settings/interface";
-import { ActionIcon, Badge, Button, Center, em, Flex, Loader, Modal, Pill, ScrollArea, TagsInput, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Center, em, Flex, Image, Loader, Modal, Pill, ScrollArea, TagsInput, Text, TextInput, Title } from "@mantine/core";
 import { IconArrowRight, IconCalendar, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconEdit, IconMail, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { ForwardedRef, JSX, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +16,8 @@ import { on } from "events";
 import { EmailCreator } from "./emailCreator";
 import { getEmailSchedule } from "@/domain/data/scheduleActions";
 import { EditorContext } from "@/domain/schema/context";
+import { RemoteSource } from "../components/remote";
+import { AIRTABLE_LINK } from "@/domain/parse/parseLinks";
 
 export function EmailSchedule() {
     const [loadedEmails, setLoadedEmails] = useState<{ email?: Email | undefined; session?: Session | undefined; emailType?: string | undefined; }[] | null>(null);
@@ -24,11 +26,12 @@ export function EmailSchedule() {
     const isLoading = useRef(false);
 
     const [sessionOffset, setSessionOffset] = useState<number>(0);
-    const [refresh, setRefresh] = useState(false);
+    const [refresh, setRefresh] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState<string[]>([]);
 
     const [savedStates, setSavedStates] = useState<Saves>([]);
+    const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
     const ref = useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +58,9 @@ export function EmailSchedule() {
             isLoading.current = false;
             console.log('Loaded sessions remotely', loadedEmails);
         });
+
+        if (sessionOffset === 0)
+            setLastRefreshed(moment().toDate());
 
         setSavedStates(loadLocally());
         setRefresh(false);
@@ -139,7 +145,18 @@ export function EmailSchedule() {
     const className = ' !bg-gray-300';
 
     return (
-        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem]  !bg-gray-50 border-1" h={920} gap={20} pr={15}>
+        <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem]  !bg-gray-50 border-1 relative" h={920} gap={20} pr={15}>
+            <Box className=" absolute " top={-35} left={-5} ml={4} >
+                <RemoteSource
+                    name="Airtable"
+                    icon={<Flex className="" justify='center' align='center' w={16} h={16} mr={-2} ml={-4}><Image src='./interface/airtable.png' h={12} w={12} /></Flex>}
+                    edit={() => openPopup(AIRTABLE_LINK)}
+                    refresh={handleRefresh}
+                    date={lastRefreshed}
+                    className="!border-gray-200 !bg-gray-50 border-1 "
+                />
+            </Box>
+
             <Flex direction='row' align='center' justify='start' w="100%" gap={15}>
                 <TagsInput variant="unstyled" placeholder="Filter" bg='gray.1' pl="5" pr="sm" className=" rounded-md overflow-hidden" leftSection={<IconSearch stroke={2} opacity={0.6} className=" mr-2" />} onChange={handleSearch} maw={256} classNames={{ pill: ' !bg-gray-300' }} tt='uppercase' />
                 <ActionIcon variant="light" color='gray.5' w={36} h={36} onClick={handleRefresh}><IconRefresh size={24} /></ActionIcon>
@@ -166,7 +183,7 @@ export function EmailSchedule() {
                 </Flex>
                 {sessionsByEmail && sessionsByEmail.length > 0 && sessionsByEmail.length < totalEmails.current ? <Loader className=" my-6 ml-auto mr-auto" color="blue" size="md" type="bars" /> : null}
             </ScrollArea>
-        </Flex>
+        </Flex >
     )
 }
 
@@ -317,6 +334,7 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
     const handleSubmit = async () => {
         if (!emailSave) {
             console.log('Starting an email as ', email);
+            email.values?.setValue('Last Populated', { value: new Date(), source: 'remote' });
             setEditorState({ step: 1, email: email });
         } else {
             setEditorState(emailSave)

@@ -5,8 +5,9 @@ import { RequireValues } from "../components/require";
 import { EmailViewCard } from "../components/email";
 import { IconAlertCircle, IconArrowBackUp, IconExternalLink, IconFileExport, IconProgressX, IconRefresh, IconUpload, IconX } from "@tabler/icons-react";
 import { postTemplate } from "@/domain/data/activeCampaignActions";
-import { createTemplateLink } from "@/domain/parse/parseLinks";
+import { AIRTABLE_LINK, createTemplateLink } from "@/domain/parse/parseLinks";
 import { EditorContext } from "@/domain/schema/context";
+import moment from "moment-timezone";
 
 export const HadIssue = createContext<[boolean, React.Dispatch<React.SetStateAction<boolean>>]>([false, () => { }]);
 export type StepState = 'waiting' | 'ready' | 'manual' | 'pending' | 'failed' | 'succeeded';
@@ -20,7 +21,7 @@ export type StateContent = {
     }
 };
 
-export function RemoteStatus({ name, icon, onClick, status }: { name: string, icon: React.ReactNode, onClick: () => void, status: string }) {
+export function RemoteStatus({ name, icon, onClick, status, className }: { name: string, icon: React.ReactNode, onClick: () => void, status: string, className?: string }) {
     const color = status !== 'loading' ? status === 'success' ? 'green' : 'red' : 'yellow';
     return (
         <Badge color="white" onClick={onClick} className={" !cursor-pointer mr-1 !border-gray-200 border-1 " + (status === 'success' ? 'hover:!bg-green-100' : 'hover:!bg-orange-100')} leftSection={icon} rightSection={
@@ -40,6 +41,43 @@ export function RemoteStatus({ name, icon, onClick, status }: { name: string, ic
             </Box>
 
         </Badge>
+    );
+}
+
+export function RemoteSource({ name, icon, refresh, edit, date, className, refreshMessage = 'Refresh', isLoading }: { name: string, icon: React.ReactNode, refresh: () => void, edit: () => void, date?: Date | null, className?: string, refreshMessage?: string, isLoading?: boolean }) {
+    const [hover, setHover] = useState(false);
+    const agoMessage = date ? moment(date).fromNow() : '';
+    return (
+        <Badge color="white" className={" !cursor-pointer mr-1 !h-6 " + className} leftSection={icon}
+            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+        >
+            <Flex direction='row' align="center" justify="start" gap={5} pl={2} className="relative">
+                {
+                    isLoading ?
+                        <Loader w={28} h={16} size='xs' type="dots" color="gray.6"></Loader>
+                        :
+                        hover ?
+                            (<>
+                                <Text fw={500} tt='none' size="xs" c={'gray.6'} className="hover:!text-black" onClick={edit}>{('Open ') + name}</Text>
+                                <ThemeIcon variant="light" c="gray.6" h={16} w={14} bg='none' ml={-5} >
+                                    <IconExternalLink size={16} strokeWidth={2} />
+                                </ThemeIcon>
+
+                                <Text fw={500} tt='none' size="xs" c={'gray.6'} onClick={refresh} ml={10} className=" hover:!text-black">{refreshMessage}</Text>
+                                <ThemeIcon variant="light" c="gray.6" h={16} w={14} bg='none' ml={-5} mr={-5} >
+                                    <IconRefresh size={16} strokeWidth={2} />
+                                </ThemeIcon>
+
+                            </>)
+                            :
+                            (<>
+                                <Text fw={500} tt='none' size="xs" c={'gray.8'}>{(date ? '' : 'Loading from ') + name + (date ? '' : '...')}</Text>
+                                <Text size="xs" c={'gray.6'} tt='none'>{agoMessage}</Text>
+                            </>)
+                }
+            </Flex>
+        </Badge>
+
     );
 }
 

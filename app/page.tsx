@@ -25,25 +25,23 @@ export default function Home() {
   }, [editorState.step]);
 
   return (
-    <GlobalSettingsProvider>
-      <SaveContextProvider>
-        <MessageContextProvider>
-          <div className="font-[family-name:var(--font-dm-sans)]">
-            <main className="h-screen max-h-screen">
-              <EmailMenuWrapper />
-              <ScrollArea className=" h-full max-h-screen w-full" type='hover'>
+    <SaveContextProvider>
+      <MessageContextProvider>
+        <div className="font-[family-name:var(--font-dm-sans)]">
+          <main className="h-screen max-h-screen">
+            <EmailMenuWrapper />
+            <ScrollArea className=" h-full max-h-screen w-full" type='hover'>
 
-                <Flex pos="absolute" top={0} left={0} right={0} bottom={0} bg='white' justify="center" align="center" className=" transition-opacity z-10 pointer-events-none" opacity={isLoading ? 0.99 : 0} >
-                  <Loader size="xl" type='bars' />
-                </Flex>
+              <Flex pos="absolute" top={0} left={0} right={0} bottom={0} bg='white' justify="center" align="center" className=" transition-opacity z-10 pointer-events-none" opacity={isLoading ? 0.99 : 0} >
+                <Loader size="xl" type='bars' />
+              </Flex>
 
-                {currentHelper}
-              </ScrollArea>
-            </main>
-          </div>
-        </MessageContextProvider>
-      </SaveContextProvider>
-    </GlobalSettingsProvider >
+              {currentHelper}
+            </ScrollArea>
+          </main>
+        </div>
+      </MessageContextProvider>
+    </SaveContextProvider>
 
   );
 }

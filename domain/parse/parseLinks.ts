@@ -18,3 +18,5 @@ export function createGoogleDocLink(id?: string) {
 export function createNotionUri(url?: string) {
     return url?.replaceAll('https://', 'notion://') ?? '';
 }
+
+export const AIRTABLE_LINK = 'https://airtable.com/appHcZTzlfXAJpL7I/tblnfXd0SIViOkj6z';

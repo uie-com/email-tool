@@ -7,7 +7,34 @@ import { Email } from "../schema";
 
 
 export async function getEmailSchedule(offset: number, queries: string[], refresh: boolean = false) {
+    const sortedEmails = await getAllEmails(refresh);
 
+    const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
+    const cutoffIndex = sortedEmails.findIndex((email) => {
+        const sendDate = email.email?.values?.resolveValue('Send Date', true);
+        return sendDate ? moment(sendDate).isBefore(cutoffDate) : false;
+    });
+    const upcomingEmails = cutoffIndex !== -1 ? sortedEmails.slice(0, cutoffIndex) : sortedEmails;
+
+    const filteredEmails = upcomingEmails.filter((email) => {
+        if (queries.length === 0) return true;
+        return queries.filter((query) => {
+            return !(
+                JSON.stringify(email).toLowerCase()?.includes(query.toLowerCase())
+            );
+        }).length === 0;
+    });
+
+    const paginatedEmails = filteredEmails.slice(offset, offset + EMAILS_IN_PAGE);
+    const totalEmails = filteredEmails.length;
+
+    return {
+        emails: JSON.stringify(paginatedEmails),
+        totalEmails: totalEmails,
+    }
+}
+
+async function getAllEmails(refresh: boolean = false) {
     const sessions = await getSessionSchedule(refresh);
     const emails = sessions?.map((session) => {
         const emails = createEmailsFromSession(session);
@@ -37,27 +64,17 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
         return 0;
     });
 
-    const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
-    const cutoffIndex = sortedEmails.findIndex((email) => {
-        const sendDate = email.email?.values?.resolveValue('Send Date', true);
-        return sendDate ? moment(sendDate).isBefore(cutoffDate) : false;
-    });
-    const upcomingEmails = cutoffIndex !== -1 ? sortedEmails.slice(0, cutoffIndex) : sortedEmails;
+    return sortedEmails;
+}
 
-    const filteredEmails = upcomingEmails.filter((email) => {
-        if (queries.length === 0) return true;
-        return queries.filter((query) => {
-            return !(
-                JSON.stringify(email).toLowerCase()?.includes(query.toLowerCase())
-            );
-        }).length === 0;
+export async function getEmailFromSchedule(emailID?: string) {
+    if (!emailID) return null;
+
+    const emails = await getAllEmails(true);
+    const matchingEmail = emails.find((email) => {
+        const emailId = email.email?.values?.resolveValue('Email ID', true);
+        return emailId === emailID;
     });
 
-    const paginatedEmails = filteredEmails.slice(offset, offset + EMAILS_IN_PAGE);
-    const totalEmails = filteredEmails.length;
-
-    return {
-        emails: JSON.stringify(paginatedEmails),
-        totalEmails: totalEmails,
-    }
+    return JSON.stringify(matchingEmail?.email);
 }
