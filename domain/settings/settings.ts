@@ -60,7 +60,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:12px">hello@centercentre.com</a>.`, hide },
         'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
         'Footer': {
-            value: `© Copyright 2025, Center Centre, Inc.<br/><br/><em>{Footer Email Reason}</em><br/><br/><em>{Footer Contact}</em><br/><br/>{Program (Caps)} {Cohort (Caps)}`, hide
+            value: `© Copyright 2025, Center Centre, Inc.<br/><br/><em>{Footer Email Reason}</em><br/><br/><em>{Footer Contact}</em><br/><br/>{Footer Tag}`, hide
         },
 
         'Link Text Decoration': { value: 'underline', hide },
@@ -412,8 +412,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Calendar Table ID': { value: 'tblVtIK7hg8LOJfZd', hide },
             'Cohort Table ID': { value: 'tblEQ09wfPRDZdXtN', hide },
 
-            'Footer Email Reason': { value: `You're receiving this email because you're a member of the {Cohort (First Word)} of the {Program Name} Online Course.` },
-            'Footer Contact': { value: `If you have questions about the course, contact us at ` },
+            'Footer Email Reason': { value: `You're receiving this email because you're a member of the {Cohort (First Word)} cohort of the {Program Name} Online Course.` },
             'Footer Tag': { value: `{Cohort (Caps)(3 Letters)}` },
 
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002' },
@@ -518,7 +517,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Type:Onboarding': {
             settings: {
                 'Email Name': { value: 'Onboarding', part: 2 },
-                'Subject': { value: 'Win Program {Topic}. {Title}' },
+                'Subject': { value: 'Let’s get started! How to Win Stakeholders & Influence Decisions Program.' },
                 'Template': { value: '/onboarding.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1bzrNfDyBpN9TjA2qdqhurm57mlisKffNWZADlRcKdGw/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540162', hide },
@@ -528,7 +527,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Type:Welcome': {
             settings: {
                 'Email Name': { value: 'Welcome', part: 2 },
-                'Subject': { value: 'Win Program {Topic}. {Title}' },
+                'Subject': { value: 'Welcome to How to Win Stakeholders & Influence Decisions Program!' },
                 'Template': { value: '/welcome.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1vGnH3X_0synDw5-r2tbV21B94XiPqNVeBVjBRfyUWEk/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540161', hide },
@@ -551,6 +550,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/extension-details.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1woSv4H2wFdyDgG_fjzglTO_7rdbbKZRQrQyfPqYNf38/edit?' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496700', hide },
+            }
+        },
+        'Email Type:Receipt': {
+            settings: {
+                'Source Reference Doc': { value: 'https://docs.google.com/document/u/0/d/12iiLZhO0Y_GIWi9oV3zOL3RQy-1Wgi1_kHX8UBoXjX0/edit' },
             }
         },
         'Cohort:April 2025': {
@@ -810,14 +814,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop/receipt.html', part: 1 },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540829', hide },
 
-
-            'Source Reference Doc': { value: '' },
             'Link Decoration': { value: 'underline' },
 
-            'Banner': { value: '' },
 
             'Company Insert': {
-                value: `<p class="p_date es-m-txt-l" style="color:#333333;font-size:16px"> <br><strong>%COMPANY_NAME%</strong><br>VAT ID <em>(Optional)</em>: %TAX_ID%<br>%STREET_ADDRESS% </p> <p class="es-m-txt-l" style="color:#333333;font-size:16px"> %CITY%, %STATE% %ZIP_CODE% </p> <p class="es-m-txt-l" style="color:#333333;font-size:16px"> %COUNTRY% </p>`, hide
+                value: `<p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> <br><strong>%COMPANY_NAME%</strong><br>VAT ID <em>(Optional)</em>: %TAX_ID%<br>%STREET_ADDRESS% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %CITY%, %STATE% %ZIP_CODE% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %COUNTRY% </p>`, hide
             },
 
         },
@@ -881,7 +882,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Space Name': { value: 'Online Course', hide },
 
-            'Banner': { value: '' },
         },
         'Program:Visions': { settings: { 'Confirmation Message': { value: `Together, let's bring to focus a clear vision of highly desirable experiences.` } } },
         'Program:Metrics': { settings: { 'Confirmation Message': { value: `<br/><br/>Outcome-driven UX Metrics focus you, your team, stakeholders, and executives on improving your customers' and users' lives.` } } },

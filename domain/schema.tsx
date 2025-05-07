@@ -22,7 +22,6 @@ export type ShowMessage = (messageType: MessageType, options: any) => void;
 
 export type EditorState = {
     email?: Email;
-    originalEmail?: Email;
     step: number;
 }
 

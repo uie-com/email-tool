@@ -39,7 +39,7 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Metrics': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt'],
         },
         'Today\'s Session': {
             options: {
@@ -72,11 +72,6 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
                 'Price Type': ['Unemployed', 'Individual', 'Team'],
             },
         },
-        'Confirmation': {
-            options: {
-                'Cohort': generateNumberedOptions('Cohort', 12),
-            },
-        }
     },
     'Research': {
         options: {

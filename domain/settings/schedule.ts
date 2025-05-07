@@ -157,6 +157,11 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                     },
                     'Onboarding': {
                         'Send Date': '{Session Date(-12d)(12:00pm)}',
+                    },
+                    'Welcome': {
+                        'Send Date': '{Session Date(+1d)(10:00am)}',
+                        'Next Cohort': '',
+                        'Cohort': '{Next Cohort}'
                     }
                 }
             },
@@ -164,15 +169,14 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         'Session Type:Wrap Up': {
             emails: {
                 'Homework': {},
+                'Wrap Up': {
+                    'Send Date': '{Session Date(Friday Before)(2:00pm)}',
+                },
                 'Certificate': {
                     'Send Date': '{Session Date(+1d)(10:00am)}',
                 },
                 'Extension Details': {
                     'Send Date': '{Session Date(+2d)(10:00am)}',
-                },
-                'Welcome': {
-                    'Send Date': '{Session Date(+1d)(10:00am)}',
-                    'Next Cohort': '{Cohort(Next Cohort)}',
                 }
             }
         }
