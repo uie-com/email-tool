@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Flex, ScrollArea, Text } from "@mantine/core";
+import { Anchor, Box, Button, Flex, Image, ScrollArea, Text } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext } from "@/domain/schema/context";
 import { TemplateEditor, TemplateView } from "../components/template";
@@ -43,7 +43,16 @@ export function TemplateFill() {
             <Flex direction='column' className={"h-full w-full " + (editorMode === 'code' ? " max-h-[36rem] max-w-none 2xl:max-w-[36rem] 2xl:max-h-full" : '')} gap={20}>
                 {
                     editorMode === 'code' ?
-                        <Button variant="light" color="green" className=" min-h-10 max-w-48 ml-auto" onClick={switchEditorMode}>Return to Variables</Button>
+                        <Flex direction='row' className="w-full" align="center" justify="end" gap={20}>
+                            {
+                                editorState.email?.values?.resolveValue('Stripo Link', true) ?
+                                    <Anchor href={editorState.email?.values?.resolveValue('Stripo Link', true)} target="_blank" rel="noopener noreferrer">
+                                        <Button variant="light" color="green" className=" min-h-10 max-w-48 ml-auto" leftSection={<Flex justify='center' align='center' w={20} pl={4}><Image src='./interface/stripo.png' w={36} h={36}></Image></Flex>}>Edit in Stripo</Button>
+                                    </Anchor>
+                                    : null
+                            }
+                            <Button variant="filled" color="blue" className=" min-h-10 max-w-48" onClick={switchEditorMode}>Return to Variables</Button>
+                        </Flex>
                         : null
                 }
                 <TemplateView setVariables={setVariables} className={" w-full h-full !min-w-[28rem]   "} showToggle />

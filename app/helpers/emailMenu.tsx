@@ -34,7 +34,7 @@ function ScheduleButton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
         saveScheduleOpen();
         setEditorState({
             step: 0
-        })
+        });
     }
 
     if (editorState.step === 0)
@@ -50,13 +50,22 @@ function ScheduleButton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
 
 function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, setIsSidebarOpen: (isOpen: boolean) => void }) {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [emailStates, deleteEmail] = useContext(SavedEmailsContext);
+    const [emailStates, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const [pinSidebar, setPinSidebar] = useState(false);
 
     const ref = useClickOutside(() => setIsSidebarOpen(false));
 
-    const [selectedEmail, setSelectedEmail] = useState<string | undefined>(editorState.email?.name);
+    const [selectedEmail, setSelectedEmail] = useState<string | undefined>(editorState.email?.name ?? undefined);
+    useEffect(() => {
+        console.log('Selected email changed:', selectedEmail);
+        if (!editorState.email?.name)
+            setSelectedEmail(undefined);
+        else
+            setSelectedEmail(editorState.email?.name);
+
+    }, [editorState.email?.name]);
+
     const [isLoaded, setIsLoaded] = useState(false);
 
     const [showFinished, setShowFinished] = useState(false);
@@ -93,15 +102,13 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
         }
     }
 
-    console.log('Sidebar is rendering with selected email:', selectedEmail);
-
     if (!isLoaded)
         return null;
 
     return (
-        <Flex className={" flex-col items-center  absolute transition-transform z-40 border-gray-200 border-r-1 overflow-y-hidden " + (isSidebarOpen || pinSidebar ? 'translate-x-[300px]' : 'translate-x-0')} w={300} h="100vh" left="-300px" top={0} bottom={0} bg="gray.0" suppressHydrationWarning ref={ref} pb={64} >
+        <Flex className={" flex-col items-center  absolute transition-transform z-40 border-gray-200 border-r-1 overflow-y-hidden " + (isSidebarOpen || pinSidebar ? 'translate-x-[300px]' : 'translate-x-0')} w={300} h="100vh" left="-300px" top={0} bottom={0} bg="gray.0" suppressHydrationWarning ref={ref} pb={72} pt={72} >
             <ScrollArea className="w-full h-full" type="hover" offsetScrollbars scrollbarSize={8} styles={{ scrollbar: { backgroundColor: 'transparent' } }} viewportProps={{ onClick: handleDefaultClick }}>
-                <Flex className=" flex-col items-center justify-start pt-16 px-2.5" gap={12}>
+                <Flex className=" flex-col items-center justify-start px-2.5" gap={12}>
                     {/* <NewEmailButton /> */}
                     <Flex justify='space-between' align='center' direction='row' className=" w-full mt-4 pl-2">
                         <Text fz={14} fw={600} c='dimmed'>{showFinished ? 'All Saved Emails' : 'Pending Emails'}</Text>
@@ -121,6 +128,9 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                                 setSelectedEmail={setSelectedEmail}
                                 deleteEmail={async (e: React.MouseEvent<HTMLButtonElement>) => {
                                     return await deleteEmail(state.email?.airtableId ?? state.email?.name);
+                                }}
+                                editEmail={async (editedState: EditorState) => {
+                                    return await editEmail(editedState.email?.airtableId ?? editedState.email?.name, editedState);
                                 }}
                                 setPinSidebar={setPinSidebar}
                                 setIsSidebarOpen={setIsSidebarOpen}
@@ -151,7 +161,7 @@ function NewEmailButton() {
 
 }
 
-function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPinSidebar, setIsSidebarOpen }: { editorState: EditorState, selected: boolean, deleteEmail: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void }) {
+function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPinSidebar, setIsSidebarOpen, editEmail }: { editorState: EditorState, selected: boolean, deleteEmail: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void, editEmail: (editedState: EditorState) => Promise<boolean> }) {
     const [_, setEditorState, isLoaded, setEditorStateDelayed] = useContext(EditorContext);
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
 
@@ -185,7 +195,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
     const isMarkedDone = useMemo(() => email?.isSentOrScheduled, [email]);
     const templateId = useMemo(() => email?.templateId, [email]);
     const campaignId = useMemo(() => email?.campaignId, [email]);
-    const automationId = useMemo(() => values.resolveValue('Automation ID'), [email]);
+    const automationId = useMemo(() => values.resolveValue('Automation ID', true), [email]);
 
     // Rerender ever time the email states change
     useEffect(() => { }, [JSON.stringify(editorState)]);
@@ -194,13 +204,22 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setPinSidebar(true);
         setIsSidebarOpen(true);
 
-        setEditorState((prev) => ({
-            ...prev,
+        const newState = {
+            ...editorState,
             email: {
                 ...email,
-                isSentOrScheduled: prev.email?.isSentOrScheduled ? undefined : email?.templateId,
+                isSentOrScheduled: email?.isSentOrScheduled ? undefined : (
+                    email?.templateId ?? 'skipped'
+                ),
+                templateId: email?.isSentOrScheduled ?
+                    email?.templateId === 'skipped' ? undefined : email?.templateId
+                    : email?.templateId ?? 'skipped',
             }
-        }));
+        }
+
+        console.log('Marking email as done:', newState);
+
+        editEmail(newState);
 
         setPinSidebar(false);
     }
@@ -209,15 +228,19 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setPinSidebar(true);
         setProcessing(true);
         setIsSidebarOpen(true);
+
         const response = await delTemplate(templateId as string);
+
+        const newState = {
+            ...editorState,
+            email: {
+                ...email,
+                templateId: undefined,
+            }
+        }
+
         if (response)
-            setEditorState({
-                ...editorState,
-                email: {
-                    ...email,
-                    templateId: undefined,
-                }
-            });
+            editEmail(newState);
 
         setProcessing(false);
         setPinSidebar(false);
@@ -228,14 +251,18 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setProcessing(true);
         setIsSidebarOpen(true);
         const response = await delCampaign(campaignId as string, globalSettings.activeCampaignToken ?? '');
+
+        const newState = {
+            ...editorState,
+            email: {
+                ...email,
+                campaignId: undefined,
+            }
+        }
+
         if (response)
-            setEditorState({
-                ...editorState,
-                email: {
-                    ...email,
-                    campaignId: undefined,
-                }
-            });
+            editEmail(newState);
+
         setProcessing(false);
         setPinSidebar(false);
     }

@@ -63,7 +63,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             value: `© Copyright 2025, Center Centre, Inc.<br/><br/><em>{Footer Email Reason}</em><br/><br/><em>{Footer Contact}</em><br/><br/>{Program (Caps)} {Cohort (Caps)}`, hide
         },
 
-        'Link Text Decoration': { value: 'underline' },
+        'Link Text Decoration': { value: 'underline', hide },
 
         'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ]', part: 0 },
 
@@ -75,6 +75,48 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Community Join Link': { value: '{Airtable Settings Query}&fields[]=Community Join Link', fetch: 'airtable' },
         'Calendar Instructions Link': { value: '{Airtable Settings Query}&fields[]=Calendar Instructions Link', fetch: 'airtable', hide },
     },
+
+
+    'Email Type:Today\'s Session': {
+        settings: {
+            'Email Name': { value: '{Topic}', part: 2 },
+
+            'Template': { value: '/today.html', part: 2 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488185', hide },
+
+            'Subject': { value: '{Program Name}: {Week}: {Topic}: ​​{Title}' },
+        }
+    },
+    'Email Type:Before Week': {
+        settings: {
+            'Email Name': { value: 'Before {Next Week}', part: 2 },
+
+            'Template': { value: '/before-week-x.html', part: 2 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551147', hide },
+
+            'Subject': { value: '{Program Name}: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
+        },
+        'Next Week:Week 2': {
+            settings: {
+                'Template': { value: '/before-week-2.html', part: 2 },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551146', hide },
+
+            }
+        },
+        'Is First Session Of Program': {
+            'Week:Week 1': {
+                settings: {
+                    'Email Name': { value: 'Before {Week}', part: 2 },
+                    'Subject': { value: '{Program Name}: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
+
+                    'Template': { value: '/before-week-1.html', part: 2 },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551144', hide },
+                }
+            },
+        },
+    },
+
+
     'Program:Stand Out': {
         settings: {
             'Program Name': { value: 'Stand Out: A Working Community for Unemployed UX Leaders', hide },
@@ -85,7 +127,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Automation ID': { value: '226', hide },
 
-            'Link Color': { value: '#ec621d' },
+            'Link Color': { value: '#ec621d', hide },
 
 
             'Calendar Table ID': { value: 'tbly8jzaHpb0hGfbj', hide },
@@ -118,11 +160,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Sessions in Week:1': {
                 settings: {
                     'Template': { value: '/one-events-of-week.html', part: 2 },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488264', hide },
                 }
             },
             'Sessions in Week:2': {
                 settings: {
                     'Template': { value: '/two-events-of-week.html', part: 2 },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488537', hide },
+
                 }
             },
         },
@@ -133,6 +178,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Live Discussion': {
                 settings: {
                     'Template': { value: '/today-live-discussion.html', part: 2 },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9453032', hide },
+
                     'Subject': { value: 'Today’s Stand Out Community Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AC2E0gWyShIPsZ7xHncWgjgolly3AwyxltTtVQLFoog/edit' },
                 }
@@ -140,6 +187,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Materials Critique': {
                 settings: {
                     'Template': { value: '/materials-critique.html', part: 2 },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488185', hide },
+
                     'Subject': { value: 'Today’s Materials Critique Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1LZaqUgGa5mIMKg3ZeS3DskPkqO1pBFND4suzQqpq0SE/edit' },
                 }
@@ -155,7 +204,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop', part: 1 },
             'Email Name': { value: '{Cohort} ', part: 1 },
 
-            'Link Color': { value: '#006f74' },
+            'Link Color': { value: '#006f74', hide },
 
 
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
@@ -177,37 +226,22 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Today\'s Session': {
             settings: {
-                'Email Name': { value: '{Topic}', part: 2 },
-
-                'Template': { value: '/today.html', part: 2 },
-                'Subject': { value: 'Outcome-Driven UX Metrics: {Week}: {Topic}: ​​{Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1iRsenQPN-SaZggLQU5o2L4WOM1a5-GgZ/edit' },
             }
         },
         'Email Type:Before Week': {
             settings: {
-                'Email Name': { value: 'Before {Next Week}', part: 2 },
-
-                'Template': { value: '/before-week-x.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AADtzEALemQO0GF3__aAdCPSecjvtM6w/edit' },
-
-                'Subject': { value: 'Outcome-Driven UX Metrics: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
             },
             'Next Week:Week 2': {
                 settings: {
-                    'Template': { value: '/before-week-2.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/16Qm909uACdtFuExBaIjbVPhxP8Zq2feJ/edit' },
-
                 }
             },
             'Is First Session Of Program': {
                 'Week:Week 1': {
                     settings: {
-                        'Email Name': { value: 'Before {Week}', part: 2 },
-                        'Subject': { value: 'Outcome-Driven UX Metrics: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
-                        'Template': { value: '/before-week-1.html', part: 2 },
                         'Source Reference Doc': { value: 'https://docs.google.com/document/d/1BeZMQwov2xBNC-qyIxrZJjOlnyxiUWDH/edit' },
-
                     }
                 },
             },
@@ -242,7 +276,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop', part: 1 },
             'Email Name': { value: '{Cohort} ', part: 1 },
 
-            'Link Color': { value: '#662547' },
+            'Link Color': { value: '#662547', hide },
 
 
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
@@ -261,12 +295,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Today\'s Session': {
             settings: {
-                'Email Name': { value: '{Topic}', part: 2 },
-
-                'Template': { value: '/today.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1N0pXqqE1760ciCiO5AT-Lk3Sud-9HwNGVCdwctWYLLs/edit' },
-
-                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Week}: {Topic}: ​​{Title}' },
             },
             'Topic:Topic 1': { settings: { value: 'https://docs.google.com/document/d/1q3RsyLF3ayTMuCYbWaZyFlY0S-nNyL1q2uLtyCz4mO8/edit?usp=share_link' } },
             'Topic:Topic 2': { settings: { value: 'https://docs.google.com/document/d/13W9orpxBNQ9CK5O5DDKFC1edoGf5w-tgTPCRoUyeh20/edit?usp=share_link' } },
@@ -279,31 +308,19 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Before Week': {
             settings: {
-                'Email Name': { value: 'Before {Next Week}', part: 2 },
-                // weeks 3 + 4
-                'Template': { value: '/before-week-x.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1coEOwxO9nzfl-ynGHjp5Lvy6ar9bG_9x3kEiUZwGvW4/edit?usp=share_link' },
-
-                'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
             },
             'Next Week:Week 3': { settings: { 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1wyRv5-iC-3ClRwoXnJa-YUBcsBUsIS0AoJSlDncGZ54/edit' }, } },
             'Next Week:Week 4': { settings: { 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1skINRI0k61iNsHO49sdfLARbB4x_mGlXhDF9C01ZeKA/edit?usp=share_link' }, } },
             'Next Week:Week 2': {
                 settings: {
-                    'Template': { value: '/before-week-2.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1A2-nVthQMAT0pMUH-zGqZh43606jSX6GjDph8v8M9Yc/edit' },
-
                 }
             },
             'Is First Session Of Program': {
                 'Week:Week 1': {
                     settings: {
-                        'Email Name': { value: 'Before {Week}', part: 2 },
-                        'Subject': { value: 'Craft + Lead a Strategic UX Vision: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
-
-                        'Template': { value: '/before-week-1.html', part: 2 },
                         'Source Reference Doc': { value: 'https://docs.google.com/document/d/1dhD6E9tWpHTyEZiogDPoOpO5oLg9sClG3CO3QpeyF6A/edit' },
-
                     }
                 },
             },
@@ -328,7 +345,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop', part: 1 },
             'Email Name': { value: '{Cohort} ', part: 1 },
 
-            'Link Color': { value: '#ec621d' },
+            'Link Color': { value: '#ec621d', hide },
 
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },
             'Topic Table ID': { value: 'tbldSCPFTa8UD58WI', hide },
@@ -347,38 +364,22 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Today\'s Session': {
             settings: {
-                'Email Name': { value: '{Topic}', part: 2 },
-
-                'Template': { value: '/today.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/160P5IwlEDgvg53zrCMTH1NwW7p0V0cnEqb-CV3VY-bc/edit' },
-
-                'Subject': { value: 'Advanced Strategic UX Research: {Week}: {Topic}: ​​{Title}' },
             }
         },
         'Email Type:Before Week': {
             settings: {
-                'Email Name': { value: 'Before {Next Week}', part: 2 },
-                // weeks 3 + 4
-                'Template': { value: '/before-week-x.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1GTwZUhhdJjiuPnWKLeEDcHRG1lX9gJG1mAk3CcogpPM/edit' },
-
-                'Subject': { value: 'Advanced Strategic UX Research: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
             },
             'Next Week:Week 2': {
                 settings: {
-                    'Template': { value: '/before-week-2.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1PxBRnXcGjY6ytzlTL4Xuvt63T8LtGHzPJM3gQywb7Sk/edit' },
-
                 }
             },
             'Is First Session Of Program': {
                 'Week:Week 1': {
                     settings: {
-                        'Email Name': { value: 'Before {Week}', part: 2 },
-                        'Subject': { value: 'Advanced Strategic UX Research: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
-                        'Template': { value: '/before-week-1.html', part: 2 },
                         'Source Reference Doc': { value: 'https://docs.google.com/document/d/1Vb5Q1FB2rumreNblfrK_qX-QyshoY9Wx3LCIjjrQm94/edit' },
-
                     }
                 },
             },
@@ -403,7 +404,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/win', part: 1 },
             'Email Name': { value: '{Cohort (First Word)} ', part: 1 },
 
-            'Link Color': { value: '#a5473d' },
+            'Link Color': { value: '#a5473d', hide },
             'Link Text Decoration': { value: 'none' },
 
             'Pillar': { value: '{Topic}' },
@@ -427,14 +428,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type: Content': {
             settings: {
-                'Link Color': { value: '#8c9a29' },
-                'Link Text Decoration': { value: 'underline' },
+                'Link Color': { value: '#8c9a29', hide },
+                'Link Text Decoration': { value: 'underline', hide },
             },
         },
         'Email Type: Vessel': {
             settings: {
-                'Link Color': { value: '#8c9a29' },
-                'Link Text Decoration': { value: 'underline' },
+                'Link Color': { value: '#8c9a29', hide },
+                'Link Text Decoration': { value: 'underline', hide },
             },
         },
         'Session Type:Live Lab 1': {
@@ -478,26 +479,30 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 settings: {
                     'Template': { value: '/homework-pillar-x-lab-1.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1sDODxhDrRbsuUEPpw0J9S4eoah5U3L6QQ18Y2E2h_YQ/edit' },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9490127', hide },
                 }
             },
             'Session Type:Live Lab 2': {
                 settings: {
                     'Template': { value: '/homework-pillar-x-lab-2.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1VDqUYv84Js2kSDbKEcGKpLXbyi_-_43bZlfNNdXxnms/edit' },
-
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488844', hide },
                 }
             },
             'Session Type:Wrap Up': {
                 settings: {
                     'Email Name': { value: 'Wrap Up', part: 2 },
                     'Template': { value: '/wrap-up.html', part: 2 },
-                    'Source Reference Doc': { value: '' },
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1WRBaWwntGWSlp2Nla-OB6YLqh-L3hMPcGyLLFnvczxM/edit?tab=t.0#heading=h.izz3rfn15qfa' },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496698', hide },
+
                 }
             },
             'Is First Session Of Program': {
                 settings: {
                     'Template': { value: '/homework-pillar-1-lab-1.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1KDQbgOjxdiy3WKIfaQmk2QLLDJQoUcZOx1ANLVkHh1I/edit' },
+                    'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488843', hide },
                 }
             },
         },
@@ -507,6 +512,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Win Program: Upcoming live session!' },
                 'Template': { value: '/first-lab-reminder.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1MXgQs2UXgDbbmf0ZvW9k6k5pGBECgs30A_uWNkjFI5Y/edit?usp=share_link' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9046397', hide },
             },
         },
         'Email Type:Onboarding': {
@@ -514,7 +520,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: 'Onboarding', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
                 'Template': { value: '/onboarding.html', part: 2 },
-                'Source Reference Doc': { value: '' },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1bzrNfDyBpN9TjA2qdqhurm57mlisKffNWZADlRcKdGw/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540162', hide },
+
             },
         },
         'Email Type:Welcome': {
@@ -522,7 +530,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: 'Welcome', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
                 'Template': { value: '/welcome.html', part: 2 },
-                'Source Reference Doc': { value: '' },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1vGnH3X_0synDw5-r2tbV21B94XiPqNVeBVjBRfyUWEk/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540161', hide },
+
             },
         },
         'Email Type:Certificate': {
@@ -531,6 +541,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
                 'Template': { value: '/certificate.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1ak_mQJ_mBQkSi7gwoYJO2s5CHOUejvXvUnypv2CNCvo/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496699', hide },
             },
         },
         'Email Type:Extension Details': {
@@ -539,6 +550,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.' },
                 'Template': { value: '/extension-details.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1woSv4H2wFdyDgG_fjzglTO_7rdbbKZRQrQyfPqYNf38/edit?' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496700', hide },
             }
         },
         'Cohort:April 2025': {
@@ -600,6 +612,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/today.html', part: 2 },
                 'Subject': { value: 'Today: {Session Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1DEU65xOzfjHrHfB8TCotSoeDN4ERclAcqYynn0yUpWw/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9491072', hide },
             },
             // Banner Settings
             'Session Type:Job Search Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/95fddc5d-1565-4ace-8067-ce00e6f3e236.png?id=39120976' }, } },
@@ -614,6 +627,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Recording: {Session Title}' },
                 'Questions': { value: '**Questions From the Session:**' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1V7suWAFtLFw4OKAAP8dcOE0hRRNdFBtGqxJg1nl-IGY/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9491094', hide },
+
             },
             // Banner Settings
             'Session Type:Job Search Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/43e4647c-9c6d-44ed-974a-9afaa9cf867c.png?id=39120942' }, } },
@@ -627,6 +642,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/new-topic.html', part: 2 },
                 'Subject': { value: 'This Monday: {Session Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AyFiVg5h6LxHYHYQ_NBdAiCAKPGVCDh2g95bh-dwAgk/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9490112', hide },
+
             },
             // Banner Settings
             'Session Type:Job Search Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/bbcd6fc6-290a-4e6b-a8e7-ecf802100916.png?id=39120554' }, } },
@@ -672,6 +689,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/667ec838-028d-4112-8be2-fe1effc217f9.png?id=39120670' },
                 'Subject': { value: 'Upcoming: {Upcoming Session #1 Title}, {Upcoming Session #2 Title}, {Upcoming Session #3 Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
+
 
                 'Session Entry': {
                     value: `<tr>
@@ -718,6 +737,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Certificate', part: 2 },
             'Subject': { value: 'Your Certificate for the {Program Name} Online Course' },
             'Template': { value: '/workshop/certificate.html', part: 1 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9552708', hide },
         },
         'Program:Metrics': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1QqwlIK0xIWQD4Ms9Tp2UQLW-4Zc7-r2tKUkwofrPGrc/edit` } } },
         'Program:Research': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1zQjiXG1bZlIMmiZz0RDGHbm1anirdWBrNvMZOSif0m4/edit` } } },
@@ -731,6 +751,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Vessel {Send To}', part: 1 },
             'Template': { value: '/workshop/vessel.html', part: 1 },
             'Banner': { value: '{Promo Banner}' },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9518240', hide },
+
 
             'Button': {
                 value: `<td align="center" class="esd-block-button"> <!--[if mso]><a href="{Program Website}" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="{Program Website}" style="height:41px; v-text-anchor:middle; width:462px" arcsize="24%" stroke="f"  fillcolor="#{Accent Color}"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:arial, "helvetica neue", helvetica, sans-serif; font-size:15px; font-weight:700; line-height:15px;  mso-text-raise:1px'> {Program Name} Course Details </center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border" style="border-width:0;border-radius:10px;background:#{Accent Color};border-color:#179d99"> <a target="_blank" href="{Program Website}" class="es-button" style="background:#{Accent Color};border-radius:10px;font-weight:bold;mso-border-alt:10px solid #{Accent Color}"> {Program Name} Course Details </a> </span> <!--<![endif]--> </td>`
@@ -748,6 +770,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Content {Send To}', part: 1 },
             'Template': { value: '/workshop/content.html', part: 1 },
             'Banner': { value: '{Promo Banner}' },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
+
         }
     },
 
@@ -784,6 +808,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Price Type} Receipt', part: 2 },
             'Subject': { value: 'Receipt: {Program Name} Online Course' },
             'Template': { value: '/workshop/receipt.html', part: 1 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540829', hide },
+
 
             'Source Reference Doc': { value: '' },
             'Link Decoration': { value: 'underline' },
@@ -848,6 +874,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Confirmation', part: 2 },
             'Subject': { value: 'Next Steps: {Program Name} Online Course' },
             'Template': { value: '/workshop/confirmation.html', part: 1 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9548503', hide },
+
 
             'Source Reference Doc': { value: '' },
 

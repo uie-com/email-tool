@@ -20,7 +20,8 @@ import { isEmailReviewed } from "@/domain/data/airtableActions";
 import { Values } from "@/domain/schema/valueCollection";
 import { NOTION_CALENDAR } from "@/domain/settings/notion";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
-import { saveScheduleOpen } from "@/domain/data/saveData";
+import { loadLocally, saveScheduleOpen } from "@/domain/data/saveData";
+import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
 
 export function AutomationPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -1319,20 +1320,13 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 if (!editorState.email?.hasSentReview)
                     resolve(false);
 
-                const isReviewed = await isEmailReviewed(editorState.email?.values?.resolveValue('Email ID', true));
-                console.log('isReviewed', isReviewed);
-                if (isReviewed) {
-                    setEditorState((prev) => ({
-                        ...prev,
-                        email: {
-                            ...prev.email,
-                            isReviewed: true,
-                            hasSentReview: true,
-                        }
-                    }));
+                const saves = loadLocally();
+                const saveMatch = saves.find((s) => s.email?.name === editorState.email?.name);
+
+                if (saveMatch && saveMatch.email?.hasSentReview)
                     resolve(true);
-                }
-            }, 15000)
+
+            }, REVIEW_ACTIVE_REFRESH_INTERVAL)
         });
     }
 

@@ -19,7 +19,8 @@ import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleAc
 import { Values } from "@/domain/schema/valueCollection";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
 import { NOTION_CALENDAR } from "@/domain/settings/notion";
-import { saveScheduleOpen } from "@/domain/data/saveData";
+import { loadLocally, saveScheduleOpen } from "@/domain/data/saveData";
+import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
 
 export function CampaignPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);
@@ -970,23 +971,15 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 if (!editorState.email?.hasSentReview)
                     resolve(false);
 
-                const isReviewed = await isEmailReviewed(editorState.email?.values?.resolveValue('Email ID', true));
-                console.log('isReviewed', isReviewed);
-                if (isReviewed) {
-                    setEditorState((prev) => ({
-                        ...prev,
-                        email: {
-                            ...prev.email,
-                            isReviewed: true,
-                            hasSentReview: true,
-                        }
-                    }));
+                const saves = loadLocally();
+                const saveMatch = saves.find((s) => s.email?.name === editorState.email?.name);
+
+                if (saveMatch && saveMatch.email?.hasSentReview)
                     resolve(true);
-                }
             }
 
             checkForReview();
-            setInterval(async () => checkForReview, 15000)
+            setInterval(async () => checkForReview, REVIEW_ACTIVE_REFRESH_INTERVAL)
         });
     }
 

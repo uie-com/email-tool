@@ -5,7 +5,7 @@ import { saveStringToLocalStorage, loadStringFromLocalStorage } from "./localSto
 
 const DEBUG = true;
 
-export const SavedEmailsContext = createContext<[Saves, (id?: string) => Promise<boolean>]>([{} as Saves, async () => false]);
+export const SavedEmailsContext = createContext<[Saves, (id?: string) => Promise<boolean>, (id?: string, editedState?: EditorState) => Promise<boolean>]>([{} as Saves, async () => false, async () => false]);
 
 const CURRENT_EMAIL_NAME_KEY = 'currentEmail';
 const EMAILS_KEY = 'emails';
@@ -37,7 +37,7 @@ export async function recoverCurrentEditorState() {
     return undefined;
 }
 
-export function saveStateLocally(state?: EditorState) {
+export function saveStateLocally(state?: EditorState, isCurrent: boolean = true) {
     if (DEBUG) console.log('[SAVE] Saving email state locally', state);
     if (!state?.email?.name) return DEBUG ? console.log('[SAVE] No email name found, not saving', state) : undefined;
 
@@ -53,7 +53,7 @@ export function saveStateLocally(state?: EditorState) {
     }
 
     if (DEBUG) console.log('[SAVE] Finished editing email array', emails);
-    saveCurrentEmailName(state.email?.name ?? '');
+    saveCurrentEmailName(isCurrent ? state.email?.name ?? '' : '');
     saveLocally(emails, EMAILS_KEY);
 }
 
@@ -86,6 +86,9 @@ export async function deleteState(id: string) {
         saveSnapshot();
     } else
         console.error('[SAVE] Failed to delete email state from remote storage', emails);
+
+    saveCurrentEmailName('');
+
 
     return isDone;
 }

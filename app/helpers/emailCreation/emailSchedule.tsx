@@ -6,22 +6,24 @@ import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { Email } from "@/domain/schema";
 import { DAY_OF_WEEK_COLOR, HOURS_TO_COLOR, PROGRAM_COLORS } from "@/domain/settings/interface";
 import { ActionIcon, Badge, Box, Button, Center, em, Flex, Image, Loader, Modal, Pill, ScrollArea, TagsInput, Text, TextInput, Title } from "@mantine/core";
-import { IconArrowRight, IconCalendar, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconEdit, IconMail, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { IconArrowRight, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconDots, IconEdit, IconEditCircle, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { ForwardedRef, JSX, useContext, useEffect, useMemo, useRef, useState } from "react";
 import seedColor from 'seed-color';
 import { hasStringInLocalStorage, loadStringFromLocalStorage, saveStringToLocalStorage } from "@/domain/data/localStorage";
-import { loadLocally } from "@/domain/data/saveData";
+import { loadLocally, SavedEmailsContext } from "@/domain/data/saveData";
 import { on } from "events";
 import { EmailCreator } from "./emailCreator";
 import { getEmailSchedule } from "@/domain/data/scheduleActions";
 import { EditorContext } from "@/domain/schema/context";
 import { RemoteSource } from "../components/remote";
 import { AIRTABLE_LINK } from "@/domain/parse/parseLinks";
+import { EmailMenu } from "../components/menu";
 
 export function EmailSchedule() {
     const [loadedEmails, setLoadedEmails] = useState<{ email?: Email | undefined; session?: Session | undefined; emailType?: string | undefined; }[] | null>(null);
     const totalEmails = useRef<number>(0);
+    const [savedStates, deleteEmail] = useContext(SavedEmailsContext);
 
     const isLoading = useRef(false);
 
@@ -30,7 +32,6 @@ export function EmailSchedule() {
 
     const [searchQuery, setSearchQuery] = useState<string[]>([]);
 
-    const [savedStates, setSavedStates] = useState<Saves>([]);
     const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
     const ref = useRef<HTMLDivElement | null>(null);
@@ -62,7 +63,6 @@ export function EmailSchedule() {
         if (sessionOffset === 0)
             setLastRefreshed(moment().toDate());
 
-        setSavedStates(loadLocally());
         setRefresh(false);
     }, [refresh, sessionOffset, searchQuery]);
 
@@ -126,7 +126,7 @@ export function EmailSchedule() {
         });
 
         return manualEmails.map((email) => ({ email: email.email, session: undefined }));
-    }, [savedStates]);
+    }, [JSON.stringify(savedStates)]);
 
     const sessionsByEmail = useMemo(() => {
         if (!loadedEmails) return null;
@@ -172,12 +172,12 @@ export function EmailSchedule() {
                         if ((!session.session || (session.session as Session).Program === undefined) && session.email) {
                             // console.log('Found manual email ', session);
                             return (
-                                <EmailEntry key={'me' + i} email={session.email} savedStates={savedStates} />
+                                <EmailEntry key={'me' + i} email={session.email} />
                             )
                         }
                         if (!session.session) return null;
                         return (
-                            <SessionEntry key={'s' + i} session={session.session} savedStates={savedStates} email={session.email} emailType={session.emailType ?? ''} />
+                            <SessionEntry key={'s' + i} session={session.session} email={session.email} emailType={session.emailType ?? ''} />
                         )
                     }) : <Flex className="w-full min-h-96" justify="center" align="center"><Loader color="gray" /></Flex>}
                 </Flex>
@@ -187,9 +187,12 @@ export function EmailSchedule() {
     )
 }
 
-function SessionEntry({ session, savedStates, email, emailType }: { session: Session, savedStates?: Saves, email?: Email, emailType?: string }) {
+function SessionEntry({ session, email, emailType }: { session: Session, email?: Email, emailType?: string }) {
     const colorMain = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + '44';
     const colorPill = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + 'ff';
+    const sessionDateMessage = useMemo(() => {
+        return moment(session["Session Date"])?.format('ddd, MMM D');
+    }, [])
 
 
     const emails = {
@@ -231,7 +234,7 @@ function SessionEntry({ session, savedStates, email, emailType }: { session: Ses
                 <Pill fw={700} bg={DAY_OF_WEEK_COLOR[moment(session["Session Date"])?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.2'} radius={5} mr={1} ml={'auto'} >
                     <Flex pt={2.5} gap={6}>
                         <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[moment(session["Session Date"])?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>
-                            {moment(session["Session Date"])?.format('ddd, MMM D')}
+                            {sessionDateMessage}
                         </Text>
                     </Flex>
                 </Pill>
@@ -292,7 +295,7 @@ function SessionEntry({ session, savedStates, email, emailType }: { session: Ses
                 {Object.keys(emails).map((key, i) => {
                     if (!emails[key]) return null;
                     return (
-                        <EmailEntry key={session.id + i + 'email'} email={emails[key]} savedStates={savedStates} />
+                        <EmailEntry key={session.id + i + 'email'} email={emails[key]} />
                     )
                 })}
             </Flex> : ''}
@@ -300,8 +303,12 @@ function SessionEntry({ session, savedStates, email, emailType }: { session: Ses
     )
 }
 
-function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves }) {
-    const [editorState, setEditorState] = useContext(EditorContext);
+function EmailEntry({ email }: { email: Email, }) {
+    const [editorState, setEditorState, isLoading, setEditorStateDelayed] = useContext(EditorContext);
+    const [savedStates, deleteEmail] = useContext(SavedEmailsContext);
+    const [hovering, setHovering] = useState(false);
+
+    useEffect(() => { }, [JSON.stringify(savedStates)]);
 
     const program = email.values?.getCurrentValue('Program');
     const colorMain = PROGRAM_COLORS[program as keyof typeof PROGRAM_COLORS] + '22';
@@ -309,6 +316,8 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
 
     const type = email.values?.getCurrentValue('Email Type');
     const sendDate = email.values?.resolveValue('Send Date', true);
+
+    const isManual = email.values?.getCurrentValue('Creation Type') === 'manual';
 
     const sendDateMoment = sendDate ? moment(sendDate) : null;
     const sendTimeMessage = sendDate ? moment(sendDate).format('h:mma') : null;
@@ -321,6 +330,15 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
                 : `${-daysAway} days ago`))
         : null;
 
+    const sendDateMessage = useMemo(() => {
+        if (!sendDateMoment) return null;
+        const diffFromToday = sendDateMoment.diff(moment(), 'days');
+        if (diffFromToday === 0) return 'Today';
+        if (diffFromToday === 1) return 'Tomorrow';
+        return sendDateMoment?.format('ddd, MMM D');
+    }, [])
+
+
     const emailSave = useMemo(() => {
         if (!email || !email.values || !savedStates) return null;
         const saveName = email.values.resolveValue('Email ID', true);
@@ -328,20 +346,20 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
             return state && parseVariableName(state.email?.name) === parseVariableName(saveName)
         });
         return saveState;
-    }, [email, savedStates]);
+    }, [email, JSON.stringify(savedStates)]);
 
 
     const handleSubmit = async () => {
         if (!emailSave) {
             console.log('Starting an email as ', email);
             email.values?.setValue('Last Populated', { value: new Date(), source: 'remote' });
-            setEditorState({ step: 1, email: email });
+            setEditorStateDelayed({ step: 1, email: email });
         } else {
-            setEditorState(emailSave)
+            setEditorStateDelayed(emailSave)
         }
     };
 
-    const emailStatus = getStatusFromEmail(emailSave?.email);
+    const emailStatus = getStatusFromEmail(isManual ? email : emailSave?.email);
     const button = useMemo(() => {
         const sharedProps = {
             h: 24,
@@ -349,7 +367,6 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
             variant: 'filled',
             color: '',
             px: 12,
-            ml: 'auto',
         };
         if (!emailStatus)
             return <Button {...sharedProps}>Start</Button>;
@@ -357,17 +374,17 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
         sharedProps.color = (STATUS_COLORS[emailStatus][1] as string).split('.')[0] + '.8';
 
         if (emailStatus === 'Editing')
-            return <Button {...sharedProps} pr={8} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />}>Edit</Button>;
+            return <Button {...sharedProps} pr={10} rightSection={<IconEdit size={16} strokeWidth={2.5} className=" -ml-1" />}>Editing</Button>;
         if (emailStatus === 'Uploaded')
-            return <Button {...sharedProps} pr={8} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />} >Uploaded</Button>;
+            return <Button {...sharedProps} pr={10} rightSection={<IconArrowRight size={16} strokeWidth={2.5} className=" -ml-1" />} >Uploaded</Button>;
         if (emailStatus === 'Review')
             return <Button {...sharedProps} pl={8} leftSection={<IconClock size={16} strokeWidth={2.5} className=" -mr-1" />}>Review</Button>;
         if (emailStatus === 'Ready')
-            return <Button {...sharedProps} >Ready</Button>;
+            return <Button {...sharedProps} pr={10} rightSection={<IconBrandTelegram size={16} strokeWidth={2.5} className=" -ml-1" />} >Ready</Button>;
         if (emailStatus === 'Scheduled')
-            return <Button {...sharedProps} pl={8} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
+            return <Button {...sharedProps} pl={10} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
         if (emailStatus === 'Sent')
-            return <Button {...sharedProps} pl={8} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
+            return <Button {...sharedProps} pl={10} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
         return <Button h={24} onMouseUp={handleSubmit}>Open</Button>;
     }, [emailStatus]);
 
@@ -376,7 +393,8 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
     return (
         <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300`}
             style={{ backgroundColor: colorMain }}
-            onMouseUp={handleSubmit}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
         >
             <Pill fw={700} bg={colorPill} radius={5} >
                 <Flex pt={2.5} gap={6}>
@@ -386,7 +404,7 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
             </Pill>
             <Pill fw={700} bg={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.2'} radius={5} ml={1} >
                 <Flex pt={2.5} gap={6}>
-                    <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>{sendDateMoment?.format('ddd, MMM D')}</Text>
+                    <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>{sendDateMessage}</Text>
                 </Flex>
             </Pill>
             <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.2'} radius={5} ml={-3} >
@@ -405,6 +423,15 @@ function EmailEntry({ email, savedStates }: { email: Email, savedStates?: Saves 
 
                 </>
             ) : null} */}
+            <EmailMenu editorState={emailSave ?? { step: 1, email: email }} target={
+                <ActionIcon c={colorPill} bg='none' radius='sm' size={24} w={24} ml='auto' opacity={hovering ? 1 : 0} className=" transition-opacity duration-200 ease-in-out" >
+                    <IconDots size={30} strokeWidth={2} />
+                </ActionIcon>
+            } loader={
+                <ActionIcon radius='sm' size={24} w={30} ml='auto' opacity={1} className=" transition-opacity duration-200 ease-in-out">
+                    <Loader color="white" type="dots" size={16} />
+                </ActionIcon>
+            } />
             {button}
         </Flex>
     )

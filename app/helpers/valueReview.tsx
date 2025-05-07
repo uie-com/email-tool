@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor, Box, Button, Flex, Image, Loader, ScrollArea, Table, TableData } from "@mantine/core";
+import { Anchor, Box, Button, Flex, Image, Loader, ScrollArea, Table, TableData, Text } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { EditorContext, MessageContext } from "@/domain/schema/context";
 import moment from "moment-timezone";
@@ -28,6 +28,7 @@ export function ValueReview() {
 
     const [refresh, setRefresh] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [showHidden, setShowHidden] = useState(false);
 
 
     const showMessage = useContext(MessageContext);
@@ -48,7 +49,7 @@ export function ValueReview() {
             const name = variable.name;
             let displayValue, value = values.resolveValue(name, true, true);
             if (name === 'id') return [];
-            if (values.isHidden(name) || PRE_APPROVED_VALUES.includes(name) || EMAIL_EDIT_VALUES.includes(name))
+            if (!showHidden && (values.isHidden(name) || PRE_APPROVED_VALUES.includes(name) || EMAIL_EDIT_VALUES.includes(name)))
                 return [];
 
 
@@ -84,6 +85,7 @@ export function ValueReview() {
 
     const templateId = useMemo(() => editorState.email?.templateId, [editorState.email]);
     const campaignId = useMemo(() => editorState.email?.campaignId, [editorState.email]);
+
     const handleDelete = async (force: boolean = false) => {
         console.log('Deleting email: ', editorState.email?.name, ' from state: ', editorState);
 
@@ -94,8 +96,7 @@ export function ValueReview() {
                 deleteEmail: () => handleDelete(true),
             });
 
-        await deleteEmail(editorState.email?.airtableId ?? editorState.email?.name);
-
+        deleteEmail(editorState.email?.airtableId ?? editorState.email?.name);
         setEditorState({ step: 0 });
     }
 
@@ -140,6 +141,7 @@ export function ValueReview() {
         <Flex align="center" justify="center" direction='column' className=" w-full h-full" gap={20}>
             <ScrollArea type="never" className="w-full" >
                 <Flex align="center" justify="center" direction='column' className="py-20 px-5" gap={20} style={{ position: 'relative' }}>
+
                     <EmailEditCard />
                     <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 relative" mt={28} gap={20}>
                         <Box className=" absolute " top={-35} left={-5} ml={4} >
@@ -153,6 +155,9 @@ export function ValueReview() {
                                 refreshMessage="Reset"
                                 isLoading={isLoading}
                             />
+                        </Box>
+                        <Box className="absolute" top={-20} right={5} >
+                            <Text c='gray.5' fz='10' onClick={() => setShowHidden((prev) => !prev)} className=" cursor-pointer">{showHidden ? 'Hide Internal Values' : 'Show Hidden Values'}</Text>
                         </Box>
                         {
 

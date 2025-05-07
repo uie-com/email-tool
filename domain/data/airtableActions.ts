@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidateTag } from "next/cache";
 import { compressText, decompressText } from "../parse/parse";
 import { EditorState, Saves } from "../schema";
 import { AT_EMAIL_BASE, AT_EMAIL_TABLE } from "../settings/save";
@@ -41,14 +42,17 @@ export async function fetchRecords(base: string = SESSION_BASE, table: string = 
 }
 
 async function airtableFetch(base: string, table: string, method: string, params?: string, body?: string, cache: boolean = true) {
+    if (!cache)
+        revalidateTag('airtable');
+
     return await fetch(`https://api.airtable.com/v0/${base}/${table}${params}`, {
         method,
         headers: {
             'Authorization': `Bearer ${process.env.AIRTABLE_READ_API_KEY}`,
             'Content-Type': 'application/json'
         },
-        cache: cache ? 'force-cache' : undefined,
-        next: { revalidate: cache ? 60 * 60 : 0 },
+        cache: 'force-cache',
+        next: { revalidate: 60 * 60 * 60, tags: ['airtable'] },
         body
     });
 }
