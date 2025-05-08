@@ -149,6 +149,14 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 }
             }
         },
+        'Is Transition': {
+            emails: {
+                'Homework': {},
+                'Transition': {
+                    'Send Date': '{Session Date (Friday Before)(2:00pm)}',
+                }
+            }
+        },
         'Is First Session Of Program': {
             'Topic:Pillar 1': {
                 emails: {

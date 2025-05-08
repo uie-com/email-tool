@@ -66,7 +66,7 @@ export function EmailPublisher() {
     );
 }
 
-export function AuthStatus() {
+export function AuthStatus({ className, showAC = true }: { className?: string, showAC?: boolean }) {
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
     const showMessage = useContext(MessageContext)
     const [acStatus, setAcStatus] = useState('loading');
@@ -169,14 +169,14 @@ export function AuthStatus() {
     }
 
     return (
-        <Flex align="center" justify="end" className="h-2 w-full relative">
-            <Flex align="center" justify="end" className="h-12 w-full absolute" gap={10} left={0} right={0} top={-16}>
-                <RemoteStatus
+        <Flex align="center" className={"h-2 w-full relative "}>
+            <Flex align="center" justify="end" className={"h-12 w-full absolute " + className} gap={10} left={0} right={0} top={-16}>
+                {showAC ? <RemoteStatus
                     name="Active Campaign"
                     icon={<Flex className="" w={16} h={16} mr={-2} ml={-4}><Image src='./interface/activecampaign.png' h={15} w={15} /></Flex>}
                     onClick={handleACClick}
                     status={acStatus}
-                />
+                /> : null}
 
                 <RemoteStatus
                     name="Google Drive"

@@ -517,6 +517,17 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 }
             },
         },
+        'Email Type:Transition': {
+            settings: {
+                'Email Name': { value: '{Topic} {Lab} Transition', part: 2 },
+                'Subject': { value: 'Win Program {Topic}. {Title}' },
+                'Share Reviews By': { value: '' },
+
+                'Template': { value: '/homework-pillar-x-lab-1-transition.html', part: 2 },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9577431', hide },
+            },
+        },
         'Email Type:First Lab Reminder': {
             settings: {
                 'Email Name': { value: 'First Reminder', part: 2 },

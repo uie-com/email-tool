@@ -678,7 +678,6 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const isReady = () => {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0
             && editorState.email?.hasRendered !== undefined && editorState.email?.hasRendered === editorState.email?.templateId
-            && editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
             && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
             && editorState.email?.hasRendered !== undefined && editorState.email?.hasRendered === editorState.email?.templateId
     }
@@ -979,11 +978,16 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                hasSentReview: true,
+            }
+        }));
+
         return await new Promise((resolve) => {
             setInterval(async () => {
-                if (!editorState.email?.hasSentReview)
-                    resolve(false);
-
                 console.log('Refreshing reviews...', emailStates);
                 const newSaves = await markReviewedEmails(emailStates);
                 const saveMatch = newSaves.find((s) => s === editorState.email?.name);

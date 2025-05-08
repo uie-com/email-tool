@@ -20,6 +20,7 @@ import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleAc
 import { IconClipboardText, IconClipboardX, IconExternalLink, IconLink, IconClipboardCheck, IconCopy, IconListDetails, IconPlaylistX } from "@tabler/icons-react";
 import { findNotionCard, createNotionCard, updateNotionCard, deleteNotionCard } from "@/domain/data/notionActions";
 import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { AuthStatus } from "./emailPublishing/emailPublisher";
 
 
 export function ValueReview() {
@@ -157,13 +158,18 @@ export function ValueReview() {
                     <EmailEditCard />
 
                     <Flex direction='column' align="center" justify="center" className="w-[38rem]" gap={10} mt={-10} mb={6} >
+                        <Box w='100%' mt={10} mb={10} >
+                            <AuthStatus className=" !justify-start " showAC={false} />
+                        </Box>
+
+
                         <CreateReferenceDoc shouldAutoStart={true} />
                         <GetNotionPage shouldAutoStart={true} />
                     </Flex>
 
 
                     <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 relative" mt={28} gap={20}>
-                        <Box className="absolute " top={-36} left={-2.5} ml={4} >
+                        <Box className="absolute " top={-34} left={-2.5} ml={4} >
                             <RemoteSource
                                 name="Airtable"
                                 icon={<Flex className="" justify='center' align='center' w={16} h={16} mr={-2} ml={-4}><Image src='./interface/airtable.png' h={12} w={12} /></Flex>}
