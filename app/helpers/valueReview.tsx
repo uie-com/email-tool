@@ -12,7 +12,7 @@ import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
 import { EMAIL_EDIT_VALUES, EmailEditCard } from "./components/email";
 import { EditorState, Email } from "@/domain/schema";
 import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/data/saveData";
-import { RemoteSource, RemoteStep, StateContent } from "./components/remote";
+import { HadIssue, RemoteSource, RemoteStep, StateContent } from "./components/remote";
 import { copy, openPopup } from "@/domain/parse/parse";
 import { AIRTABLE_LINK, createGoogleDocLink, createNotionUri } from "@/domain/parse/parseLinks";
 import { getEmailFromSchedule } from "@/domain/data/scheduleActions";
@@ -34,6 +34,9 @@ export function ValueReview() {
     const [refresh, setRefresh] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [showHidden, setShowHidden] = useState(false);
+
+    const [hadIssue, setHadIssue] = useState(false);
+
 
 
     const showMessage = useContext(MessageContext);
@@ -162,9 +165,10 @@ export function ValueReview() {
                             <AuthStatus className=" !justify-start " showAC={false} />
                         </Box>
 
-
-                        <CreateReferenceDoc shouldAutoStart={true} />
-                        <GetNotionPage shouldAutoStart={true} />
+                        <HadIssue.Provider value={[hadIssue, setHadIssue]}>
+                            <CreateReferenceDoc shouldAutoStart={true} />
+                            <GetNotionPage shouldAutoStart={true} />
+                        </HadIssue.Provider>
                     </Flex>
 
 
@@ -456,8 +460,9 @@ function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
         const emailName = values.resolveValue("Email Name", true) ?? '';
         const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
-        const shareReviewBy = values.resolveValue((values.resolveValue("Share Review By", true) ?? ''), true);
+        const shareReviewBy = values.resolveValue((values.resolveValue("Share Reviews By", true) ?? ''), true);
         const referenceDocURL = email?.referenceDocURL ?? '';
+
 
         const isPreApproved = isPreApprovedTemplate(editorState.email?.template, emailStates);
 

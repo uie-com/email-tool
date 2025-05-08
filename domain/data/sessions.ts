@@ -53,7 +53,6 @@ export type Session = {
     "Is First Session Of Program"?: string;
     "Is Last Session Of Program"?: string;
 
-    "Is Transition"?: string;
     "Is Before Break"?: string;
     "Is After Break"?: string;
 
@@ -73,6 +72,9 @@ export type Session = {
     "First Homework"?: string;
     "Second Homework"?: string;
 
+    "Previous Topic"?: string;
+    "Previous Session Type"?: string;
+
     // For TUXS
     "Number of Upcoming Sessions"?: string;
 
@@ -89,6 +91,7 @@ export const EMAILS_IN_PAGE = 20;
 export async function getSessionSchedule(refresh: boolean = false): Promise<Session[] | null> {
     let sessions: Session[] = [];
     try {
+
         let records: AirtableSessionRecord[] = await fetchRecords(undefined, undefined, !refresh);
         // console.log('Initial sessions: ', records);
         moment.tz.setDefault("America/New_York");
@@ -163,7 +166,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
         sessions = combineOptionsSessions(sessions);
 
         sessions = addSessionWeekContext(sessions);
-        sessions = markTransitions(sessions);
+        sessions = markPreviousSession(sessions);
         sessions = markBreaks(sessions);
 
         sessions = addSessionDateValues(sessions);
@@ -175,6 +178,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
 
 
         // console.log('Sessions: ', sessions);
+
         return sessions;
 
     } catch (error) {
@@ -358,20 +362,21 @@ function sortSessionsByDate(sessions: Session[]): Session[] {
     );
 }
 
-function markTransitions(sessions: Session[]): Session[] {
+function markPreviousSession(sessions: Session[]): Session[] {
     sessions.forEach((session, index) => {
-        if (session.Program !== 'Win') return;
+        const sessionsBefore = sessions.filter((s) => (
+            s.Cohort === session.Cohort
+            && s.Program === session.Program
+            && moment(s["Session Date"]).isBefore(session["Session Date"])
+        ));
+        const lastSession = sessionsBefore[sessionsBefore.length - 1];
 
-        const lastSession = sessions.slice(index - 1, index).sort((a, b) => {
-            return new Date(b["Session Date"]).getTime() - new Date(a["Session Date"]).getTime();
-        }).filter((s) => s.Program === session.Program && s.Cohort === session.Program)[0];
+        if (!lastSession || !lastSession.Topic) return;
 
-        if (!lastSession || !lastSession.Topic || !session.Topic) return;
+        session["Previous Topic"] = lastSession.Topic;
+        session["Previous Session Type"] = lastSession["Session Type"];
 
-        const lastSessionTopicNumber = parseInt(lastSession.Topic.split(" ")[1]);
-        const currentSessionTopicNumber = parseInt(session.Topic.split(" ")[1]);
-        const isTransition = lastSessionTopicNumber + 1 !== currentSessionTopicNumber;
-        session["Is Transition"] = 'Is Transition';
+
     });
     return sessions;
 }

@@ -5,9 +5,16 @@ import { createEmailsFromSession } from "../parse/parseSchedule";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, getSessionSchedule, Session } from "./sessions";
 import { Email } from "../schema";
 
+let emailCache: {
+    email?: Email;
+    session?: Session;
+    emailType?: string;
+}[] = [];
 
 export async function getEmailSchedule(offset: number, queries: string[], refresh: boolean = false) {
-    const sortedEmails = await getAllEmails(refresh);
+
+    let sortedEmails = (emailCache.length > 0 && !refresh) ? emailCache : await getAllEmails(refresh);
+    emailCache = sortedEmails;
 
     const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
     const cutoffIndex = sortedEmails.findIndex((email) => {

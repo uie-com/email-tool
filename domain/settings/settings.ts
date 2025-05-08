@@ -115,6 +115,17 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             },
         },
     },
+    'Email Type:Certificate': {
+        settings: {
+            'Email Name': { value: 'Certificate', part: 2 },
+            'Subject': { value: 'Your Certificate for the {Program Name} Online Course' },
+            'Template': { value: '/workshop/certificate.html', part: 1 },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9552708', hide },
+        },
+        'Program:Metrics': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1QqwlIK0xIWQD4Ms9Tp2UQLW-4Zc7-r2tKUkwofrPGrc/edit` } } },
+        'Program:Research': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1zQjiXG1bZlIMmiZz0RDGHbm1anirdWBrNvMZOSif0m4/edit` } } },
+        'Program:Visions': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1vo3rdXSIWOU1apSulbd3M8vfyEkkWA8tAfbKfN9_iQA/edit` } } },
+    },
 
 
     'Program:Stand Out': {
@@ -729,6 +740,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
 
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
+
 
                 'Session Entry': {
                     value: `<tr>
@@ -770,17 +783,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
     },
 
-    'Email Type:Certificate': {
-        settings: {
-            'Email Name': { value: 'Certificate', part: 2 },
-            'Subject': { value: 'Your Certificate for the {Program Name} Online Course' },
-            'Template': { value: '/workshop/certificate.html', part: 1 },
-            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9552708', hide },
-        },
-        'Program:Metrics': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1QqwlIK0xIWQD4Ms9Tp2UQLW-4Zc7-r2tKUkwofrPGrc/edit` } } },
-        'Program:Research': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1zQjiXG1bZlIMmiZz0RDGHbm1anirdWBrNvMZOSif0m4/edit` } } },
-        'Program:Visions': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1vo3rdXSIWOU1apSulbd3M8vfyEkkWA8tAfbKfN9_iQA/edit` } } },
-    },
+
 
 
     'Email Type: Vessel': {

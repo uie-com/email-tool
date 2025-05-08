@@ -149,11 +149,13 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 }
             }
         },
-        'Is Transition': {
-            emails: {
-                'Homework': {},
-                'Transition': {
-                    'Send Date': '{Session Date (Friday Before)(2:00pm)}',
+        'Previous Topic:Pillar 2': {
+            'Previous Session Type:Live Lab 2': {
+                emails: {
+                    'Homework': {},
+                    'Transition': {
+                        'Send Date': '{Session Date (Friday Before)(2:00pm)}',
+                    }
                 }
             }
         },
