@@ -14,7 +14,7 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
         const sendDate = email.email?.values?.resolveValue('Send Date', true);
         return sendDate ? moment(sendDate).isBefore(cutoffDate) : false;
     });
-    const upcomingEmails = cutoffIndex !== -1 ? sortedEmails.slice(0, cutoffIndex) : sortedEmails;
+    const upcomingEmails = cutoffIndex !== -1 ? sortedEmails.slice(cutoffIndex) : sortedEmails;
 
     const filteredEmails = upcomingEmails.filter((email) => {
         if (queries.length === 0) return true;
