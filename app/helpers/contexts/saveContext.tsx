@@ -59,7 +59,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
     }, []);
 
     useEffect(() => {
-        const refreshReviews = async () => {
+        const refreshReviews = async (delay: number = REVIEW_PASSIVE_REFRESH_INTERVAL) => {
             if (refreshReviewsInterval.current)
                 clearInterval(refreshReviewsInterval.current);
 
@@ -82,16 +82,17 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
                     handleSaveEdit(fullSave);
                 });
 
-            }, REVIEW_PASSIVE_REFRESH_INTERVAL);
+            }, delay);
         }
 
 
-        window.addEventListener('focus', refreshReviews);
+        window.addEventListener('focus', () => refreshReviews());
+        window.addEventListener('load', () => refreshReviews(0));
 
         return () => {
             if (refreshReviewsInterval.current)
                 clearInterval(refreshReviewsInterval.current);
-            window.removeEventListener('focus', refreshReviews);
+            window.removeEventListener('focus', () => refreshReviews());
         }
     }, [saves]);
 
