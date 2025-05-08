@@ -13,6 +13,7 @@ import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getStatusFromEmail, Email, EditorState, STATUS_COLORS } from "@/domain/schema";
 import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/schema/context";
+import { markEmailDone, markEmailIncomplete } from "@/domain/data/publishingActions";
 
 export function EmailMenuWrapper() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -50,7 +51,7 @@ function ScheduleButton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
 
 function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, setIsSidebarOpen: (isOpen: boolean) => void }) {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [emailStates, deleteEmail, editEmail] = useContext(SavedEmailsContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const [pinSidebar, setPinSidebar] = useState(false);
 
@@ -126,12 +127,6 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                                 editorState={state}
                                 selected={selected}
                                 setSelectedEmail={setSelectedEmail}
-                                deleteEmail={async (e: React.MouseEvent<HTMLButtonElement>) => {
-                                    return await deleteEmail(state.email?.airtableId ?? state.email?.name);
-                                }}
-                                editEmail={async (editedState: EditorState) => {
-                                    return await editEmail(editedState.email?.airtableId ?? editedState.email?.name, editedState);
-                                }}
                                 setPinSidebar={setPinSidebar}
                                 setIsSidebarOpen={setIsSidebarOpen}
                             />
@@ -161,9 +156,10 @@ function NewEmailButton() {
 
 }
 
-function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPinSidebar, setIsSidebarOpen, editEmail }: { editorState: EditorState, selected: boolean, deleteEmail: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void, editEmail: (editedState: EditorState) => Promise<boolean> }) {
+function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, setIsSidebarOpen }: { editorState: EditorState, selected: boolean, setSelectedEmail: (airtableId: string) => void, setPinSidebar: (isPinned: boolean) => void, setIsSidebarOpen: (shouldOpen: boolean) => void, }) {
     const [_, setEditorState, isLoaded, setEditorStateDelayed] = useContext(EditorContext);
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
 
     const [hovered, setHovered] = useState(false);
@@ -175,6 +171,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
 
     const email = editorState.email;
     const emailId = email?.name as string;
+    const id = editorState.email?.airtableId as string ?? emailId;
 
     const values = useMemo(() => new Values(email?.values?.initialValues), [email?.values?.initialValues]);
 
@@ -182,7 +179,6 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
 
     const program = useMemo(() => values?.resolveValue('Program', true), [values.initialValues]);
     const programColor = useMemo(() => PROGRAM_COLORS[program as keyof typeof PROGRAM_COLORS] + 'ff', [values.initialValues]);
-    const subject = useMemo(() => values?.resolveValue('Subject', true), [values.initialValues]);
 
     const emailName = useMemo(() => emailId.split(' ').slice(1).join(' '), [emailId]);
     const emailNameMinusProgram = useMemo(() => Object.keys(PROGRAM_COLORS).reduce((acc, program) => acc.replace(program, ''), emailName), [emailId]);
@@ -198,11 +194,13 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
     const automationId = useMemo(() => values.resolveValue('Automation ID', true), [email]);
 
     // Rerender ever time the email states change
-    useEffect(() => { }, [JSON.stringify(editorState)]);
+    useEffect(() => { }, [JSON.stringify(editorState), JSON.stringify(emailStates)]);
 
     const handleToggleMarkDone = async () => {
         setPinSidebar(true);
         setIsSidebarOpen(true);
+        setProcessing(true);
+
 
         const newState = {
             ...editorState,
@@ -219,9 +217,15 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
 
         console.log('Marking email as done:', newState);
 
-        editEmail(newState);
+        if (newState.email?.isSentOrScheduled !== undefined)
+            await markEmailDone(editorState);
+        else
+            await markEmailIncomplete(editorState);
+
+        await editEmail(newState);
 
         setPinSidebar(false);
+        setProcessing(false);
     }
 
     const deleteTemplate = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -240,7 +244,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         }
 
         if (response)
-            editEmail(newState);
+            await editEmail(newState);
 
         setProcessing(false);
         setPinSidebar(false);
@@ -261,7 +265,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         }
 
         if (response)
-            editEmail(newState);
+            await editEmail(newState);
 
         setProcessing(false);
         setPinSidebar(false);
@@ -280,7 +284,7 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setProcessing(true);
         setIsSidebarOpen(true);
 
-        await deleteEmail(e);
+        await deleteEmail(id);
 
         setProcessing(false);
         setPinSidebar(false);
@@ -290,17 +294,23 @@ function EmailItem({ editorState, selected, deleteEmail, setSelectedEmail, setPi
         setPinSidebar(false);
     }
 
-    const handleSelect = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleSelect = async (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
             console.log('Selected email:', editorState);
             setNewlySelected(true);
             setSelectedEmail(emailId);
 
+            const loadedState = await loadEmail(emailId);
+            if (!loadedState) {
+                console.log('Email not found:', emailId);
+                return;
+            }
+
             setEditorStateDelayed({
-                ...editorState,
+                ...loadedState,
                 email: {
-                    ...email,
-                    values: new Values(email?.values?.initialValues),
+                    ...loadedState?.email,
+                    values: new Values(loadedState.email?.values?.initialValues),
                 }
             });
         }

@@ -16,11 +16,10 @@ import { CopyOverlay } from "../components/clipboard";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
 import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWER_IDS, MARKETING_REVIEWERS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/domain/settings/slack";
 import { createEmailInSlack, deleteEmailInSlack, markEmailSentInSlack, markEmailUnsentInSlack } from "@/domain/data/slackActions";
-import { isEmailReviewed } from "@/domain/data/airtableActions";
 import { Values } from "@/domain/schema/valueCollection";
 import { NOTION_CALENDAR } from "@/domain/settings/notion";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
-import { loadLocally, saveScheduleOpen } from "@/domain/data/saveData";
+import { loadState, markReviewedEmails, SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
 
 export function AutomationPublisher() {
@@ -41,11 +40,9 @@ export function AutomationPublisher() {
             <AuthStatus />
             <CreateTemplate shouldAutoStart={false} />
             <RenderTemplate shouldAutoStart={false} />
-            <CreateReferenceDoc shouldAutoStart={!hadIssue} />
             <CreatePostmarkAction shouldAutoStart={false} />
             <CreateWaitAction shouldAutoStart={false} />
             <TestTemplate shouldAutoStart={!hadIssue} />
-            <GetNotionPage shouldAutoStart={!hadIssue} />
             <ReviewTestEmail shouldAutoStart={false} />
 
             <SendReview shouldAutoStart={editorState.email?.hasSentReview ?? false} />
@@ -294,161 +291,6 @@ function RenderTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             tryAction={tryAction}
             tryUndo={tryUndo}
             allowsUndo={true}
-        />
-    )
-}
-
-function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
-    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
-    const [editorState, setEditorState] = useContext(EditorContext);
-
-    const stateContent: StateContent = {
-        waiting: {
-            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Create Reference Document',
-            subtitle: 'Create a Google Doc for content reference',
-            rightContent: '',
-        },
-        ready: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Create Reference Document',
-            subtitle: 'Create a Google Doc for content reference',
-            rightContent: '',
-        },
-        manual: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Create Reference Document',
-            subtitle: 'Create a Google Doc for content reference',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Create Doc</Button>,
-        },
-        pending: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Creating Reference Document',
-            subtitle: 'Creating a Google Doc for content reference...',
-            rightContent: <Loader variant="bars" color="blue.5" size={30} />
-        },
-        failed: {
-            icon: <ThemeIcon w={50} h={50} color="gray.6"><IconClipboardX size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Couldn\'t Find Reference Doc',
-            subtitle: 'Input a document manually.',
-            rightContent:
-                <Anchor href={(editorState.email?.values?.resolveValue('Source Reference Doc', true))} target="_blank">
-                    <Button variant="light" color="gray.9" h={40} rightSection={<IconExternalLink />} >
-                        Open Source
-                    </Button>
-                </Anchor>,
-            expandedContent:
-                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
-                    <Text size="xs">Either input a source document to duplicate and retry, <br />or input a completed reference document below and continue.</Text>
-                    <TextInput description='Link to Source Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
-                        onChange={(e) => {
-                            const newValues = new Values(editorState.email?.values?.initialValues);
-                            newValues.setValue('Source Reference Doc', { value: e.target.value, source: 'user' });
-                            setEditorState((prev) => ({
-                                ...prev,
-                                email: {
-                                    ...prev.email,
-                                    values: newValues,
-                                }
-                            }));
-                        }} />
-                    <TextInput description='Link to Final Reference Doc' value={editorState.email?.values?.resolveValue('Source Reference Doc', true)} w='100%' rightSection={<IconLink />}
-                        onChange={(e) => {
-                            setEditorState((prev) => ({
-                                ...prev,
-                                email: {
-                                    ...prev.email,
-                                    referenceDocURL: e.target.value,
-                                }
-                            }));
-                        }} />
-                </Flex>
-        },
-        succeeded: {
-            icon: <ThemeIcon w={50} h={50} color="green.6"><IconClipboardCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Created Reference Doc',
-            subtitle: 'Created content reference doc.',
-            rightContent:
-                <Flex gap={10}>
-                    <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.referenceDocURL ?? ''))}>
-                        <IconCopy />
-                    </ActionIcon>
-                    <Anchor href={(editorState.email?.referenceDocURL ?? '')} target="_blank">
-                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
-                            Open Doc
-                        </Button>
-                    </Anchor>
-                </Flex>
-
-        }
-    };
-
-    const isReady = () => {
-        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0;
-    }
-
-    const isDone = () => {
-        return editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
-    }
-
-    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
-        const email = editorState.email;
-        const values = email?.values;
-
-        if (!email || !values) return setMessage('No email found.');
-
-        const sourceDoc = values.resolveValue("Source Reference Doc", true) ?? '';
-        const docName = values.resolveValue("Template Name", true) ?? '';
-
-        const res = await copyGoogleDocByUrl(sourceDoc, docName, globalSettings.googleAccessToken ?? '');
-
-        if (!res.success || !res.newFileId) {
-            console.log("Error copying doc", res.error);
-            return setMessage(res.error);
-        }
-
-        setEditorState((prev) => ({
-            ...prev,
-            email: {
-                ...prev.email,
-                referenceDocURL: createGoogleDocLink(res.newFileId),
-            }
-        }));
-
-        return true;
-    }
-
-    const tryUndo = async () => {
-        const referenceDocURL = editorState.email?.referenceDocURL;
-        if (!referenceDocURL) return true;
-
-        console.log("Deleting reference doc", referenceDocURL);
-        const res = await deleteGoogleDocByUrl(referenceDocURL, globalSettings.googleAccessToken ?? '');
-        if (!res.success) {
-            console.log("Error deleting doc", res.error);
-            return;
-        }
-
-        setEditorState((prev) => ({
-            ...prev,
-            email: {
-                ...prev.email,
-                referenceDocURL: undefined,
-            }
-        }));
-
-        return true;
-    }
-
-    return (
-        <RemoteStep
-            shouldAutoStart={shouldAutoStart}
-            stateContent={stateContent}
-            isReady={isReady}
-            isDone={isDone}
-            tryAction={tryAction}
-            tryUndo={tryUndo}
-            allowsUndo
         />
     )
 }
@@ -969,185 +811,6 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     )
 }
 
-function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean }) {
-    const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
-    const [editorState, setEditorState] = useContext(EditorContext);
-
-    const [didCreate, setDidCreate] = useState(false);
-    const [updatingCard, setUpdatingCard] = useState(false);
-
-    const stateContent: StateContent = {
-        waiting: {
-            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Link Notion Card',
-            subtitle: 'Finds or creates a Notion card for the email.',
-            rightContent: '',
-        },
-        ready: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Link Notion Card',
-            subtitle: 'Finds or creates a Notion card for the email.',
-            rightContent: '',
-        },
-        manual: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Link Notion Card',
-            subtitle: 'Finds or creates a Notion card for the email.',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Find Card</Button>
-        },
-        pending: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: (updatingCard ? 'Adding Ref Doc to ' : (didCreate ? 'New' : 'Found')) + ' Notion Card',
-            subtitle: (didCreate ? 'Created' : 'Found') + ' a Notion card for the email....',
-            rightContent: <Loader variant="bars" color="blue.5" size={30} />
-        },
-        failed: {
-            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconPlaylistX size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: 'Couldn\'t Create Notion Card',
-            subtitle: 'Couldn\'t find or create a Notion card.',
-            rightContent:
-                <Anchor href={(NOTION_CALENDAR)} target="_blank">
-                    <Button variant="light" color="orange.9" h={40} rightSection={<IconExternalLink />} >
-                        Open Notion
-                    </Button>
-                </Anchor>,
-            expandedContent:
-                <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' p={12}>
-                    <Text size="xs">Input the Link to the Notion Card to Continue</Text>
-                    <TextInput description='Link to Notion Card' value={editorState.email?.notionURL} w='100%' rightSection={<IconLink />}
-                        onChange={(e) => {
-                            setEditorState((prev) => ({
-                                ...prev,
-                                email: {
-                                    ...prev.email,
-                                    notionURL: e.target.value,
-                                }
-                            }));
-                        }} />
-
-                </Flex>
-        },
-        succeeded: {
-            icon: <ThemeIcon w={50} h={50} color="green.6"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
-            title: (didCreate ? 'Created' : 'Found') + ' Notion Card',
-            subtitle: 'Notion card ' + (didCreate ? 'created' : 'found') + ' and linked.',
-            rightContent:
-                <Flex gap={10}>
-                    <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.notionURL ?? ''))}>
-                        <IconCopy />
-                    </ActionIcon>
-                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
-                        <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} >
-                            Open Card
-                        </Button>
-                    </Anchor>
-                </Flex>
-
-        }
-    };
-
-    const isReady = () => {
-        return editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true
-            && editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId
-            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
-    }
-
-    const isDone = () => {
-        return editorState.email?.notionURL !== undefined && editorState.email?.notionURL.length > 0;
-    }
-
-    const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
-        const email = editorState.email;
-        const values = email?.values;
-
-        if (!email || !values) return setMessage('No email found.');
-
-        const emailName = values.resolveValue("Email Name", true) ?? '';
-        const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
-        const referenceDocURL = email?.referenceDocURL ?? '';
-
-        setDidCreate(false);
-
-        let res = await findNotionCard(sendDate, emailName);
-        if (!res || !res.success) {
-            console.log("Error querying Notion", res);
-            if (res.error)
-                setMessage(res?.error ?? 'Error searching Notion: ' + res?.error);
-            else
-                setMessage('No Notion card found. Created one called ' + emailName + ' for ' + sendDate);
-        }
-
-        if (!res.url) {
-            setDidCreate(true);
-
-            const notionCard = await createNotionCard(sendDate, emailName);
-            if (notionCard && notionCard.success && notionCard.url && notionCard.id) {
-                res = notionCard;
-            } else {
-                return setMessage('Error creating Notion card: ' + notionCard?.error);
-            }
-        }
-
-        setUpdatingCard(true);
-
-        const notionId = res.id;
-        const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false);
-        if (!updateRes.success) {
-            console.log("Error updating Notion card", updateRes.error);
-            return setMessage('Error updating Notion card: ' + updateRes.error);
-        }
-        console.log("Updated Notion card", updateRes);
-
-        setUpdatingCard(false);
-
-        setEditorState((prev) => ({
-            ...prev,
-            email: {
-                ...prev.email,
-                notionURL: res.url,
-                notionId: res.id,
-            }
-        }));
-
-        return true;
-    }
-
-    const tryUndo = async () => {
-        const notionId = editorState.email?.notionId;
-        if (!notionId) return true;
-
-        console.log("Deleting notion card", notionId);
-        const res = await deleteNotionCard(notionId);
-        if (!res.success) {
-            console.log("Error deleting notion card", res.error);
-            return true;
-        }
-
-        setEditorState((prev) => ({
-            ...prev,
-            email: {
-                ...prev.email,
-                notionURL: undefined,
-                notionId: undefined,
-            }
-        }));
-
-        return true;
-    }
-
-    return (
-        <RemoteStep
-            shouldAutoStart={shouldAutoStart}
-            stateContent={stateContent}
-            isReady={isReady}
-            isDone={isDone}
-            tryAction={tryAction}
-            tryUndo={tryUndo}
-            allowsUndo
-        />
-    )
-}
-
 function ReviewTestEmail({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
@@ -1261,6 +924,7 @@ function ReviewTestEmail({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
 function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const [reviewer, setReviewer] = useState(MARKETING_REVIEWERS[GET_REVIEW_INDEX(editorState.email?.templateId ?? '') % MARKETING_REVIEWERS.length]);
     const [priority, setPriority] = useState<string | undefined>(undefined);
@@ -1320,15 +984,41 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 if (!editorState.email?.hasSentReview)
                     resolve(false);
 
-                const saves = loadLocally();
-                const saveMatch = saves.find((s) => s.email?.name === editorState.email?.name);
+                console.log('Refreshing reviews...', emailStates);
+                const newSaves = await markReviewedEmails(emailStates);
+                const saveMatch = newSaves.find((s) => s === editorState.email?.name);
 
-                if (saveMatch && saveMatch.email?.hasSentReview)
+                let fullSave = await loadState(saveMatch ?? '');
+                if (fullSave) {
+                    fullSave = {
+                        ...fullSave,
+                        email: {
+                            ...fullSave.email,
+                            isReviewed: true,
+                        }
+                    }
+                    await editEmail(fullSave);
+                }
+
+                if (saveMatch)
                     resolve(true);
 
             }, REVIEW_ACTIVE_REFRESH_INTERVAL)
         });
     }
+
+    const handleSkipReview = () => {
+        setEditorState((prev) => ({
+            ...prev,
+            email: {
+                ...prev.email,
+                hasSentReview: true,
+                isReviewed: true,
+            }
+        }));
+    }
+
+    useEffect(() => { }, [editorState.email?.hasSentReview, editorState.email?.isReviewed]);
 
 
     const stateContent: StateContent = {
@@ -1427,8 +1117,12 @@ function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
                     <Flex gap={20} direction="row" p={10} align="start" justify="space-between" w='100%'>
                         <Flex direction="row" align="end" justify="end" mt={10} mr={-5} gap={20} w='100%'>
-                            <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket(true)} >
+
+                            <Button variant="outline" color="red" h={40} mr={'auto'} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket(true)} >
                                 Delete Ticket
+                            </Button>
+                            <Button variant="light" color="gray" h={40} leftSection={<IconCheck />} onClick={() => handleSkipReview()} >
+                                Mark Reviewed
                             </Button>
                             <Anchor href={SLACK_LIST_URL} target="_blank">
                                 <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} >

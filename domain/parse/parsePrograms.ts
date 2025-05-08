@@ -100,3 +100,17 @@ export function shortenIdentifier(id: string) {
         .replaceAll('November', 'Nov')
         .replaceAll('December', 'Dec')
 }
+
+export function matchEmailName(src: string, target: string, excludedToken?: string) {
+    let excluded = excludedToken?.toLowerCase().replace(/\s+/g, '')
+    let excludedShortened = shortenIdentifier(excludedToken ?? '').toLowerCase().replace(/\s+/g, '')
+
+    let emailNames = target.split(' ').map(name => name.toLowerCase().replace(/\s+/g, '')).filter(name => excluded ? excluded?.includes(name) === false : true);
+    let shortenedEmailNames = shortenIdentifier(target).split(' ').map(name => name.toLowerCase().replace(/\s+/g, '')).filter(name => excluded ? excludedShortened?.includes(name) === false : true);
+
+    const hasAllEmailNames = emailNames.every(emailName => src.toLowerCase().replace(/\s+/g, '').includes(emailName));
+    const hasAllShortenedEmailNames = shortenedEmailNames.every(shortenedEmailName => src.toLowerCase().replace(/\s+/g, '').includes(shortenedEmailName));
+
+    if (hasAllEmailNames || hasAllShortenedEmailNames) return true;
+    return false;
+}

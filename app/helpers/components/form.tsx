@@ -2,9 +2,9 @@ import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables, Variable } from "@/domain/schema/variableCollection";
 import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
-import { Flex, MantineSize, TextInput, Textarea, ThemeIcon } from "@mantine/core";
+import { Flex, Loader, MantineSize, TextInput, Textarea, ThemeIcon } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
-import { IconCalendar, IconCalendarEventFilled, IconCalendarFilled, IconCalendarMonthFilled, IconCalendarWeek, IconCalendarWeekFilled, IconExternalLink, IconExternalLinkOff, IconLink, IconLinkOff } from "@tabler/icons-react";
+import { IconCalendar, IconCalendarEventFilled, IconCalendarFilled, IconCalendarMonthFilled, IconCalendarWeek, IconCalendarWeekFilled, IconExternalLink, IconExternalLinkOff, IconLink, IconLinkOff, IconRefresh } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import moment, { Moment } from "moment-timezone";
 import { useMemo, useState } from "react";
@@ -54,6 +54,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
         }
     }, [value]);
     const [showPreview, setShowPreview] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     if (!variable)
         variable = new Variable('{' + variableName + '}', 0);
@@ -71,6 +72,10 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
         label: variant === "unstyled" ? undefined : variable.name,
         placeholder: 'No ' + variable.name,
     };
+
+    if (isRefreshing) {
+        return <Loader color="black" type="dots" opacity={0.1} />
+    }
 
     if (variable.type === 'String' && !((isValidHttpUrl(value as string) || value.indexOf('./') === 0) && (typeof value === 'string' && value.length > 5))) {
         return (
@@ -121,6 +126,49 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                     mb={variant === 'unstyled' ? -0.25 : 0}
                 />
             </Flex>
+        )
+    } else if (variable.key === 'template') {
+
+        return (
+            <Textarea
+                key={'vi' + index}
+                onChange={e => setValue(e.target.value)}
+                value={value as string ?? ''}
+                rightSection={
+                    <>
+                        {linkState && (
+                            linkState === 'empty' ? (null) :
+                                linkState === 'link' ? (
+                                    <ThemeIcon color="blue" pb={1} variant="light" className=" !absolute top-1.5 right-1 rounded-full" style={{ background: 'none' }}>
+                                        <IconRefresh size={26} opacity={1} className=" cursor-pointer  hover:stroke-blue-500 rounded-sm transition-all hover:bg-blue-100 pb-0.5 " strokeWidth={1.75}
+                                            onMouseUp={() => {
+                                                setIsRefreshing(true);
+                                                setValue('');
+                                                setTimeout(() => {
+                                                    setValue(value as string);
+                                                    setIsRefreshing(false);
+                                                }, 400);
+                                            }}
+                                        />
+                                    </ThemeIcon>)
+                                    : linkState === 'broken'
+                                        ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className=" cursor-pointer transition-all" onMouseUp={() => { window.open(value as string, '_blank'); }} />)
+                                        : null)}
+
+                    </>
+                }
+                onFocus={() => setShowPreview(true)}
+                onBlur={() => setShowPreview(false)}
+                autosize={true}
+                minRows={2}
+                maxRows={variant === "unstyled" ? undefined : 10}
+                {...sharedProps}
+                className="relative"
+                classNames={{ input: '!text-[#228BE6]' }}
+            // leftSection={
+            //     <iframe src={value as string ?? ''} className=" absolute left-0 right-0"></iframe>
+            // }
+            />
         )
     } else if (variable.type === 'Link' || variable.type === 'Banner' || variable.type === 'Image' || ((isValidHttpUrl(value as string) || value.indexOf('./') === 0) && (typeof value === 'string' && value.length > 5))) {
         return (

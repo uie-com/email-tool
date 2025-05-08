@@ -1,4 +1,5 @@
 import { delTemplate, delCampaign } from "@/domain/data/activeCampaignActions";
+import { markEmailDone, markEmailIncomplete } from "@/domain/data/publishingActions";
 import { SavedEmailsContext } from "@/domain/data/saveData";
 import { openPopup } from "@/domain/parse/parse";
 import { createTemplateLink, createCampaignLink, createAutomationLink } from "@/domain/parse/parseLinks";
@@ -11,7 +12,7 @@ import { useContext, useState } from "react";
 
 export function EmailMenu({ editorState, target, loader }: { editorState?: EditorState, target?: React.ReactNode, loader?: React.ReactNode }) {
     const [_, setEditorState, isLoaded, setEditorStateDelayed] = useContext(EditorContext);
-    const [emailStates, deleteEmail, editEmail] = useContext(SavedEmailsContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
     const [globalSettings, setGlobalSettings] = useContext(GlobalSettingsContext);
     const showMessage = useContext(MessageContext);
 
@@ -30,7 +31,7 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
         setIsLoading(true);
 
         console.log('Marking email as done:', editorState);
-        if (editorState?.email?.isSentOrScheduled === 'skipped' && editorState?.email?.templateId === 'skipped')
+        if (editorState?.email?.isSentOrScheduled === 'skipped' && editorState?.email?.templateId === 'skipped' && !editorState.email?.templateHTML)
             return handleDelete(true);
 
         const newState = {
@@ -50,7 +51,12 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
 
         console.log('Marking email as done:', newState);
 
-        await editEmail(id, newState);
+        if (newState.email?.isSentOrScheduled !== undefined)
+            await markEmailDone(editorState);
+        else
+            await markEmailIncomplete(editorState);
+
+        await editEmail(newState);
         setIsLoading(false);
     }
 
@@ -69,7 +75,7 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
         }
 
         if (response)
-            await editEmail(id, newState);
+            await editEmail(newState);
         setIsLoading(false);
     }
 
@@ -88,7 +94,7 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
         }
 
         if (response)
-            await editEmail(id, newState);
+            await editEmail(newState);
         setIsLoading(false);
     }
 

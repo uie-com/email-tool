@@ -1,14 +1,15 @@
 import { getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
-import { Badge, Box, Button, Flex, Group, Pill, ScrollArea, Text, Title } from "@mantine/core";
+import { Badge, Box, Button, Flex, Group, Pill, ScrollArea, Text, ThemeIcon, Title } from "@mantine/core";
 import { JSX, use, useContext, useEffect, useMemo, useState } from "react";
 import { VariableInput } from "./form";
 import { Values } from "@/domain/schema/valueCollection";
 import { TemplateView } from "./template";
-import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, IconCopyleftFilled } from "@tabler/icons-react";
+import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, IconCopyleftFilled, IconRosetteDiscountCheck, IconRosetteDiscountCheckFilled } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { CopyOverlay } from "./clipboard";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
 import { EditorContext } from "@/domain/schema/context";
+import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/data/saveData";
 
 
 export const EMAIL_EDIT_VALUES = ['Email Name', 'Send Date', 'Send Type', 'Subject', 'Preview'];
@@ -24,6 +25,7 @@ export function EmailEditCard({ rightContent }: { rightContent?: JSX.Element }) 
     }
     return (
         <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-[38rem] border-1 overflow-hidden relative" gap={25}>
+            <PreApprovalBadge className=" !absolute top-0 right-0 scale-[300%]" />
             <div className={" relative w-[9rem] h-[16rem]"}>
                 <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" showToggle={false} />
             </div>
@@ -108,6 +110,7 @@ export function EmailViewCard() {
     else if (editorState.step === 3)
         return (
             <Flex align="stretch" justify="start" direction='row' className="p-4 border-gray-200 rounded-lg w-full border-1 overflow-hidden relative" gap={25}>
+                <PreApprovalBadge className=" !absolute top-0 right-0 scale-[300%]" />
 
                 <div className={" relative w-[9rem] h-[16rem]"}>
                     <TemplateView setVariables={() => { }} className=" absolute top-0 left-0 h-[64rem] w-[36rem] origin-top-left scale-25" showToggle={false} />
@@ -152,4 +155,25 @@ export function EmailViewCard() {
                 </Flex>
             </Flex >
         );
+}
+
+function PreApprovalBadge({ className }: { className?: string }) {
+    const [editorState, setEditorState] = useContext(EditorContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
+
+    const isPreApproved = isPreApprovedTemplate(editorState.email?.template, emailStates);
+
+    if (!isPreApproved)
+        return null;
+
+    return (
+        <ThemeIcon
+            className={className}
+            c="gray.0"
+            bg='none'
+            size={32}
+        >
+            <IconRosetteDiscountCheck size={36} strokeWidth={2} />
+        </ThemeIcon>
+    )
 }

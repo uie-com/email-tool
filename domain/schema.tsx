@@ -29,6 +29,8 @@ export type EditorState = {
 export type Saves = EditorState[];
 
 export class Email {
+    isShortened?: boolean; // Whether the email is shortened
+
     airtableId?: string; // Airtable ID once uploaded
     name?: string; // unique name of the email
 

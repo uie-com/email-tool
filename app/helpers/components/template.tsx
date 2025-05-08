@@ -18,7 +18,6 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
 
     const [showOriginal, setShowOriginal] = useState(false);
 
-    const currentFilled = useRef<string>('');
     const currentlyRenderedEmail = useRef<string>(editorState.email?.template ?? '');
 
     const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -72,19 +71,22 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
             const filled = variables.resolveWith(values);
             if (DEBUG) console.log('[TEMPLATE] Filled template', filled);
 
-            currentFilled.current = (filled);
-
             currentlyRenderedEmail.current = editorState.email?.template ?? '';
 
-            if (currentFilled.current !== filledTemplate)
-                setFilledTemplate(currentFilled.current);
-            else
+            if (filled !== filledTemplate) {
+                console.log('[TEMPLATE] Setting filled template to ' + filled.length + ' characters, from path ' + currentlyRenderedEmail.current);
+                setFilledTemplate(filled);
+            }
+            else {
+                console.log('[TEMPLATE] Filled template is the same as before.');
                 forceUpdate();
+            }
 
         }, RENDER_DELAY);
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
     if (DEBUG) console.log('[TEMPLATE] Rendering template view of ' + editorState.email?.template + ' with ' + ((currentlyRenderedEmail.current !== editorState.email?.template) ? 0 : filledTemplate.length) + ' characters');
+    if (DEBUG) console.log('[TEMPLATE] Filled template', editorState.email);
 
     return (
         <div className={className + ' relative'} >

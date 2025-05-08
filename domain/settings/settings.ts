@@ -65,7 +65,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Link Text Decoration': { value: 'underline', hide },
 
-        'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ]', part: 0 },
+        'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] ul [ margin-bottom: 1.5rem !important; ]', part: 0 },
 
         'Zoom Link': { value: '{Airtable Settings Query}&fields[]=Zoom Link', fetch: 'airtable', hide },
         'Zoom ID': { value: '{Airtable Settings Query}&fields[]=Zoom ID', fetch: 'airtable', hide },
@@ -402,7 +402,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Send Type': { value: 'AUTOMATION', hide },
             'Template': { value: '/win', part: 1 },
-            'Email Name': { value: '{Cohort (First Word)} ', part: 1 },
+            'Email Name': { value: '{Cohort (3 Letters)} ', part: 1 },
 
             'Link Color': { value: '#a5473d', hide },
             'Link Text Decoration': { value: 'none' },
@@ -473,6 +473,18 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Email Name': { value: '{Topic} {Lab}', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
+                'Share Reviews By': { value: 'Cohort' },
+
+            },
+            'Week:Week 1': {
+                settings: {
+                    'Share Reviews By': { value: '' },
+                }
+            },
+            'Week:Week 2': {
+                settings: {
+                    'Share Reviews By': { value: '' },
+                }
             },
             'Session Type:Live Lab 1': {
                 settings: {
@@ -531,7 +543,15 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/welcome.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1vGnH3X_0synDw5-r2tbV21B94XiPqNVeBVjBRfyUWEk/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540161', hide },
-
+            },
+        },
+        'Email Type:Wrap Up': {
+            settings: {
+                'Email Name': { value: 'Wrap Up', part: 2 },
+                'Subject': { value: 'Program Off-Boarding, Support, and Next Steps.' },
+                'Template': { value: '/wrap-up.html', part: 2 },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1qNN47LexqXBO6HWVOiGewCGdTmgFYOepeKs11Jky4RA/edit?tab=t.0#heading=h.izz3rfn15qfa' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496698', hide },
             },
         },
         'Email Type:Certificate': {
@@ -610,6 +630,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable' },
             'Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
             'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
+
+            'Global Styles': { value: 'ul [ margin-bottom: 1.5rem !important; ]', part: 0 },
+
         },
         'Email Type:Today': {
             settings: {

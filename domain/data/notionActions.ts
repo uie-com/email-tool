@@ -1,13 +1,20 @@
 'use server';
 
 import { Client } from '@notionhq/client';
-import { shortenIdentifier } from '../parse/parsePrograms';
+import { matchEmailName, shortenIdentifier } from '../parse/parsePrograms';
 import { error } from 'console';
+import { NOTION_NEW_TEMPLATE, NOTION_PRE_APPROVED_TEMPLATE } from '../settings/notion';
+import { BlockObjectRequest, BlockObjectResponse, PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.NOTION_EMAIL_DB_ID as string;
 
-export async function updateNotionCard(cardId: string, referenceDoc: string, isDone: boolean): Promise<{ success: boolean; error?: string | null }> {
+export async function updateNotionCard(cardId: string, referenceDoc: string, isDone: boolean, isPreApproved?: boolean): Promise<{ success: boolean; error?: string | null }> {
+    let blocks: (BlockObjectRequest)[] = [];
+    // if (isPreApproved !== undefined) {
+    //     const pageId = !isPreApproved ? NOTION_NEW_TEMPLATE : NOTION_PRE_APPROVED_TEMPLATE;
+    //     blocks = await getBlocksRecursively(pageId);
+    // }
     try {
         const response = await notion.pages.update({
             page_id: cardId,
@@ -31,6 +38,30 @@ export async function updateNotionCard(cardId: string, referenceDoc: string, isD
             },
         });
         console.log('Updated Notion card:', response);
+
+        // if (blocks.length > 0) {
+        //     for (const block of blocks) {
+        //         const { children, ...blockWithoutChildren } = block as BlockObjectRequest & { children?: BlockObjectRequest[] };
+
+        //         // Append top-level block
+        //         const created = await notion.blocks.children.append({
+        //             block_id: cardId,
+        //             children: [blockWithoutChildren],
+        //         });
+
+        //         // If it had children, recursively add them to the new block
+        //         if (children && created.results.length > 0) {
+        //             const newBlockId = (created.results[0] as BlockObjectResponse).id;
+        //             for (const child of children) {
+        //                 await appendBlockWithChildren(newBlockId, child);
+        //             }
+        //         }
+
+        //         console.log('Added Block:', block.type);
+        //     }
+        // }
+
+
         return {
             success: true,
             error: null,
@@ -66,7 +97,7 @@ export async function deleteNotionCard(cardId: string) {
 }
 
 
-export async function findNotionCard(date: string, emailName: string): Promise<{ success: boolean; url?: string; id?: string; error?: string | null, card?: NotionCard | null }> {
+export async function findNotionCard(date: string, emailName: string, shareReviewBy: string | undefined): Promise<{ success: boolean; url?: string; id?: string; error?: string | null, card?: NotionCard | null }> {
     console.log('Finding Notion card with date:', date, 'and emailName:', emailName);
     const potentialCards = await getNotionCardByDate(date);
     if (!potentialCards.success) {
@@ -84,7 +115,7 @@ export async function findNotionCard(date: string, emailName: string): Promise<{
         };
     }
 
-    const filteredCards = cards.filter(card => filterCardByName(card, emailName));
+    const filteredCards = cards.filter(card => filterCardByName(card, emailName, shareReviewBy));
     if (filteredCards.length === 0) {
         console.log('No cards found matching the email name:', emailName);
         return {
@@ -140,29 +171,16 @@ export async function createNotionCard(date: string, emailName: string): Promise
     }
 }
 
-function filterCardByName(card: NotionCard, emailName: string) {
+function filterCardByName(card: NotionCard, emailName: string, shareReviewBy?: string) {
     let cardName = card.properties.name.title[0].text.content;
     if (!cardName) return false;
 
-    let emailNames = emailName.split(' ');
-    let shortenedEmailNames = shortenIdentifier(emailName).split(' ');
+    if (shareReviewBy?.trim().length === 0)
+        shareReviewBy = undefined;
 
-    // // Remove cohort from win, USE IF COMBINING QA
-    // if (emailNames.includes('Win')) {
-    //     const index = emailNames.indexOf('Win');
-    //     if (index > -1) {
-    //         emailNames.splice(index + 1, 1);
-    //     }
-    //     const index2 = shortenedEmailNames.indexOf('Win');
-    //     if (index2 > -1) {
-    //         shortenedEmailNames.splice(index2 + 1, 1);
-    //     }
-    // }
+    console.log('Comparing card name:', cardName, 'with email name:', emailName, 'and shareReviewBy:', shareReviewBy, ' found:', matchEmailName(cardName, emailName, shareReviewBy));
 
-    const hasAllEmailNames = emailNames.every(emailName => cardName.toLowerCase().replace(/\s+/g, '').includes(emailName.toLowerCase().replace(/\s+/g, '')));
-    const hasAllShortenedEmailNames = shortenedEmailNames.every(shortenedEmailName => cardName.toLowerCase().replace(/\s+/g, '').includes(shortenedEmailName.toLowerCase().replace(/\s+/g, '')));
-    if (hasAllEmailNames || hasAllShortenedEmailNames) return true;
-    return false;
+    return matchEmailName(cardName, emailName, shareReviewBy);
 }
 
 async function getNotionCardByDate(date: string) {
@@ -193,6 +211,54 @@ async function getNotionCardByDate(date: string) {
             success: false,
             error: (error as Error).message,
         };
+    }
+}
+
+// Recursively get all blocks and their children
+async function getBlocksRecursively(blockId: string): Promise<(BlockObjectRequest & { children?: BlockObjectRequest[] })[]> {
+    const blocks: (BlockObjectRequest & { children?: BlockObjectRequest[] })[] = [];
+    let cursor: string | undefined = undefined;
+
+    do {
+        const response = await notion.blocks.children.list({
+            block_id: blockId,
+            start_cursor: cursor,
+        });
+
+        for (const block of response.results) {
+            const typed = block as BlockObjectResponse;
+            const newBlock: any = {
+                type: typed.type,
+                ...(typed.type in typed ? { [typed.type]: (typed as any)[typed.type] } : {}), // safely access block type
+            };
+
+            if (typed.has_children) {
+                newBlock.children = await getBlocksRecursively(typed.id);
+            }
+
+            console.log('Found Block:', newBlock.type);
+            blocks.push(newBlock);
+        }
+
+        cursor = response.has_more ? response.next_cursor ?? undefined : undefined;
+    } while (cursor);
+
+    return blocks;
+}
+
+async function appendBlockWithChildren(parentId: string, block: BlockObjectRequest & { children?: BlockObjectRequest[] }) {
+    const { children, ...blockWithoutChildren } = block;
+
+    const created = await notion.blocks.children.append({
+        block_id: parentId,
+        children: [blockWithoutChildren],
+    });
+
+    if (children && created.results.length > 0) {
+        const newBlockId = (created.results[0] as BlockObjectResponse).id;
+        for (const child of children) {
+            await appendBlockWithChildren(newBlockId, child);
+        }
     }
 }
 

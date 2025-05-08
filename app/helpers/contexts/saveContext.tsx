@@ -1,18 +1,16 @@
 "use client";
 
 import { EditorState } from "@/domain/schema";
-import { SavedEmailsContext, recoverCurrentEditorState, saveStateLocally, saveLocally, loadLocally, saveRemotely, deleteState, loadRemotely } from "@/domain/data/saveData";
+import { SavedEmailsContext, recoverCurrentEditorState, saveState, saveAllRemotely, deleteState, loadAllRemotely, markReviewedEmails, loadState } from "@/domain/data/saveData";
 import { Saves } from "@/domain/schema";
-import { Values } from "@/domain/schema/valueCollection";
-import { Variables } from "@/domain/schema/variableCollection";
 import { LOCAL_SAVE_INTERVAL, REMOTE_REFRESH_INTERVAL, REMOTE_SAVE_INTERVAL, REVIEW_PASSIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
 import { Box, Flex, Loader, Text } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
 import { EditorContext } from "@/domain/schema/context";
-import { isEmailReviewed } from "@/domain/data/airtableActions";
+import { isEmailReviewed, loadAirtableSave, loadAirtableSaves } from "@/domain/data/saveActions";
 
 
-const DEBUG = false;
+const DEBUG = true;
 export function SaveContextProvider({ children }: { children: React.ReactNode }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const lastEditorState = useRef<EditorState | undefined>(undefined);
@@ -30,29 +28,6 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
 
     const [requestSave, setRequestSave] = useState(false);
 
-    const refreshReviews = async () => {
-        const saves = loadLocally();
-        console.log('Refreshing reviews...', saves);
-
-        saves.forEach(async (email) => {
-            if (!email.email?.hasSentReview || email.email?.isReviewed) return;
-
-            const isReviewed = await isEmailReviewed(email.email?.values?.resolveValue('Email ID', true));
-            console.log('Checked for review ' + email.email?.name + ': ' + isReviewed);
-
-            if (isReviewed)
-                await handleSaveEdit(email.email?.airtableId, {
-                    ...email,
-                    email: {
-                        ...email.email,
-                        isReviewed: true,
-                        hasSentReview: true,
-                    }
-                })
-
-        });
-    }
-
     // Load last editor state on load
     useEffect(() => {
         const recoverState = async () => {
@@ -65,9 +40,10 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
             setIsLoading(false);
         }
 
+        // Download all saves on load
         const loadSaves = async () => {
             setSaveStatus('Loading...');
-            const saves = await loadRemotely();
+            const saves = await loadAllRemotely();
             setSaves(saves);
             setSaveStatus('Loaded');
             setTimeout(() => {
@@ -79,38 +55,61 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         loadSaves();
         recoverState();
 
-        if (refreshSavesInterval.current)
-            clearInterval(refreshSavesInterval.current);
-        refreshSavesInterval.current = setInterval(() => {
-            loadSaves();
-        }, REMOTE_REFRESH_INTERVAL);
 
-        if (refreshReviewsInterval.current)
-            clearInterval(refreshReviewsInterval.current);
-        refreshReviewsInterval.current = setInterval(() => {
-            refreshReviews();
-        }, REVIEW_PASSIVE_REFRESH_INTERVAL);
     }, []);
 
-    // Save on any edit
+    useEffect(() => {
+        const refreshReviews = async () => {
+            if (refreshReviewsInterval.current)
+                clearInterval(refreshReviewsInterval.current);
+
+            refreshReviewsInterval.current = setTimeout(async () => {
+                console.log('Refreshing reviews...', saves);
+                const newSaves = await markReviewedEmails(saves);
+                newSaves.forEach(async (id) => {
+                    const save = saves.find((s) => s.email?.name === id);
+                    let fullSave = await loadState(id);
+                    if (!fullSave) return;
+
+                    fullSave = {
+                        ...fullSave,
+                        email: {
+                            ...fullSave.email,
+                            isReviewed: true,
+                        }
+                    }
+
+                    handleSaveEdit(fullSave);
+                });
+
+            }, REVIEW_PASSIVE_REFRESH_INTERVAL);
+        }
+
+
+        window.addEventListener('focus', refreshReviews);
+
+        return () => {
+            if (refreshReviewsInterval.current)
+                clearInterval(refreshReviewsInterval.current);
+            window.removeEventListener('focus', refreshReviews);
+        }
+    }, [saves]);
+
+    // auto-save on edit
     useEffect(() => {
         if (!editorState.email || editorState.step === 0) return;
         setSaveStatus((p) => p === 'Loading...' ? 'Loading...' : '...');
-
-        if (localTimeoutId.current)
-            clearTimeout(localTimeoutId.current);
-        localTimeoutId.current = setTimeout(() => {
-            saveStateLocally(editorState);
-            setSaves(loadLocally());
-        }, LOCAL_SAVE_INTERVAL);
 
         if (remoteTimeoutId.current)
             clearTimeout(remoteTimeoutId.current);
         remoteTimeoutId.current = setTimeout(async () => {
             setSaveStatus('Saving...');
 
-            await saveRemotely();
-            setSaves(loadLocally());
+            const newSaves = await saveState(editorState, saves, true);
+
+            if (newSaves)
+                setSaves(newSaves);
+
             setSaveStatus('Saved');
 
             // setTimeout(() => {
@@ -120,7 +119,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
 
         if (lastEditorState.current?.email?.name !== editorState.email?.name) {
             console.log('[SAVE] Saving old email during switch:', lastEditorState);
-            saveStateLocally(lastEditorState.current);
+            handleSaveEdit(lastEditorState.current);
         }
         lastEditorState.current = editorState;
 
@@ -130,21 +129,38 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         setRequestSave(false);
     }, [JSON.stringify(editorState), requestSave]);
 
-    const handleSaveEdit = async (id: string | undefined, editedState: EditorState | undefined) => {
+    const handleSaveEdit = async (editedState: EditorState | undefined) => {
+        const id = editedState?.email?.name ?? editedState?.email?.airtableId;
         if (!id || !editedState) return false;
 
         console.log('[SAVE] Saving email:', id, ' with state:', editedState);
+        if (editedState.email?.isShortened) {
+            const fullState = await loadState(id);
+            console.log('[SAVE] Loading email:', id, ' to edit with state:', fullState);
 
-        saveStateLocally(editedState, false);
-        setSaves(loadLocally());
-
-        if (editorState.email?.name === id || editorState.email?.airtableId === id) {
-            console.log('[SAVE] Saving current email, resetting editor', editorState.email?.name);
-            setEditorState(editedState);
+            if (!fullState) return false;
+            editedState = {
+                ...fullState,
+                ...editedState,
+                email: {
+                    ...fullState.email,
+                    ...editedState.email,
+                    airtableId: fullState.email?.airtableId,
+                    name: fullState.email?.name,
+                    values: fullState.email?.values,
+                    isShortened: false,
+                }
+            }
         }
 
-        setRequestSave(true);
+        const newSaves = await saveState(editedState, saves, false);
+        if (newSaves)
+            setSaves(newSaves);
 
+        if (editorState.email?.name === id || editorState.email?.airtableId === id) {
+            console.log('[SAVE] Edited current email, resetting editor', editorState.email?.name);
+            setEditorState(editedState);
+        }
         return true;
     }
 
@@ -166,16 +182,26 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
             setEditorState({ step: 0 });
         }
 
-        const done = await deleteState(id);
+        const newSaves = await deleteState(saves, id);
+        if (newSaves)
+            setSaves(newSaves);
 
-        setSaves(loadLocally());
         setSaveStatus('Saved');
 
-        return done;
+        return newSaves !== undefined;
+    }
+
+    const handleEmailLoad = async (id: string | undefined) => {
+        if (!id) return undefined;
+
+        const state = await loadAirtableSave(id);
+        if (!state || !state.email) return undefined;
+
+        return state;
     }
 
     return (
-        <SavedEmailsContext.Provider value={[saves, handleEmailDelete, handleSaveEdit]}>
+        <SavedEmailsContext.Provider value={[saves, handleEmailLoad, handleEmailDelete, handleSaveEdit]}>
             {
                 isLoading ?
                     (

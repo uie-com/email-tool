@@ -11,7 +11,7 @@ import moment from "moment-timezone";
 import { ForwardedRef, JSX, useContext, useEffect, useMemo, useRef, useState } from "react";
 import seedColor from 'seed-color';
 import { hasStringInLocalStorage, loadStringFromLocalStorage, saveStringToLocalStorage } from "@/domain/data/localStorage";
-import { loadLocally, SavedEmailsContext } from "@/domain/data/saveData";
+import { SavedEmailsContext } from "@/domain/data/saveData";
 import { on } from "events";
 import { EmailCreator } from "./emailCreator";
 import { getEmailSchedule } from "@/domain/data/scheduleActions";

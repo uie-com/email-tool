@@ -1,11 +1,11 @@
 import { createContext, Dispatch, SetStateAction } from "react";
 import { EditorState, Email, Saves } from "../schema";
-import { deleteEmailStateRecord, loadAirtableSaves, saveStateToAirtable } from "./airtableActions";
-import { saveStringToLocalStorage, loadStringFromLocalStorage } from "./localStorage";
+import { deleteEmailStateRecord, listReviewedEmails, loadAirtableSave, loadAirtableSaves, saveStateToAirtable } from "./saveActions";
+import { saveStringToLocalStorage, loadStringFromLocalStorage, saveStringToSessionStorage, loadStringFromSessionStorage } from "./localStorage";
 
 const DEBUG = true;
 
-export const SavedEmailsContext = createContext<[Saves, (id?: string) => Promise<boolean>, (id?: string, editedState?: EditorState) => Promise<boolean>]>([{} as Saves, async () => false, async () => false]);
+export const SavedEmailsContext = createContext<[Saves, (id?: string) => Promise<EditorState | undefined>, (id?: string) => Promise<boolean>, (editedState?: EditorState) => Promise<boolean>]>([{} as Saves, async () => ({} as EditorState), async () => false, async () => false]);
 
 const CURRENT_EMAIL_NAME_KEY = 'currentEmail';
 const EMAILS_KEY = 'emails';
@@ -15,54 +15,76 @@ export async function saveScheduleOpen() {
     saveCurrentEmailName('');
 }
 
+export async function markReviewedEmails(saves: Saves) {
+    if (DEBUG) console.log('[SAVE] Marking reviewed emails', saves);
+    const reviewedIDs = await listReviewedEmails();
+    if (DEBUG) console.log('[SAVE] Reviewed emails', reviewedIDs);
+    const emails = [...saves];
+    const reviewedEmails = [];
+    for (const state of emails) {
+        if (state.email?.name && !state.email?.isReviewed && reviewedIDs.includes(state.email?.name)) {
+            state.email.isReviewed = true;
+            reviewedEmails.push(state.email.name);
+        }
+    }
+    if (DEBUG) console.log('[SAVE] Finished marking reviewed emails', emails);
+    return reviewedEmails;
+}
 
-export async function recoverCurrentEditorState() {
+export async function recoverCurrentEditorState(): Promise<EditorState> {
     const currentEmailName = getCurrentEmailName();
     if (DEBUG) console.log('[SAVE] Recovering email state', currentEmailName);
-    if (!currentEmailName) return undefined;
+    if (!currentEmailName) return { step: 0 } as EditorState;
 
-    const localEmails = loadLocally();
-    const currentState = localEmails.find((state) => state.email?.name === currentEmailName);
-    if (DEBUG) console.log('[SAVE] Found local email state', currentState);
-    if (currentState)
-        return reconstructEmail(currentState);
-
-    const remoteEmails = await loadAirtableSaves();
-    const currentRemoteState = remoteEmails.find((state) => state.email?.name === currentEmailName);
-    if (DEBUG) console.log('[SAVE] Found remote email state', currentRemoteState);
-    if (currentRemoteState)
-        return reconstructEmail(currentRemoteState);
+    const email = await loadState(currentEmailName);
+    if (email) {
+        if (DEBUG) console.log('[SAVE] Recovered email state', email);
+        return email;
+    }
 
     console.log('[SAVE] No email state found for id', currentEmailName);
+    return { step: 0 } as EditorState;
+}
+
+export async function loadState(id: string): Promise<EditorState | undefined> {
+    if (DEBUG) console.log('[SAVE] Loading email state', id);
+    if (!id) return undefined;
+
+    const email = await loadAirtableSave(id);
+    if (email) {
+        if (DEBUG) console.log('[SAVE] Loaded email state', email);
+        return reconstructEmail(email);
+    }
+
+    console.log('[SAVE] No email state found for id', id);
     return undefined;
 }
 
-export function saveStateLocally(state?: EditorState, isCurrent: boolean = true) {
+export async function saveState(state: EditorState | undefined, saves: Saves, isCurrent: boolean = true) {
     if (DEBUG) console.log('[SAVE] Saving email state locally', state);
     if (!state?.email?.name) return DEBUG ? console.log('[SAVE] No email name found, not saving', state) : undefined;
 
-    const emails = loadLocally();
-    const existingState = emails.find((s) => s.email?.name === state.email?.name);
-    if (existingState) {
-        if (DEBUG) console.log('[SAVE] Found existing email state', existingState);
-        const index = emails.indexOf(existingState);
-        emails[index] = state;
-    } else {
-        if (DEBUG) console.log('[SAVE] No existing email state found, adding new one', state);
-        emails.push(state);
-    }
+    const airtableId = await saveStateToAirtable(JSON.stringify(state));
 
-    if (DEBUG) console.log('[SAVE] Finished editing email array', emails);
+    const emails = [...saves];
+    const index = emails.findIndex((email) => email.email?.name === state.email?.name);
+    if (index !== -1) {
+        if (DEBUG) console.log('[SAVE] Found email state, updating it', emails[index]);
+        emails[index] = state;
+    }
+    saves = addAirtableIdToEmailState(emails, airtableId, state.email?.name);
+    if (DEBUG) console.log('[SAVE] Finished saving emails ', emails);
+
     saveCurrentEmailName(isCurrent ? state.email?.name ?? '' : '');
-    saveLocally(emails, EMAILS_KEY);
+    return saves;
 }
 
-export async function deleteState(id: string) {
+export async function deleteState(saves: Saves, id: string) {
     if (DEBUG) console.log('[SAVE] Deleting email state', id);
 
     const isDone = await deleteEmailStateRecord(id);
 
-    const emails = loadLocally();
+    const emails = [...saves];
     const index = emails.findIndex((state) => state.email?.airtableId === id);
     const localIndex = emails.findIndex((state) => state.email?.name === id);
     if (index === -1) {
@@ -71,67 +93,70 @@ export async function deleteState(id: string) {
         if (localIndex !== -1) {
             if (DEBUG) console.log('[SAVE] Found local email state, deleting it', emails[localIndex]);
             emails.splice(localIndex, 1);
-            saveLocally(emails, EMAILS_KEY);
         } else
             console.error('[SAVE] No local email state found for id', id);
 
-        return true;
+        return emails;
     }
 
     if (index !== -1 && isDone) {
         if (DEBUG) console.log('[SAVE] Deleted email state from remote storage', emails);
 
         emails.splice(index, 1);
-        saveLocally(emails, EMAILS_KEY);
-        saveSnapshot();
     } else
         console.error('[SAVE] Failed to delete email state from remote storage', emails);
 
     saveCurrentEmailName('');
 
 
-    return isDone;
+    return isDone ? emails : saves;
 }
 
-export async function loadRemotely() {
+export async function loadAllRemotely() {
     const res = await loadAirtableSaves();
     if (DEBUG) console.log('[SAVE] Loaded remote emails', res);
-    saveLocally(res, EMAILS_KEY);
-    saveSnapshot();
     return reconstructEmails(res);
 }
 
-export async function saveRemotely() {
-    const emails = loadLocally();
-    const unsavedStates = getUnsavedStates();
-    if (DEBUG) console.log('[SAVE] Saving emails remotely', unsavedStates);
-    for (const state of unsavedStates) {
+export async function saveAllRemotely(saves: Saves) {
+    if (DEBUG) console.log('[SAVE] Saving emails remotely', saves);
+    for (const state of saves) {
         const airtableId = await saveStateToAirtable(JSON.stringify(state));
-        const emails = addAirtableIdToEmailState(airtableId, state.email?.name);
-        saveLocally(emails, EMAILS_KEY);
-        saveSnapshot();
+        saves = addAirtableIdToEmailState(saves, airtableId, state.email?.name);
     }
+    return saves;
 }
 
-function getUnsavedStates() {
-    const localEmails = loadLocally();
-    const remoteEmails = loadLocally(REMOTE_SAVE_SNAPSHOT_KEY);
-
-    const filteredEmails = localEmails.filter((state) => {
-        return remoteEmails.find((remoteState) => {
-            if (state.email?.name === remoteState.email?.name
-                || state.email?.airtableId === remoteState.email?.airtableId) {
-                return JSON.stringify(state) !== JSON.stringify(remoteState);
-            }
-            return false;
-        }) !== undefined || !state.email?.airtableId;
-    });
-
-    return filteredEmails;
+export function isPreApprovedTemplate(templatePath?: string, saves?: Saves) {
+    if (DEBUG) console.log('[SAVE] Checking if template is pre-approved', templatePath, saves);
+    if (!templatePath || !saves) return false;
+    const emails = saves.filter((email) => email.email?.template === templatePath);
+    if (emails.length > 3) {
+        if (DEBUG) console.log('[SAVE] Found pre-approved template', emails);
+        return true;
+    }
+    return false;
 }
 
-function addAirtableIdToEmailState(id?: string, originalKey?: string): Saves {
-    const states = loadLocally();
+// function getUnsavedStates() {
+//     const localEmails = loadLocally();
+//     const remoteEmails = loadLocally(REMOTE_SAVE_SNAPSHOT_KEY);
+
+//     const filteredEmails = localEmails.filter((state) => {
+//         return remoteEmails.find((remoteState) => {
+//             if (state.email?.name === remoteState.email?.name
+//                 || state.email?.airtableId === remoteState.email?.airtableId) {
+//                 return JSON.stringify(state) !== JSON.stringify(remoteState);
+//             }
+//             return false;
+//         }) !== undefined || !state.email?.airtableId;
+//     });
+
+//     return filteredEmails;
+// }
+
+function addAirtableIdToEmailState(saves: Saves, id?: string, originalKey?: string): Saves {
+    const states = saves;
     if (!states || !states.length) return [];
     if (!id || !originalKey || originalKey === id) return states;
 
@@ -151,39 +176,39 @@ function addAirtableIdToEmailState(id?: string, originalKey?: string): Saves {
     return markedEmails;
 }
 
-function saveSnapshot() {
-    const emails = loadLocally();
-    if (DEBUG) console.log('[SAVE] Saving snapshot', emails);
-    saveLocally(emails, REMOTE_SAVE_SNAPSHOT_KEY);
-}
+// function saveSnapshot() {
+//     const emails = loadLocally();
+//     if (DEBUG) console.log('[SAVE] Saving snapshot', emails);
+//     saveLocally(emails, REMOTE_SAVE_SNAPSHOT_KEY);
+// }
 
-export function loadLocally(key: string = EMAILS_KEY): Saves {
-    const str = loadStringFromLocalStorage(key);
-    try {
-        if (!str) return [];
-        let emails = JSON.parse(str) as Saves;
-        emails = reconstructEmails(emails);
-        if (DEBUG) console.log('[SAVE] Loaded emails', emails);
-        return emails;
-    }
-    catch (e) {
-        console.error('Couldn\'t load saved emails from local storage.', e);
-        return [];
-    }
-}
+// export function loadLocally(key: string = EMAILS_KEY): Saves {
+//     const str = loadStringFromLocalStorage(key);
+//     try {
+//         if (!str) return [];
+//         let emails = JSON.parse(str) as Saves;
+//         emails = reconstructEmails(emails);
+//         if (DEBUG) console.log('[SAVE] Loaded emails', emails);
+//         return emails;
+//     }
+//     catch (e) {
+//         console.error('Couldn\'t load saved emails from local storage.', e);
+//         return [];
+//     }
+// }
 
-export function saveLocally(emails: Saves, key: string = EMAILS_KEY) {
-    if (DEBUG) console.log('[SAVE] Saving emails locally', emails);
-    saveStringToLocalStorage(key, JSON.stringify(emails));
-}
+// export function saveLocally(emails: Saves, key: string = EMAILS_KEY) {
+//     if (DEBUG) console.log('[SAVE] Saving emails locally', emails);
+//     saveStringToLocalStorage(key, JSON.stringify(emails));
+// }
 
 export function saveCurrentEmailName(id: string) {
     console.log('[SAVE] Saving current email name', id);
-    saveStringToLocalStorage(CURRENT_EMAIL_NAME_KEY, id);
+    saveStringToSessionStorage(CURRENT_EMAIL_NAME_KEY, id);
 }
 
 export function getCurrentEmailName() {
-    const id = loadStringFromLocalStorage(CURRENT_EMAIL_NAME_KEY);
+    const id = loadStringFromSessionStorage(CURRENT_EMAIL_NAME_KEY);
     if (DEBUG) console.log('[SAVE] Loaded current email name', id);
     return id;
 }
