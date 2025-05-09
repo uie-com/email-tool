@@ -430,7 +430,7 @@ function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         const campaignId = parseInt(email.campaignId ?? '');
         const testEmail = values.resolveValue("Test Email", true) ?? '';
         const subject = values.resolveValue("Subject", true) ?? '';
-        const sendDateMessage = values.resolveValue("Send Date", true).format('[[]M-D [AT] h:mmA[]]').replace(':00', '') ?? '';
+        const sendDateMessage = values.resolveValue("Send Date", true).format('[[]M-D h:mmA[]]').replace(':00', '') ?? '';
 
         const notFound = (...vs: (string | number | undefined | null)[]) => vs.map((v) => v === undefined || v === null || (typeof v === 'string' && v.trim().length === 0)).find((v) => v);
         if (notFound(messageId, campaignId, testEmail, subject))
