@@ -54,10 +54,10 @@ export function EmailSchedule() {
                 email: email.email ? new Email(email.email.values, email.email) : undefined,
                 session: email.session,
             }));
-            setLoadedEmails(loadedEmails?.slice(0, sessionOffset)?.concat((newEmails ?? [])) ?? newEmails ?? []);
+            setLoadedEmails((prev) => prev?.slice(0, data.offset)?.concat((newEmails ?? []), prev?.slice(data.offset)) ?? newEmails ?? []);
 
             isLoading.current = false;
-            console.log('Loaded sessions remotely', loadedEmails);
+            console.log('Loaded sessions remotely', data);
         });
 
         if (sessionOffset === 0)

@@ -4,6 +4,7 @@ import moment from "moment-timezone";
 import { createEmailsFromSession } from "../parse/parseSchedule";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, getSessionSchedule, Session } from "./sessions";
 import { Email } from "../schema";
+import { off } from "process";
 
 let emailCache: {
     email?: Email;
@@ -37,6 +38,7 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
 
     return {
         emails: JSON.stringify(paginatedEmails),
+        offset: offset,
         totalEmails: totalEmails,
     }
 }
