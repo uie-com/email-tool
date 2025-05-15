@@ -57,13 +57,36 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
         'Footer Email Reason': { value: `You're receiving this email because you're a member of {Cohort} of the {Program Name} Online Course.`, hide },
-        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:12px">hello@centercentre.com</a>.`, hide },
+
+        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">Unsubscribe</a> from ALL Leaders of Awesomeness Emails.<br/><br/>`, hide },
+
+        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.`, hide },
+
         'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
         'Footer': {
-            value: `© Copyright 2025, Center Centre, Inc.<br/><br/><em>{Footer Email Reason}</em><br/><br/><em>{Footer Contact}</em><br/><br/>{Footer Tag}`, hide
+            value: `<hr style="opacity:0.2;margin:0px 0px 20px 0px;" />
+            <p style="color:#666666 !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important;">
+            {Footer Email Reason}
+            <br/><br/>
+            <em>{Footer Unsubscribe}{Footer Contact}</em>
+            </p>
+            <hr style="opacity:0.2;margin:20px 0px;" />
+            <p style="color:#666666 !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important;">
+            © Copyright 2025, Center Centre, Inc.
+            <br/>
+            %SENDER-INFO-SINGLELINE%
+            <br/><br/>
+            Email sent to: %EMAIL%
+            <br/><br/>
+            <a href="%FORWARD2FRIEND%" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">Forward email to a friend</a>
+            <br/><br/>
+            {Footer Tag}
+            </p>`, hide
         },
 
         'Link Text Decoration': { value: 'underline', hide },
+
+        'Font': { value: '\'Open Sans\'', part: 0 },
 
         'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] ul [ margin-bottom: 1.5rem !important; ]', part: 0 },
 
@@ -147,7 +170,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             // 'Session Notes Link': { value: '{Airtable Session Query}&fields[]=Collab Notes Link', fetch: 'airtable' },
 
             'Footer Email Reason': { value: `You're receiving this email because you're a member of {Program Name}.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at ` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `{Program (Caps)}` },
         },
         'Email Type:Events of Week': {
@@ -642,6 +665,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Template': { value: '/tuxs', part: 1 },
 
+            'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
+            'Footer Tag': { value: `LOA` },
+
             'List ID': { value: '{LoA ID}', hide },
             'Segment ID': { value: '{LoA Segment ID}', hide },
 
@@ -726,7 +753,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Accent Color': { value: '8c9b29' },
             }
         },
-        'Session Type:Vision': {
+        'Session Type:Vision Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: '9b0e5b' },
@@ -742,6 +769,13 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                 'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
 
+                'Session Entries': {
+                    value: `<table cellpadding="0" cellspacing="0" width="100%" bgcolor="#0C6D77" style="background-color: #0c6d77; border-radius: 10px; border-collapse: separate">
+            <tbody>
+            {Session Entry (Iterate x{Number of Upcoming Sessions})}
+            </tbody>
+            </table>`, hide
+                },
 
                 'Session Entry': {
                     value: `<tr>
@@ -774,7 +808,59 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             </tr>`, hide
                 },
             }
+        },
+        'Email Type:Onboarding Upcoming Topics': {
+            settings: {
+                'Template': { value: '/upcoming-topics.html', part: 2 },
+                'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/667ec838-028d-4112-8be2-fe1effc217f9.png?id=39120670' },
+                'Subject': { value: 'FREE Talk UX Strategy sessions for you to join.' },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
 
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
+
+                // 'Send Type': { value: 'AUTOMATION', hide },
+
+
+                'Session Entries': {
+                    value: `<table cellpadding="0" cellspacing="0" width="100%" bgcolor="#0C6D77" style="background-color: #0c6d77; border-radius: 10px; border-collapse: separate">
+            <tbody>
+            {Session Entry (Iterate x{Number of Upcoming Sessions})}
+            </tbody>
+            </table>`
+                },
+
+                'Session Entry': {
+                    value: `<tr>
+                <td align="left" esd-tmp-menu-font-family="&#39;open sans&#39;,&#39;helvetica neue&#39;,helvetica,arial,sans-serif" esd-tmp-divider="0|solid|#000000" esd-tmp-menu-color="#ffffff" esd-tmp-menu-padding="0|10" esd-tmp-menu-font-size="16px" esd-tmp-menu-font-weight="bold" class="esd-block-menu">
+                  <table cellspacing="0" width="100%" cellpadding="0">
+                    <tbody>
+                      <tr>
+                        <td valign="left" id="esd-menu-id-0" class="esd-block-menu-item" style="text-align:center;min-width:130px;max-width:130px">
+                          <span class="es-button-border" style="border-width:0px;background:#9b0e5b;border-radius:5px">
+                            <a target="_blank" href="[Upcoming Session #1 Event Link]" class="es-button es-button-1724857678642" style="font-weight:bold;padding:10px 20px;font-size:24px;border-radius:5px;white-space:nowrap;background:#0196a7;font-family:&quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif;color:#ffffff !important;text-decoration:none">
+                              RSVP
+                            </a>
+                          </span>
+                        </td>
+                        <!-- Left Column -->
+                        <td align="left" valign="top" id="esd-menu-id-1" class="esd-block-menu-item" style="padding:20px 20px 20px 0px;min-width:300px;max-width:300px">
+                          <a target="_blank" href="[Upcoming Session #1 Event Link]" style="line-height:28px;text-decoration:none;color:#ffffff;font-size:17px;font-family:&quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif;display:inline-block">
+                            [Upcoming Session #1 Date (dddd, MMMM D)] at Noon [Upcoming Session #1 Date (z)] ([Upcoming Session #1 Date (GMT)(HH.mm z)])
+                            <br>
+                            <strong>
+                              [Upcoming Session #1 Title].
+                            </strong>
+                          </a>
+                        </td>
+                        <!-- Right Column -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+            </tr>`, hide
+                },
+            }
         },
         // DST Banner overrides
         'Is DST': {
@@ -825,7 +911,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Greeting': { value: 'Hello %FIRSTNAME%,' },
 
             'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `LOA` },
         }
     },
@@ -838,7 +924,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
             'Footer Email Reason': { value: `You're receiving this email because you've subscribed to Center Centre emails.` },
-            'Footer Contact': { value: `If you have questions, contact us at ` },
+            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:#666666 !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `BL` },
         }
     },
