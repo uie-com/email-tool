@@ -39,7 +39,7 @@ function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
         else if (!keyName || !keyValue && key !== 'settings')
             console.warn('Invalid settings filter key: "' + key + '". This should be in the form of "key:value"');
 
-        if (!values.source('email').hasValueForOf(keyName, keyValue) && !values.source('schedule').hasValueForOf(keyName, keyValue)) return;
+        if (!values.source('email').hasValueForOf(keyName, keyValue) && !values.source('schedule').hasValueForOf(keyName, keyValue) && !values.source('settings').hasValueForOf(keyName, keyValue)) return;
         if (DEBUG) console.log('Found settings for', key);
         if ((settings[key].settings as SettingDict<ValuePart<any>>))
             values = saveSettings(settings[key].settings as SettingDict<ValuePart<any>>, values);

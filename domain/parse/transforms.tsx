@@ -255,7 +255,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             transform.includes('MD to HTML')
         );
         const defaultStyles = {
-            'fontFamily': '\'' + (context.getCurrentValue('Font') ?? 'arial') + '\', helvetica neue, helvetica, sans-serif',
+            'fontFamily': '' + (context.getCurrentValue('Font') ?? 'arial') + ', helvetica neue, helvetica, sans-serif',
             margin: 0,
             'color': '#333333',
             'letterSpacing': '0',

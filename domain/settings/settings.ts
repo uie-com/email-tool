@@ -60,36 +60,43 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Unsubscribe</a> from ALL Leaders of Awesomeness Emails.<br/><br/>`, hide },
 
-        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.`, hide },
+        'Footer Forward': {
+            value: `<a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Forward email to a friend</a>
+            <br/><br/>`, hide
+        },
+
+        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color:{Footer Color} !important;text-decoration:underline !important">hello@centercentre.com</a>.`, hide },
 
         'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
         'Footer': {
-            value: `<hr style="opacity:0.2;margin:-15px 0px 20px 0px;" />
-            <p style="color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important;">
+            value: `
+            <div class="footer">
+            <hr style="opacity:0.2;margin:6px 0px 20px 0px;" />
+            <p class="footer-text">
             {Footer Email Reason}
             <br/><br/>
             <em>{Footer Unsubscribe}{Footer Contact}</em>
             </p>
             <hr style="opacity:0.2;margin:20px 0px;" />
-            <p style="color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important;">
+            <p class="footer-text" style="">
             © Copyright 2025, Center Centre, Inc.
             <br/>
             %SENDER-INFO-SINGLELINE%
             <br/><br/>
             Email sent to: %EMAIL%
             <br/><br/>
-            <a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Forward email to a friend</a>
-            <br/><br/>
-            {Footer Tag}
-            </p>`, hide
+            {Footer Forward}{Footer Tag}
+            </p>
+            </div>
+            `, hide
         },
 
-        'Footer Color': { value: '#555555', hide },
+        'Footer Color': { value: '#999999', hide },
         'Link Text Decoration': { value: 'underline', hide },
 
         'Font': { value: '\'Open Sans\'', part: 0 },
 
-        'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] ul [ margin-bottom: 1.5rem !important; ]', part: 0 },
+        'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text, a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ] ]  ', part: 0 },
 
         'Zoom Link': { value: '{Airtable Settings Query}&fields[]=Zoom Link', fetch: 'airtable', hide },
         'Zoom ID': { value: '{Airtable Settings Query}&fields[]=Zoom ID', fetch: 'airtable', hide },
@@ -160,6 +167,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Send Type': { value: 'AUTOMATION', hide },
             'Template': { value: '/standout', part: 1 },
 
+            'Footer Color': { value: '#BBBBBB', hide },
+
             'Automation ID': { value: '226', hide },
 
             'Link Color': { value: '#ec621d', hide },
@@ -221,7 +230,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             },
             'Session Type:Materials Critique': {
                 settings: {
-                    'Template': { value: '/materials-critique.html', part: 2 },
+                    'Template': { value: '/today-materials-critique.html', part: 2 },
                     'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488185', hide },
 
                     'Subject': { value: 'Today’s Materials Critique Session' },
@@ -240,6 +249,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort} ', part: 1 },
 
             'Link Color': { value: '#006f74', hide },
+            'Accent Color': { value: '00a3b4', hide },
 
 
             'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
@@ -440,6 +450,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort (3 Letters)} ', part: 1 },
 
             'Link Color': { value: '#a5473d', hide },
+            'Accent Color': { value: '#00a3b4', hide },
             'Link Text Decoration': { value: 'none' },
 
             'Pillar': { value: '{Topic}' },
@@ -883,13 +894,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
             'Button': {
-                value: `<td align="center" class="esd-block-button"> <!--[if mso]><a href="{Program Website}" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="{Program Website}" style="height:41px; v-text-anchor:middle; width:462px" arcsize="24%" stroke="f"  fillcolor="#{Accent Color}"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:arial, "helvetica neue", helvetica, sans-serif; font-size:15px; font-weight:700; line-height:15px;  mso-text-raise:1px'> {Program Name} Course Details </center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border" style="border-width:0;border-radius:10px;background:#{Accent Color};border-color:#179d99"> <a target="_blank" href="{Program Website}" class="es-button" style="background:#{Accent Color};border-radius:10px;font-weight:bold;mso-border-alt:10px solid #{Accent Color}"> {Program Name} Course Details </a> </span> <!--<![endif]--> </td>`
+                value: `<td align="left" class="esd-block-button"> <!--[if mso]><a href="{Program Website}" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="{Program Website}" style="height:41px; v-text-anchor:middle; width:462px" arcsize="24%" stroke="f"  fillcolor="#{Accent Color}"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:'Open Sans', "helvetica neue", helvetica, sans-serif; font-size:15px; font-weight:700; line-height:15px;  mso-text-raise:1px'> {Program Name} Course Details </center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border" style="border-width:0;border-radius:10px;background:#{Accent Color};border-color:#179d99"> <a target="_blank" href="{Program Website}" class="es-button" style="background:#{Accent Color};border-radius:10px;font-weight:bold;mso-border-alt:10px solid #{Accent Color}"> {Program Name} Course Details </a> </span> <!--<![endif]--> </td>`
             },
-        },
-        'Program:Win': {
-            settings: {
-                'Button': { value: `<!--[if mso]><a href="https://winstakeholders.com/" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="https://winstakeholders.com/" style="height:61px; v-text-anchor:middle; width:268px" arcsize="25%" stroke="f"  fillcolor="#8c9b28"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:arial, "helvetica neue", helvetica, sans-serif; font-size:18px; font-weight:700; line-height:18px;  mso-text-raise:1px; '>WinStakeholders.com</center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border es-button-border-7035" style="background:#8c9b28;border-color:#8c9b28;border-radius:15px;border-width:0"> <a href="https://winstakeholders.com/" target="_blank" class="es-button es-button-3634" style="font-weight:bold;background:#8c9b28;mso-border-alt:10px solid #8c9b28;border-radius:15px;padding:20px 40px;color:white !important;text-decoration:none !important"> WinStakeholders.com </a> </span> <!--<![endif]-->` },
-            }
         },
     },
     'Email Type: Content': {
@@ -929,6 +935,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Footer Tag': { value: `BL` },
         }
     },
+
+
+
 
 
     'Email Type:Receipt': {
@@ -1016,5 +1025,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Space Name': { value: 'Stand Out Community' }
             }
         },
-    }
+    },
+
+    'Send Type:AUTOMATION': {
+        settings: {
+            'Footer Unsubscribe': { value: '', hide },
+            'Footer Forward': { value: '', hide },
+        }
+    },
 };

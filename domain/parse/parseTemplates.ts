@@ -10,7 +10,9 @@ export function fixTemplate(template: string | undefined, values: Values) {
             + template.substring(template.lastIndexOf('</style>'));
 
     return template
-        .replaceAll('#2CB543', '#{Accent Color}')
-        .replaceAll('#31CB4B', '#{Accent Color}')
+        .replaceAll('#2CB543', '#{Accent Color} !important')
+        .replaceAll('#31CB4B', '#{Accent Color} !important')
+        .replaceAll('#56D66B', '#{Accent Color} !important')
         .replaceAll('#75de43', '{Link Color}')
+
 }
