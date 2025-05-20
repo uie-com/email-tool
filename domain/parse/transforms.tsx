@@ -233,6 +233,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         if (tuxsTransform) {
             value = value
                 .replaceAll('Jared Spool', 'me')
+                .replaceAll('Jared', 'me')
                 .replaceAll(' he ', ' I ')
                 .replaceAll(' explores ', ' explore ')
                 .replaceAll(' his ', ' my ')

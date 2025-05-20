@@ -58,14 +58,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Footer Email Reason': { value: `You're receiving this email because you're a member of {Cohort} of the {Program Name} Online Course.`, hide },
 
-        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Unsubscribe</a> from ALL Leaders of Awesomeness Emails.<br/><br/>`, hide },
+        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Unsubscribe</a> from ALL Leaders of Awesomeness Emails.<br/><br/>`, hide },
 
         'Footer Forward': {
-            value: `<a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">Forward email to a friend</a>
+            value: `<a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Forward email to a friend</a>
             <br/><br/>`, hide
         },
 
-        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color:{Footer Color} !important;text-decoration:underline !important">hello@centercentre.com</a>.`, hide },
+        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.`, hide },
 
         'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
         'Footer': {
@@ -96,7 +96,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Font': { value: '\'Open Sans\'', part: 0 },
 
-        'Global Styles': { value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text, a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ] ]  ', part: 0 },
+        'Global Styles': {
+            value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] ', part: 0
+        },
 
         'Zoom Link': { value: '{Airtable Settings Query}&fields[]=Zoom Link', fetch: 'airtable', hide },
         'Zoom ID': { value: '{Airtable Settings Query}&fields[]=Zoom ID', fetch: 'airtable', hide },
@@ -180,7 +182,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             // 'Session Notes Link': { value: '{Airtable Session Query}&fields[]=Collab Notes Link', fetch: 'airtable' },
 
             'Footer Email Reason': { value: `You're receiving this email because you're a member of {Program Name}.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `{Program (Caps)}` },
         },
         'Email Type:Events of Week': {
@@ -678,7 +680,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/tuxs', part: 1 },
 
             'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `LOA` },
 
             'List ID': { value: '{LoA ID}', hide },
@@ -692,7 +694,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
             'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
 
-            'Global Styles': { value: 'ul [ margin-bottom: 1.5rem !important; ]', part: 0 },
+            'Global Styles': { value: ' ul [ margin-bottom: 1.5rem !important; ] ', part: 1 },
 
         },
         'Email Type:Today': {
@@ -918,7 +920,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Greeting': { value: 'Hello %FIRSTNAME%,' },
 
             'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `LOA` },
         }
     },
@@ -931,7 +933,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
             'Footer Email Reason': { value: `You're receiving this email because you've subscribed to Center Centre emails.` },
-            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;font-size:14px !important;text-decoration:underline !important">hello@centercentre.com</a>.` },
+            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `BL` },
         }
     },
