@@ -109,9 +109,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
 
         'Footer Color': { value: '#999999', hide },
+        'Link Color': { value: 'inherit', hide },
         'Link Text Decoration': { value: 'underline', hide },
 
-        'Font': { value: '\'Open Sans\'', part: 0 },
+        'Font': { value: '\'Open Sans\'', part: 0, hide },
 
         'Global Styles': {
             value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] ', part: 0
@@ -866,7 +867,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             <tbody>
             {Session Entry (Iterate x{Number of Upcoming Sessions})}
             </tbody>
-            </table>`
+            </table>`, hide
                 },
 
                 'Session Entry': {

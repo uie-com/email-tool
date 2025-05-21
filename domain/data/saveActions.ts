@@ -37,6 +37,8 @@ export async function loadAirtableSaves(): Promise<Saves> {
                     airtableId: record.id,
                     name: emailId,
                     values: { initialValues: shortValues } as Values,
+                    HTML: '',
+                    templateHTML: '',
                     isShortened: true,
                 }
             });

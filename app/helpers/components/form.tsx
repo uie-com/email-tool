@@ -1,13 +1,15 @@
+import { getPreview } from "@/domain/data/preview";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables, Variable } from "@/domain/schema/variableCollection";
 import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
-import { Flex, Loader, MantineSize, TextInput, Textarea, ThemeIcon } from "@mantine/core";
+import { Flex, HoverCard, Loader, MantineSize, TextInput, Textarea, ThemeIcon } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
 import { IconCalendar, IconCalendarEventFilled, IconCalendarFilled, IconCalendarMonthFilled, IconCalendarWeek, IconCalendarWeekFilled, IconExternalLink, IconExternalLinkOff, IconLink, IconLinkOff, IconRefresh } from "@tabler/icons-react";
 import dayjs from "dayjs";
+import { link } from "fs";
 import moment, { Moment } from "moment-timezone";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const DEBUG = false;
 export function VariableForm({ variables, values, setValue }: { variables: Variables, values?: Values, setValue: (values: Values) => void }) {
@@ -53,7 +55,6 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
             return ('broken');
         }
     }, [value]);
-    const [showPreview, setShowPreview] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     if (!variable)
@@ -157,8 +158,6 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
 
                     </>
                 }
-                onFocus={() => setShowPreview(true)}
-                onBlur={() => setShowPreview(false)}
                 autosize={true}
                 minRows={2}
                 maxRows={variant === "unstyled" ? undefined : 10}
@@ -181,17 +180,27 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                         {linkState && (
                             linkState === 'empty' ? (null) :
                                 linkState === 'link' ? (
-                                    <ThemeIcon color="blue" pb={1} variant="light" className=" !absolute top-1.5 right-1 rounded-full" style={{ background: 'none' }}>
-                                        <IconExternalLink size={26} opacity={1} className=" cursor-pointer  hover:stroke-blue-500 rounded-sm transition-all hover:bg-blue-100 pb-0.5 " strokeWidth={1.75} onMouseUp={() => { window.open(value as string, '_blank'); }} />
-                                    </ThemeIcon>)
+                                    <HoverCard disabled={value.includes('leaders') || variable.name.includes('Banner')}>
+                                        <HoverCard.Target>
+                                            <ThemeIcon color="blue" pb={1} variant="light" className=" !absolute top-1.5 right-1 rounded-full" style={{ background: 'none' }}>
+                                                <IconExternalLink size={26} opacity={1} className=" cursor-pointer  hover:stroke-blue-500 rounded-sm transition-all hover:bg-blue-100 pb-0.5 " strokeWidth={1.75} onMouseUp={() => { window.open(value as string, '_blank'); }} />
+                                            </ThemeIcon>
+                                        </HoverCard.Target>
+                                        <HoverCard.Dropdown className="!w-[250px] !h-[375px] !p-0 overflow-hidden">
+                                            <div className=" scale-[0.25] origin-top-left">
+                                                <div className="w-[1000px] h-[1500px] relative">
+                                                    <iframe src={value} className="absolute top-0 left-0 w-full h-full"></iframe>
+                                                </div>
+                                            </div>
+                                        </HoverCard.Dropdown>
+                                    </HoverCard>
+                                )
                                     : linkState === 'broken'
                                         ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className=" cursor-pointer transition-all" onMouseUp={() => { window.open(value as string, '_blank'); }} />)
                                         : null)}
 
                     </>
                 }
-                onFocus={() => setShowPreview(true)}
-                onBlur={() => setShowPreview(false)}
                 autosize={true}
                 minRows={2}
                 maxRows={variant === "unstyled" ? undefined : 10}

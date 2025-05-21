@@ -30,7 +30,12 @@ export function EmailSchedule() {
     const [sessionOffset, setSessionOffset] = useState<number>(0);
     const [refresh, setRefresh] = useState(true);
 
-    const [searchQuery, setSearchQuery] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string[] | null>(null);
+    if (searchQuery === null) {
+        const string = hasStringInLocalStorage('scheduleSearch') ? loadStringFromLocalStorage('scheduleSearch') : '[]';
+        const savedSearch = JSON.parse(string) ?? [];
+        setSearchQuery(savedSearch);
+    }
 
     const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
@@ -42,11 +47,21 @@ export function EmailSchedule() {
             setSessionOffset(0);
 
         if (isLoading.current && !refresh) return;
-        console.log('Loading emails', sessionOffset, searchQuery, refresh);
 
+        if (searchQuery !== null && searchQuery.length > 0) {
+            saveStringToLocalStorage('scheduleSearch', JSON.stringify(searchQuery));
+        }
 
         isLoading.current = true;
-        getEmailSchedule(sessionOffset, searchQuery, refresh).then((data) => {
+        const params = new URLSearchParams({ sessionOffset: sessionOffset + '', refresh: refresh ? 'true' : 'false', searchQuery: searchQuery?.join(',') ?? '' });
+        fetch('/api/schedule?' + params).then(async (res) => {
+            const data = (await res.json()) as {
+                emails: string;
+                offset: number;
+                totalEmails: number;
+            };
+            console.log(data)
+
             totalEmails.current = data?.totalEmails ?? 0;
             let newEmails = JSON.parse(data.emails) ?? [];
             newEmails = newEmails.map((email: { email?: Email | undefined; session?: Session | undefined; emailType?: string | undefined; }) => ({
@@ -54,10 +69,21 @@ export function EmailSchedule() {
                 email: email.email ? new Email(email.email.values, email.email) : undefined,
                 session: email.session,
             }));
-            setLoadedEmails((prev) => prev?.slice(0, data.offset)?.concat((newEmails ?? []), prev?.slice(data.offset)) ?? newEmails ?? []);
+            setLoadedEmails((prev) => {
+
+                let emailsBefore = prev?.slice(0, data.offset) ?? [];
+                if (data.offset === 0)
+                    emailsBefore = [];
+
+                let emailsAfter = prev?.slice(data.offset + EMAILS_IN_PAGE) ?? [];
+
+                console.log('[SCHEDULE] Loaded ' + newEmails.length + ' emails (' + data.offset + ' -> ' + (data.offset + EMAILS_IN_PAGE) + ') out of ' + totalEmails.current + ' - schedule is [' + emailsBefore.length + ' old + ' + (newEmails ?? []).length + ' new + ' + emailsAfter.length + ' old]');
+
+
+                return emailsBefore.concat((newEmails ?? []), emailsAfter) ?? newEmails ?? []
+            });
 
             isLoading.current = false;
-            console.log('Loaded sessions remotely', data);
         });
 
         if (sessionOffset === 0)
@@ -76,13 +102,13 @@ export function EmailSchedule() {
         const scrollTop = ref.current?.scrollTop;
         const scrollHeight = ref.current?.scrollHeight;
 
-        if (scrollTop + clientHeight >= scrollHeight - 10) {
+        if (scrollTop + clientHeight >= scrollHeight - 1000) {
             if (isLoading.current) return;
             setSessionOffset((prevCount) => Math.min(prevCount + EMAILS_IN_PAGE, totalEmails.current ?? 0));
 
             setTimeout(() => {
                 handleScroll();
-            }, 10);
+            }, 1000);
         }
     }
 
@@ -117,8 +143,8 @@ export function EmailSchedule() {
             if (lastDate && moment(date).isAfter(moment(lastDate)))
                 return false;
 
-            if (searchQuery.length === 0) return true;
-            return searchQuery.filter((query) => {
+            if (searchQuery?.length === 0) return true;
+            return searchQuery?.filter((query) => {
                 return !(
                     JSON.stringify(session.email).toLowerCase()?.includes(query.toLowerCase())
                 );
@@ -166,7 +192,7 @@ export function EmailSchedule() {
             <Modal opened={createManual} onClose={handleClose} classNames={{ content: " border-gray-200 rounded-xl w-96 bg-gray-50 border-1 p-3 overflow-visible", title: " !font-bold" }} styles={{ content: { minHeight: '32rem' } }} title='New Email' centered>
                 <EmailCreator />
             </Modal>
-            <ScrollArea className="max-w-full w-full overflow-x-hidden h-full " onBottomReached={handleScroll} viewportRef={ref} type="hover" >
+            <ScrollArea className="max-w-full w-full overflow-x-hidden h-full " onBottomReached={handleScroll} scrollbars="y" viewportRef={ref} type="hover" >
                 <Flex align="start" justify="start" direction='column' className="max-w-full w-full h-full " gap={15} pr={15} >
                     {sessionsByEmail ? sessionsByEmail.map((session, i) => {
                         if ((!session.session || (session.session as Session).Program === undefined) && session.email) {

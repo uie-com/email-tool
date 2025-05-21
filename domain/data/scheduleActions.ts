@@ -17,6 +17,8 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
     let sortedEmails = (emailCache.length > 0 && !refresh) ? emailCache : await getAllEmails(refresh);
     emailCache = sortedEmails;
 
+    console.log('[SCHEDULE] ' + (emailCache.length > 0 && !refresh) ? 'Using ' + emailCache.length + ' cached emails' : 'Fetching emails from Airtable');
+
     const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
     const cutoffIndex = sortedEmails.findIndex((email) => {
         const sendDate = email.email?.values?.resolveValue('Send Date', true);

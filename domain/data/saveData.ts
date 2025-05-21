@@ -71,6 +71,9 @@ export async function saveState(state: EditorState | undefined, saves: Saves, is
     if (index !== -1) {
         if (DEBUG) console.log('[SAVE] Found email state, updating it', emails[index]);
         emails[index] = state;
+    } else {
+        if (DEBUG) console.log('[SAVE] No email state found, adding it', state);
+        emails.push(state);
     }
     saves = addAirtableIdToEmailState(emails, airtableId, state.email?.name);
     if (DEBUG) console.log('[SAVE] Finished saving emails ', emails);

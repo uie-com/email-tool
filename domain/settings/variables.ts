@@ -12,7 +12,7 @@ export const VARIABLE_TYPES: Settings<string[]> = {
         keywords: ['image', 'picture', 'photo', 'graphic', 'illustration', 'icon', 'logo']
     },
     "Link": {
-        keywords: ['link', 'url', 'href', 'anchor']
+        keywords: [' link', ' url', 'href', 'anchor']
     }
 };
 

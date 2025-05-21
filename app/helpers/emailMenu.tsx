@@ -11,7 +11,7 @@ import { useClickOutside } from "@mantine/hooks";
 import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, IconBackspace, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCheck, IconCheckbox, IconDots, IconEdit, IconExternalLink, IconFile, IconFileX, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMailX, IconMessageQuestion, IconPlus, IconRoute, IconRouteOff, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { MouseEventHandler, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { getStatusFromEmail, Email, EditorState, STATUS_COLORS } from "@/domain/schema";
+import { getStatusFromEmail, Email, EditorState, STATUS_COLORS, Saves } from "@/domain/schema";
 import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/schema/context";
 import { markEmailDone, markEmailIncomplete } from "@/domain/data/publishingActions";
 
@@ -71,7 +71,9 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
 
     const [showFinished, setShowFinished] = useState(false);
 
-    const sortedEmailStates = useMemo(() => {
+    // Update on save state change
+    const [sortedEmailStates, setSortedEmailStates] = useState<Saves>([]);
+    useEffect(() => {
         let sorted = emailStates.sort((a, b) => {
             const aDate = moment(a.email?.values?.resolveValue('Send Date', true));
             const bDate = moment(b.email?.values?.resolveValue('Send Date', true));
@@ -79,12 +81,13 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                 return aDate.isAfter(bDate) ? -1 : 1;
             return aDate.isAfter(bDate) ? 1 : -1;
         });
-        return showFinished ? sorted : sorted.filter((state) => {
+        const result = showFinished ? sorted : sorted.filter((state) => {
             const sendDate = state.email?.values?.resolveValue('Send Date', true);
             const isValidDate = moment(sendDate).isValid();
             const daysBeforeToday = moment(sendDate).diff(moment(), 'days') > -5;
             return isValidDate && daysBeforeToday;
         });
+        setSortedEmailStates(result);
     }, [emailStates, showFinished]);
 
     // Will be different between server and client
