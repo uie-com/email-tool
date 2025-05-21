@@ -47,14 +47,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
 
-        'Automation ID': { value: '226', hide }, // TEMP for testing
-
-
         'LoA ID': { value: '97', hide },
         'LoA Segment ID': { value: '1258', hide },
         'BL ID': { value: '108', hide },
         'BL Segment ID': { value: '0', hide },
-
 
         'Footer Email Reason': { value: `You're receiving this email because you're a member of {Cohort} of the {Program Name} Online Course.`, hide },
 
@@ -67,8 +63,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.`, hide },
 
+        'Footer Sender Info': { value: `%SENDER-INFO-SINGLELINE%<br/><br/>`, hide },
+
         'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
-        'Footer': {
+        'Marketing Footer': {
             value: `
             <div class="footer">
             <hr style="opacity:0.2;margin:6px 0px 20px 0px;" />
@@ -81,11 +79,30 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             <p class="footer-text" style="">
             © Copyright 2025, Center Centre, Inc.
             <br/>
-            %SENDER-INFO-SINGLELINE%
-            <br/><br/>
+            {Footer Sender Info}
             Email sent to: %EMAIL%
             <br/><br/>
             {Footer Forward}{Footer Tag}
+            </p>
+            </div>
+            `, hide
+        },
+        'Transactional Footer': {
+            value: `
+            <div class="footer">
+            <hr style="opacity:0.2;margin:6px 0px 20px 0px;" />
+            <p class="footer-text">
+            {Footer Email Reason}
+            <br/><br/>
+            <em>{Footer Contact}</em>
+            </p>
+            <hr style="opacity:0.2;margin:20px 0px;" />
+            <p class="footer-text" style="">
+            © Copyright 2025, Center Centre, Inc.
+            <br/><br/>
+            Email sent to: %EMAIL%
+            <br/><br/>
+            {Footer Tag}
             </p>
             </div>
             `, hide
@@ -452,7 +469,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort (3 Letters)} ', part: 1 },
 
             'Link Color': { value: '#a5473d', hide },
-            'Accent Color': { value: '#00a3b4', hide },
+            'Accent Color': { value: '8c9a29', hide },
             'Link Text Decoration': { value: 'none' },
 
             'Pillar': { value: '{Topic}' },
@@ -483,6 +500,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Link Color': { value: '#8c9a29', hide },
                 'Link Text Decoration': { value: 'underline', hide },
+                'Button': { value: '{Program Name}' },
             },
         },
         'Session Type:Live Lab 1': {
@@ -895,10 +913,13 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9518240', hide },
 
 
-            'Button': {
-                value: `<td align="left" class="esd-block-button"> <!--[if mso]><a href="{Program Website}" target="_blank" hidden> <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" esdevVmlButton href="{Program Website}" style="height:41px; v-text-anchor:middle; width:462px" arcsize="24%" stroke="f"  fillcolor="#{Accent Color}"> <w:anchorlock></w:anchorlock> <center style='color:#ffffff; font-family:'Open Sans', "helvetica neue", helvetica, sans-serif; font-size:15px; font-weight:700; line-height:15px;  mso-text-raise:1px'> {Program Name} Course Details </center> </v:roundrect></a> <![endif]--> <!--[if !mso]><!-- --> <span class="es-button-border" style="border-width:0;border-radius:10px;background:#{Accent Color};border-color:#179d99"> <a target="_blank" href="{Program Website}" class="es-button" style="background:#{Accent Color};border-radius:10px;font-weight:bold;mso-border-alt:10px solid #{Accent Color}"> {Program Name} Course Details </a> </span> <!--<![endif]--> </td>`
-            },
+            'Button': { value: '{Program Name} Course Details' },
         },
+        'Program:Win': {
+            settings: {
+                'Button': { value: '{Program Name}' },
+            }
+        }
     },
     'Email Type: Content': {
         settings: {
@@ -1031,8 +1052,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
     'Send Type:AUTOMATION': {
         settings: {
-            'Footer Unsubscribe': { value: '', hide },
-            'Footer Forward': { value: '', hide },
+            'Footer': { value: '{Transactional Footer}', hide },
+        }
+    },
+    'Send Type:CAMPAIGN': {
+        settings: {
+            'Footer': { value: '{Marketing Footer}', hide },
         }
     },
 };
