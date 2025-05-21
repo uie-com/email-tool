@@ -471,6 +471,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Link Color': { value: '#a5473d', hide },
             'Accent Color': { value: '8c9a29', hide },
             'Link Text Decoration': { value: 'none' },
+            'Font': { value: '\'Arial\'', hide },
 
             'Pillar': { value: '{Topic}' },
 
@@ -704,11 +705,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'List ID': { value: '{LoA ID}', hide },
             'Segment ID': { value: '{LoA Segment ID}', hide },
 
-            'Link Text Decoration': { value: 'none' },
+            'Link Text Decoration': { value: '' },
 
             'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz', hide },
             'Session Title': { value: '{Airtable Session Query}&fields[]=Title', fetch: 'airtable' },
-            'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable' },
+            'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable', part: 0 },
             'Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
             'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
 
@@ -765,30 +766,36 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: 'eb621d' },
+                'Banner Topic': { value: 'UX Job Search' },
             }
         },
         'Session Type:Metrics Topic': {
             settings: {
                 'Primary Color': { value: '9b0e5b' },
                 'Accent Color': { value: '00a1b3' },
+                'Banner Topic': { value: 'UX Metrics' },
+
             }
         },
         'Session Type:Research Topic': {
             settings: {
                 'Primary Color': { value: '662547' },
                 'Accent Color': { value: '00a1b3' },
+                'Banner Topic': { value: 'UX Research' },
             }
         },
         'Session Type:Win Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: '8c9b29' },
+                'Banner Topic': { value: 'UX Influence' },
             }
         },
         'Session Type:Vision Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: '9b0e5b' },
+                'Banner Topic': { value: 'UX Vision' },
             }
         },
         'Email Type:Upcoming Topics': {
@@ -797,9 +804,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/667ec838-028d-4112-8be2-fe1effc217f9.png?id=39120670' },
                 'Subject': { value: 'Upcoming: {Upcoming Session #1 Title}, {Upcoming Session #2 Title}, {Upcoming Session #3 Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
-                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9623518', hide },
 
-                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.', part: 1 },
 
                 'Session Entries': {
                     value: `<table cellpadding="0" cellspacing="0" width="100%" bgcolor="#0C6D77" style="background-color: #0c6d77; border-radius: 10px; border-collapse: separate">
@@ -849,7 +856,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
 
-                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.', part: 1 },
 
                 // 'Send Type': { value: 'AUTOMATION', hide },
 
