@@ -12,16 +12,19 @@ import moment, { Moment } from "moment-timezone";
 import { useEffect, useMemo, useState } from "react";
 
 const DEBUG = false;
-export function VariableForm({ variables, values, setValue }: { variables: Variables, values?: Values, setValue: (values: Values) => void }) {
+const prependVariables = [new Variable('{Send Date}', 0), new Variable('{Subject}', 0), new Variable('{Preview}', 0)];
+
+export function VariableForm({ variables, values, setValue, showHidden }: { variables: Variables, values?: Values, setValue: (values: Values) => void, showHidden?: boolean }) {
     const formVariables = useMemo(() => {
-        return variables.getDisplayVariables(values)
+        return variables.getDisplayVariables(values, prependVariables)
     }, [variables, values]);
 
     return (
         <Flex direction="column" align="stretch" justify="center" className="h-full" gap={20} key={'form'}>
             {formVariables && formVariables.map((variable, index) => {
-                if (values?.isHidden(variable.key) || PRE_APPROVED_VALUES.includes(variable.key))
+                if (!showHidden && (values?.isHidden(variable.key) || PRE_APPROVED_VALUES.includes(variable.key)))
                     return null;
+
                 return (
                     <VariableInput
                         key={'ve' + index}
@@ -37,7 +40,6 @@ export function VariableForm({ variables, values, setValue }: { variables: Varia
                             );
                             setValue(new Values(values.initialValues));
                         }}
-
                     />)
             }
             )}

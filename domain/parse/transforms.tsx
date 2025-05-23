@@ -277,6 +277,26 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         ...defaultStyles,
                         'marginBottom': '-0.5rem',
                     },
+                    h1: {
+                        ...defaultStyles,
+                        'fontSize': '28px',
+                        'paddingTop': '2rem',
+                        'paddingBottom': '0.25rem',
+                    },
+                    h2: {
+                        ...defaultStyles,
+                        'fontSize': '24px',
+                        'paddingTop': '1.5rem',
+                        'paddingBottom': '0.25rem',
+
+                    },
+                    h3: {
+                        ...defaultStyles,
+                        'fontSize': '20px',
+                        'paddingTop': '1.25rem',
+                        'paddingBottom': '0.25rem',
+                    },
+
                     link: {
                         'textDecoration': context && context.getCurrentValue ? context.getCurrentValue('Link Text Decoration') as string ?? 'underline' : 'underline',
                         'color': context && context.getCurrentValue ? context.getCurrentValue('Link Color') as string : '#007bff',

@@ -8,7 +8,7 @@
 
 export const EMAIL_TYPES: Settings<string[]> = <const>{
     options: {
-        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions']
+        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA']
     },
     'TUXS': {
         options: {
@@ -37,9 +37,14 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
         },
     },
+    'LoA': {
+        options: {
+            'Email Type': ['Content'],
+        },
+    },
     'Metrics': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation', 'Message'],
         },
         'Today\'s Session': {
             options: {
@@ -72,10 +77,20 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
                 'Price Type': ['Unemployed', 'Individual', 'Team'],
             },
         },
+        'Confirmation': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+            },
+        },
+        'Message': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+            },
+        }
     },
     'Research': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation', 'Message'],
         },
         'Today\'s Session': {
             options: {
@@ -110,6 +125,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
         },
         'Confirmation': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+            },
+        },
+        'Message': {
             options: {
                 'Cohort': generateNumberedOptions('Cohort', 12),
             },
@@ -117,7 +137,7 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Visions': {
         options: {
-            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
+            'Email Type': ['Today\'s Session', 'Before Week', 'Vessel', 'Content', 'Receipt', 'Confirmation', 'Message'],
         },
         'Today\'s Session': {
             options: {
@@ -155,11 +175,16 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             options: {
                 'Cohort': generateNumberedOptions('Cohort', 12),
             },
+        },
+        'Message': {
+            options: {
+                'Cohort': generateNumberedOptions('Cohort', 12),
+            },
         }
     },
     'Win': {
         options: {
-            'Email Type': ['Homework', 'Vessel', 'Content', 'Receipt', 'Confirmation'],
+            'Email Type': ['Homework', 'Vessel', 'Content', 'Receipt', 'Confirmation', 'Message'],
         },
         'Homework': {
             options: {
@@ -188,11 +213,16 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             options: {
                 'Cohort': generateMonthOptions(),
             },
+        },
+        'Message': {
+            options: {
+                'Cohort': generateMonthOptions(),
+            },
         }
     },
     'Stand Out': {
         options: {
-            'Email Type': ['Today\'s Session', 'Events of the Week'],
+            'Email Type': ['Today\'s Session', 'Events of the Week', 'Message'],
         },
         'Today\'s Session': {
             options: {

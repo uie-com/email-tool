@@ -169,7 +169,7 @@ function PreApprovalBadge({ className }: { className?: string }) {
     return (
         <ThemeIcon
             className={className}
-            c="gray.0"
+            c="gray.2"
             bg='none'
             size={32}
         >

@@ -115,7 +115,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Font': { value: '\'Open Sans\'', part: 0, hide },
 
         'Global Styles': {
-            value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] ', part: 0
+            value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] hr [ margin-top: 25px; margin-bottom: 20px; ] ', part: 0
         },
 
         'Zoom Link': { value: '{Airtable Settings Query}&fields[]=Zoom Link', fetch: 'airtable', hide },
@@ -237,7 +237,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
         'Email Type:Today\'s Session': {
             settings: {
-                'Email Name': { value: '{Session Type}', part: 1 },
+                'Email Name': { value: '{Session Type}', part: 2 },
             },
             'Session Type:Live Discussion': {
                 settings: {
@@ -472,7 +472,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Link Color': { value: '#a5473d', hide },
             'Accent Color': { value: '8c9a29', hide },
             'Link Text Decoration': { value: 'none' },
-            'Font': { value: '\'Arial\'', hide },
+            'Font': { value: 'arial', hide },
 
             'Pillar': { value: '{Topic}' },
 
@@ -692,6 +692,25 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             }
         },
     },
+    'Program:LoA': {
+        settings: {
+            'Send Type': { value: 'CAMPAIGN', hide },
+            'Program Name': { value: 'Leaders of Awesomeness', hide },
+
+            'Template': { value: '/loa', part: 1 },
+
+
+            'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
+            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
+            'Footer Tag': { value: `LOA` },
+
+            'List ID': { value: '{LoA ID}', hide },
+            'Segment ID': { value: '{LoA Segment ID}', hide },
+
+            'Link Text Decoration': { value: '' },
+            'Link Color': { value: '#4293a4' },
+        }
+    },
     'Program:TUXS': {
         settings: {
             'Send Type': { value: 'CAMPAIGN', hide },
@@ -706,7 +725,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'List ID': { value: '{LoA ID}', hide },
             'Segment ID': { value: '{LoA Segment ID}', hide },
 
-            'Link Text Decoration': { value: '' },
+
 
             'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz', hide },
             'Session Title': { value: '{Airtable Session Query}&fields[]=Title', fetch: 'airtable' },
@@ -926,6 +945,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Program:Win': {
             settings: {
                 'Button': { value: '{Program Name}' },
+                'Link Color': { value: '#646E1A' },
             }
         }
     },
@@ -936,7 +956,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop/content.html', part: 1 },
             'Banner': { value: '{Promo Banner}' },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
-
+        },
+        'Program:Win': {
+            settings: {
+                'Button': { value: '{Program Name}' },
+                'Link Color': { value: '#646E1A' },
+            }
         }
     },
 

@@ -23,6 +23,7 @@ import { NOTION_CALENDAR } from "@/domain/settings/notion";
 import { AuthStatus } from "./emailPublishing/emailPublisher";
 
 
+
 export function ValueReview() {
     const [editorState, setEditorState] = useContext(EditorContext);
     const values = editorState.email?.values;
@@ -36,6 +37,7 @@ export function ValueReview() {
     const [showHidden, setShowHidden] = useState(false);
 
     const [hadIssue, setHadIssue] = useState(false);
+
 
 
 
@@ -123,6 +125,7 @@ export function ValueReview() {
         if (isLoading) return;
         setIsLoading(true);
 
+
         const emailId = editorState.email?.name;
         const newEmailStr = await getEmailFromSchedule(emailId);
         let newEmail = JSON.parse(newEmailStr ?? '{}');
@@ -131,7 +134,7 @@ export function ValueReview() {
             newEmail.values.setValue('Last Populated', { value: new Date(), source: 'remote' });
 
             console.log('Refreshing email: ', newEmail, ' from state: ', editorState);
-            setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail } });
+            setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail, referenceDocURL: editorState.email?.referenceDocURL, notionURL: editorState.email?.notionURL, notionId: editorState.email?.notionId } });
             setIsLoading(false);
             setRefresh(true);
         } else {
@@ -166,8 +169,8 @@ export function ValueReview() {
                         </Box>
 
                         <HadIssue.Provider value={[hadIssue, setHadIssue]}>
-                            <CreateReferenceDoc shouldAutoStart={true} />
-                            <GetNotionPage shouldAutoStart={true} />
+                            <CreateReferenceDoc shouldAutoStart={!hadIssue} />
+                            <GetNotionPage shouldAutoStart={!hadIssue} />
                         </HadIssue.Provider>
                     </Flex>
 
@@ -305,6 +308,7 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+
         const email = editorState.email;
         const values = email?.values;
 
@@ -312,6 +316,11 @@ function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
         const sourceDoc = values.resolveValue("Source Reference Doc", true) ?? '';
         const docName = values.resolveValue("Template Name", true) ?? '';
+
+        if (!sourceDoc || !isValidHttpUrl(sourceDoc)) {
+            console.log("Invalid source doc", sourceDoc);
+            return setMessage('Invalid source document link.');
+        }
 
         const res = await copyGoogleDocByUrl(sourceDoc, docName, globalSettings.googleAccessToken ?? '');
 

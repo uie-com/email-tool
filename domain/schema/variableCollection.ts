@@ -43,8 +43,9 @@ export class Variables {
         return uniqueVariables;
     }
 
-    getDisplayVariables(values?: Values): Variable[] {
+    getDisplayVariables(values?: Values, prepend?: Variable[]): Variable[] {
         let sum = [
+            ...(prepend ? prepend : []),
             ...this.variables.map(variable => {
                 if (values === undefined) return variable;
                 return variable.resolveDependencies(values);
