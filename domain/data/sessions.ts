@@ -104,12 +104,16 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
             const splitTitle = record.fields["Calendar Title"].split("•");
             let topic = (splitTitle.length === 3) ? splitTitle[1].trim() : undefined;
             let sessionType: string | undefined = (splitTitle.length === 3) ? splitTitle[2].trim() : splitTitle[1].trim();
-            let topicType: string | undefined = undefined
+            let topicType: string | undefined = undefined, lab: string | undefined = undefined;
 
             if (program === 'TUXS') {
                 [topic, sessionType] = [sessionType, topic];
                 sessionType = sessionType + ' Topic';
                 topicType = sessionType;
+            }
+
+            if (program === 'Win') {
+                lab = sessionType.replace('Live ', '');
             }
 
             if (cohorts && cohorts.length >= 1)
@@ -120,6 +124,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
                         Program: program,
                         Topic: topic,
                         "Session Type": sessionType,
+                        "Lab": lab,
                         Cohort: cohort,
 
                         TopicType: topicType,
@@ -143,6 +148,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
                     Program: program,
                     Topic: topic,
                     "Session Type": sessionType,
+                    "Lab": lab,
 
                     TopicType: topicType,
 
@@ -384,15 +390,19 @@ function markPreviousSession(sessions: Session[]): Session[] {
 function markBreaks(sessions: Session[]): Session[] {
     const programs = [...new Set(sessions.map((session) => session.Program))];
     programs.forEach((program) => {
-        sessions = markBreaksForProgram(sessions, program);
+        const cohorts = [...new Set(sessions.filter((session) => session.Program === program).map((session) => session.Cohort))];
+        cohorts.forEach((cohort) => {
+            sessions = markBreaksForProgram(sessions, program, cohort);
+        });
     });
     return sessions;
 }
 
-function markBreaksForProgram(sessions: Session[], program: string): Session[] {
+function markBreaksForProgram(sessions: Session[], program: string, cohort?: string): Session[] {
     let lastSession: Session | null = null;
     sessions.forEach((session, index) => {
         if (session.Program !== program) return;
+        if (!cohort || session.Cohort !== cohort) return;
 
         if (lastSession && session.Cohort === lastSession.Cohort) {
             const lastSessionDate = moment(lastSession["Session Date"]);

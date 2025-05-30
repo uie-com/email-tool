@@ -109,8 +109,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
 
         'Footer Color': { value: '#999999', hide },
-        'Link Color': { value: 'inherit', hide },
-        'Link Text Decoration': { value: 'underline', hide },
+        'Link Color': { value: '', hide },
+        'Link Text Decoration': { value: '', hide },
 
         'Font': { value: '\'Open Sans\'', part: 0, hide },
 
@@ -544,12 +544,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Share Reviews By': { value: 'Cohort' },
 
             },
-            'Week:Week 1': {
+            'Topic:Pillar 1': {
                 settings: {
                     'Share Reviews By': { value: '' },
                 }
             },
-            'Week:Week 2': {
+            'Topic:Pillar 2': {
                 settings: {
                     'Share Reviews By': { value: '' },
                 }
@@ -594,6 +594,36 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/homework-pillar-x-lab-1-transition.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9577431', hide },
+            },
+        },
+        'Email Type:Before Break': {
+            settings: {
+                'Email Name': { value: 'Before Break', part: 2 },
+                'Subject': { value: 'Win Program: Break {Break Range}' },
+                'Share Reviews By': { value: 'Cohort' },
+                'Template': { value: '/before-break.html', part: 2 },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1XpRHEBaYCzGyWJ-BH_eWtXhT4Mo1dlsQUNHo8q6QUtI/edit' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9695433', hide },
+            },
+            'Topic:Pillar 1': {
+                settings: {
+                    'Share Reviews By': { value: '' },
+                }
+            },
+            'Topic:Pillar 2': {
+                settings: {
+                    'Share Reviews By': { value: '' },
+                }
+            },
+        },
+        'Email Type:Before Break Transition': {
+            settings: {
+                'Email Name': { value: 'Before Break Transition', part: 2 },
+                'Subject': { value: 'Win Program: Break {Break Range}' },
+                'Share Reviews By': { value: '' },
+                'Template': { value: '/before-break-transition.html', part: 2 },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1_Bnz3wAmMYH-JZ7MS6J3kuLsO1WbJh3fY-spccKqOec/edit?tab=t.0' },
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9695734', hide },
             },
         },
         'Email Type:First Lab Reminder': {
