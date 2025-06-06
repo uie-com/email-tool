@@ -46,6 +46,7 @@ export class Email {
     campaignId?: string; // Campaign ID in Active Campaign
 
     referenceDocURL?: string;
+    areNotesSaved?: boolean;
     notionURL?: string; // URL of the Notion card
     notionId?: string; // ID of the Notion card
 

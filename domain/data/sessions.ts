@@ -5,6 +5,8 @@ import { fetchRecords } from "./airtableActions";
 export type AirtableSessionRecord = {
     id: string;
     fields: {
+        "Record ID"?: string;
+
         "Date": string;
         "Sync Source": string;
         "Calendar Title": string;
@@ -25,7 +27,8 @@ export type AirtableSessionRecord = {
 
 export type Session = {
     // targets airtable assignments
-    "id": string;
+    id: string;
+    "Original ID"?: string;
     "Session Date": Date;
     "Program": string;
     "Topic"?: string;
@@ -120,6 +123,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
                 cohorts.forEach((cohort) => {
                     sessions.push({
                         id: record.id,
+                        "Original ID": record.fields["Record ID"] || record.id,
                         "Session Date": moment(date).toDate(),
                         Program: program,
                         Topic: topic,
@@ -144,6 +148,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
             else
                 sessions.push({
                     id: record.id,
+                    "Original ID": record.fields["Record ID"] || record.id,
                     "Session Date": moment(date).toDate(),
                     Program: program,
                     Topic: topic,
@@ -446,6 +451,10 @@ function combineWorkshopSessions(sessions: Session[]): Session[] {
                 "Lecture Event Link": firstSession["Event Link"],
                 "Coaching Event Link": secondSession["Event Link"],
                 "Session Type": '',
+                "Lecture ID": firstSession.id,
+                "Coaching ID": secondSession.id,
+                "Original Lecture ID": firstSession["Original ID"],
+                "Original Coaching ID": secondSession["Original ID"],
             };
             combinedSessions.push(combinedSession);
             skip.push(secondSession);
@@ -480,6 +489,10 @@ function combineOptionsSessions(sessions: Session[]): Session[] {
                 "Second Date": secondSession["Session Date"],
                 "First Event Link": firstSession["Event Link"],
                 "Second Event Link": secondSession["Event Link"],
+                "First ID": firstSession.id,
+                "Second ID": secondSession.id,
+                "Original First ID": firstSession["Original ID"],
+                "Original Second ID": secondSession["Original ID"],
             };
             combinedSessions.push(combinedSession);
             skip.push(secondSession);

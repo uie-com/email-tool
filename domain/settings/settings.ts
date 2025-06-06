@@ -46,6 +46,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
+        'Collab Notes Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name}', hide },
 
         'LoA ID': { value: '97', hide },
         'LoA Segment ID': { value: '1258', hide },
@@ -115,7 +116,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Font': { value: '\'Open Sans\'', part: 0, hide },
 
         'Global Styles': {
-            value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.5rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] hr [ margin-top: 25px; margin-bottom: 20px; ] ', part: 0
+            value: 'a [ color: {Link Color} !important; text-decoration: {Link Text Decoration} !important; ] \n ul [ margin-bottom: 1.75rem !important; ] \n .footer-text [ color:{Footer Color} !important;font-size:14px !important;font-family:{Font}, sans-serif !important;line-height:1.5 !important; ] \n @media only screen and (max-width:600px) [ div.footer p.footer-text,a.footer-text [ font-size:12px !important; ] .top-padding-insert [ display: none; ]  h1 [ font-size: 26px !important; ] ] hr [ margin-top: 25px; margin-bottom: 20px; ] ', part: 0
         },
 
         'Zoom Link': { value: '{Airtable Settings Query}&fields[]=Zoom Link', fetch: 'airtable', hide },
@@ -133,9 +134,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Topic}', part: 2 },
 
             'Template': { value: '/today.html', part: 2 },
-            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488185', hide },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551152', hide },
 
             'Subject': { value: '{Program Name}: {Week}: {Topic}: ​​{Title}' },
+
+            'Uses Collab Notes': { value: 'true', hide },
         }
     },
     'Email Type:Before Week': {
@@ -246,6 +249,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                     'Subject': { value: 'Today’s Stand Out Community Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AC2E0gWyShIPsZ7xHncWgjgolly3AwyxltTtVQLFoog/edit' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1ZGQ09ANNM4W2gCC8BmJQjswUGZs9CTfguX3dnpkKEK4/edit' }
                 }
             },
             'Session Type:Materials Critique': {
@@ -255,6 +259,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                     'Subject': { value: 'Today’s Materials Critique Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1LZaqUgGa5mIMKg3ZeS3DskPkqO1pBFND4suzQqpq0SE/edit' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/14fcUiSQHJ51Na_OgNhU1BOAfQZHVItLznb8xPyCbf-M/edit' }
                 }
             }
         }
@@ -344,7 +349,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Link Color': { value: '#662547', hide },
 
 
-            'Calendar Table ID': { value: 'tblm2TqCcDcx94nA2', hide },
+            'Calendar Table ID': { value: 'tblwWOJncBNkBEOie', hide },
             'Topic Table ID': { value: 'tbl60eXcCEU581e7v', hide },
 
             'Airtable Topic Query': { value: '{Airtable URL}/{Topic Table ID}?filterByFormula=SEARCH("{Topic}", %7BName%7D)', hide },
@@ -362,14 +367,54 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1N0pXqqE1760ciCiO5AT-Lk3Sud-9HwNGVCdwctWYLLs/edit' },
             },
-            'Topic:Topic 1': { settings: { value: 'https://docs.google.com/document/d/1q3RsyLF3ayTMuCYbWaZyFlY0S-nNyL1q2uLtyCz4mO8/edit?usp=share_link' } },
-            'Topic:Topic 2': { settings: { value: 'https://docs.google.com/document/d/13W9orpxBNQ9CK5O5DDKFC1edoGf5w-tgTPCRoUyeh20/edit?usp=share_link' } },
-            'Topic:Topic 3': { settings: { value: 'https://docs.google.com/document/d/1yGLuA-To8eEw3yjhYDht-JuR17lJ2eThiQu_B-H9rP4/edit?usp=share_link' } },
-            'Topic:Topic 4': { settings: { value: 'https://docs.google.com/document/d/1zUcI1V5zzWkTYBgDfMBYLmC6JDhrHhD3AoplB-nuWdQ/edit?usp=share_link' } },
-            'Topic:Topic 5': { settings: { value: 'https://docs.google.com/document/d/1YaI1rSLWBaDja7A47Ikzoh5Yrb_Vw-bNRERZtD_-itw/edit?usp=share_link' } },
-            'Topic:Topic 6': { settings: { value: 'https://docs.google.com/document/d/16SX0a90Pw3_zcK-fHc5p-s_0NBJLuiHlHK7F2DpF5FI/edit?usp=share_link' } },
-            'Topic:Topic 7': { settings: { value: 'https://docs.google.com/document/d/1PxmUdg9oDVdGbJ7T6v6N6dPrTpkrh-6xaFEzsW-py1E/edit?usp=share_link' } },
-            'Topic:Topic 8': { settings: { value: 'https://docs.google.com/document/d/153-uZmIyIsbGoaxi6E_eokj3WOIqL3A_CcjUBZ7xbwo/edit?usp=share_link' } },
+            'Topic:Topic 1': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1q3RsyLF3ayTMuCYbWaZyFlY0S-nNyL1q2uLtyCz4mO8/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1xzlb3nqHyFjtdNH5VQ3nVuEWrviMgzhHagLnLI5-ooo/edit' }
+                }
+            },
+            'Topic:Topic 2': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/13W9orpxBNQ9CK5O5DDKFC1edoGf5w-tgTPCRoUyeh20/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/19oDEn9PjvUcutzCw5LBixXU1OmirrIkSop5VHUaX_u0/edit' }
+                }
+            },
+            'Topic:Topic 3': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1yGLuA-To8eEw3yjhYDht-JuR17lJ2eThiQu_B-H9rP4/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1ZRHh_fVzooJeujRto6yrGv7qlz-83MCRu2TqjanwtKk/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
+            'Topic:Topic 4': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1zUcI1V5zzWkTYBgDfMBYLmC6JDhrHhD3AoplB-nuWdQ/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1j8mpwfcxdSm0aAn48Urngt0bddt3wKylZhQcNg83OjQ/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
+            'Topic:Topic 5': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1YaI1rSLWBaDja7A47Ikzoh5Yrb_Vw-bNRERZtD_-itw/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1o0a9KpyzoAHDdti02awuUrknywd540ZAKkIdbCgcqcA/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
+            'Topic:Topic 6': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/16SX0a90Pw3_zcK-fHc5p-s_0NBJLuiHlHK7F2DpF5FI/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1MB0Z-llczObDAyf6ny0wYNFpmKMo3MfyWpSOn_cyQrc/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
+            'Topic:Topic 7': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1PxmUdg9oDVdGbJ7T6v6N6dPrTpkrh-6xaFEzsW-py1E/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1UQQFkCa7-QufEWdB2do0DgdFwBYymiMFFX3vKhEMnBg/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
+            'Topic:Topic 8': {
+                settings: {
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/153-uZmIyIsbGoaxi6E_eokj3WOIqL3A_CcjUBZ7xbwo/edit?usp=share_link' },
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1FOtRBsH1kZ6kcvenulQgb2Nmj0jEr7lWDKs9OPzUwvw/edit?tab=t.0#heading=h.m3vfswnu9y08' }
+                }
+            },
         },
         'Email Type:Before Week': {
             settings: {
@@ -411,6 +456,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Email Name': { value: '{Cohort} ', part: 1 },
 
             'Link Color': { value: '#ec621d', hide },
+            'Accent Color': { value: '5e2946', hide },
 
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },
             'Topic Table ID': { value: 'tbldSCPFTa8UD58WI', hide },
@@ -542,7 +588,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Email Name': { value: '{Topic} {Lab}', part: 2 },
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
                 'Share Reviews By': { value: 'Cohort' },
-
+                'Last Session Phrase': { value: 'This past week in our', hide },
             },
             'Topic:Pillar 1': {
                 settings: {
@@ -585,16 +631,18 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 }
             },
         },
-        'Email Type:Transition': {
+        'Is Transition': {
             settings: {
-                'Email Name': { value: '{Topic} {Lab} Transition', part: 2 },
-                'Subject': { value: 'Win Program {Topic}. {Title}' },
-                'Share Reviews By': { value: '' },
-
-                'Template': { value: '/homework-pillar-x-lab-1-transition.html', part: 2 },
+                'Email Name': { value: ' Transition', part: 3 },
+                'Session Note': { value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`, hide },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing' },
-                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9577431', hide },
-            },
+            }
+        },
+        'Is After Break': {
+            settings: {
+                'Email Name': { value: ' After Break', part: 3 },
+                'Last Session Phrase': { value: 'Last time we met for' },
+            }
         },
         'Email Type:Before Break': {
             settings: {
@@ -615,16 +663,15 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                     'Share Reviews By': { value: '' },
                 }
             },
-        },
-        'Email Type:Before Break Transition': {
-            settings: {
-                'Email Name': { value: 'Before Break Transition', part: 2 },
-                'Subject': { value: 'Win Program: Break {Break Range}' },
-                'Share Reviews By': { value: '' },
-                'Template': { value: '/before-break-transition.html', part: 2 },
-                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1_Bnz3wAmMYH-JZ7MS6J3kuLsO1WbJh3fY-spccKqOec/edit?tab=t.0' },
-                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9695734', hide },
-            },
+            'Is Transition': {
+                settings: {
+                    'Session Note': {
+                        value: `<em>Note: Your sessions will now start two hours later, at <strong>{{Week (+{Break Length(+1)})} Session #1 First Date (h:mma z)(:00)} ({{Week (+{Break Length(+1)})} Session #1 First Date (HH.mm z)(GMT)})</strong> or <strong>{{Week (+{Break Length(+1)})} Session #1 Second Date (h:mma z)(:00)} ({{Week (+{Break Length(+1)})} Session #1 Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {{Week (+{Break Length(+1)})} Session #1 Topic}. {{Week (+{Break Length(+1)})} Session #1 Lab}.</em><br/><br/>`, hide
+                    },
+                    'Break Note': { value: '<br/><em>Note: When we return from break, you will join the larger program group.</em>', hide },
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1_Bnz3wAmMYH-JZ7MS6J3kuLsO1WbJh3fY-spccKqOec/edit?tab=t.0' },
+                }
+            }
         },
         'Email Type:First Lab Reminder': {
             settings: {
@@ -759,7 +806,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Calendar Table ID': { value: 'tbl6T80hI7yrFsJWz', hide },
             'Session Title': { value: '{Airtable Session Query}&fields[]=Title', fetch: 'airtable' },
-            'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable', part: 0 },
             'Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
             'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
 
@@ -772,6 +818,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Today: {Session Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1DEU65xOzfjHrHfB8TCotSoeDN4ERclAcqYynn0yUpWw/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9491072', hide },
+
+                'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable', part: 0 },
+
             },
             // Banner Settings
             'Session Type:Job Search Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/95fddc5d-1565-4ace-8067-ce00e6f3e236.png?id=39120976' }, } },
@@ -788,6 +837,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1V7suWAFtLFw4OKAAP8dcOE0hRRNdFBtGqxJg1nl-IGY/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9491094', hide },
 
+                'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable', part: 0 },
+
+
             },
             // Banner Settings
             'Session Type:Job Search Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/43e4647c-9c6d-44ed-974a-9afaa9cf867c.png?id=39120942' }, } },
@@ -802,6 +854,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'This Monday: {Session Title}' },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AyFiVg5h6LxHYHYQ_NBdAiCAKPGVCDh2g95bh-dwAgk/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9490112', hide },
+
+                'Preview': { value: '{Airtable Session Query}&fields[]=Preview', fetch: 'airtable', part: 0 },
 
             },
             // Banner Settings
@@ -856,7 +910,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9623518', hide },
 
-                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.', part: 1 },
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
 
                 'Session Entries': {
                     value: `<table cellpadding="0" cellspacing="0" width="100%" bgcolor="#0C6D77" style="background-color: #0c6d77; border-radius: 10px; border-collapse: separate">
@@ -906,7 +960,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1NLFu-FcTj4MFt5fHP-TDROtWwvziAH9zOueZ54GqgIo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496120', hide },
 
-                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.', part: 1 },
+                'Preview': { value: 'Every week, join me for a free, live discussion about UX Strategy.' },
 
                 // 'Send Type': { value: 'AUTOMATION', hide },
 
@@ -1098,6 +1152,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
             'Source Reference Doc': { value: '' },
+            'Link Color': { value: '' },
+            'Link Decoration': { value: '' },
 
             'Space Name': { value: 'Online Course', hide },
 

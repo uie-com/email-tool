@@ -154,24 +154,6 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 }
             }
         },
-        'Is After Break': {
-            emails: {
-                'Homework': {}, // Deletes the previous email
-                'Returning From Break': {
-                    'Send Date': '{Session Date (Friday Before)(2:00pm)}',
-                }
-            }
-        },
-        'Previous Topic:Pillar 2': {
-            'Previous Session Type:Live Lab 2': {
-                emails: {
-                    'Homework': {},
-                    'Transition': {
-                        'Send Date': '{Session Date (Friday Before)(2:00pm)}',
-                    }
-                }
-            }
-        },
         'Is First Session Of Program': {
             'Topic:Pillar 1': {
                 emails: {

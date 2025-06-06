@@ -260,7 +260,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             margin: 0,
             'color': '#333333',
             'letterSpacing': '0',
-            'marginBottom': '1rem',
+            'marginBottom': '1.33rem',
             'lineHeight': '24px',
             'fontSize': '16px',
         };
@@ -272,10 +272,11 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                     },
                     li: {
                         ...defaultStyles,
+                        'marginBottom': '0.75rem',
                     },
                     ul: {
                         ...defaultStyles,
-                        'marginBottom': '-0.5rem',
+                        // 'marginTop': '-0.5rem',
                     },
                     h1: {
                         ...defaultStyles,
@@ -286,7 +287,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                     h2: {
                         ...defaultStyles,
                         'fontSize': '24px',
-                        'paddingTop': '1.5rem',
+                        'paddingTop': '1rem',
                         'paddingBottom': '0.25rem',
 
                     },
@@ -302,7 +303,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         'color': context && context.getCurrentValue ? context.getCurrentValue('Link Color') as string : '#007bff',
                     }
                 }}
-            >{value as string}</Markdown >))
+            >{(value as string)}</Markdown >))
                 .replaceAll('<li', '<li><p')
                 .replaceAll('/li>', '/p></li>')
         }

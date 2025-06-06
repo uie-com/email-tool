@@ -402,7 +402,7 @@ function CreatePostmarkAction({ shouldAutoStart }: { shouldAutoStart: boolean })
     const isReady = () => {
         return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0 &&
             editorState.email?.hasRendered !== undefined && editorState.email?.hasRendered === editorState.email?.templateId
-            && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
+        // && editorState.email?.referenceDocURL !== undefined && editorState.email?.referenceDocURL.length > 0;
     }
 
     const isDone = () => {

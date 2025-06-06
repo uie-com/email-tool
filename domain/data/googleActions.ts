@@ -1,5 +1,8 @@
 "use server";
 
+import { Values } from "../schema/valueCollection";
+import { Variables } from "../schema/variableCollection";
+
 export async function getToken(code?: string, refreshToken?: string) {
     const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -109,6 +112,135 @@ export async function copyGoogleDocByUrl(docUrl: string, newName: string, access
         return { success: false, error: err.message || 'Unexpected error' };
     }
 }
+
+
+type GetContentDocResult = {
+    success: boolean;
+    content?: any;
+    title?: string;
+    error?: string;
+};
+
+export async function getGoogleDocContentByUrl(docUrl: string, accessToken: string): Promise<GetContentDocResult> {
+    try {
+        // Extract File ID from URL
+        const match = docUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match || !match[1]) {
+            return { success: false, error: 'Invalid Google Docs URL' };
+        }
+
+        const fileId = match[1].trim();
+        console.log('Reading Google Doc:', fileId);
+
+        // Get the document content
+        const contentRes = await fetch(`https://docs.googleapis.com/v1/documents/${fileId}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!contentRes.ok) {
+            return { success: false, error: 'Failed to fetch document content' };
+        }
+
+        const docData = await contentRes.json();
+        const originalText = docData.body;
+
+        return {
+            success: true,
+            content: originalText,
+            title: docData.title || 'Untitled Document',
+        };
+
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Unexpected error' };
+    }
+}
+
+type CreateSiblingDocResult = {
+    success: boolean;
+    newFileId?: string;
+    newFileName?: string;
+    error?: string;
+};
+export async function createSiblingGoogleDoc(docUrl: string, newName: string, edits: any, accessToken: string): Promise<CreateSiblingDocResult> {
+    try {
+        // Extract File ID from URL
+        const match = docUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match || !match[1]) {
+            return { success: false, error: 'Invalid Google Docs URL' };
+        }
+
+        const fileId = match[1].trim();
+        console.log('Creating sibling Google Doc:', fileId);
+
+        // Get the file metadata to determine folder
+        const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=parents&supportsAllDrives=true`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!metaRes.ok) {
+            return { success: false, error: 'Failed to fetch file metadata' };
+        }
+
+        const { parents } = await metaRes.json();
+
+        // Copy the file
+        const copyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/copy?supportsAllDrives=true`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: newName,
+                parents: parents, // Same folder as original
+            }),
+        });
+
+        if (!copyRes.ok) {
+            const err = await copyRes.json();
+            return { success: false, error: `Copy failed: ${err.error?.message || 'Unknown error'}` };
+        }
+
+        const newDoc = await copyRes.json();
+        const newFileId = newDoc.id;
+
+        // Send batchUpdate
+        const updateRes = await fetch(`https://docs.googleapis.com/v1/documents/${newFileId}:batchUpdate`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ requests: edits }),
+        });
+
+        if (!updateRes.ok) {
+            const error = await updateRes.text();
+            console.log('Update failed:', error);
+
+            return { success: false, error: error };
+        }
+
+        const updateData = await updateRes.json();
+
+        console.log('Document updated successfully:', updateData);
+
+
+        return {
+            success: true,
+            newFileId,
+            newFileName: newName,
+        };
+
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Unexpected error' };
+    }
+}
+
 
 type DeleteDocResult = {
     success: boolean;

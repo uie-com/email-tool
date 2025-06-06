@@ -184,7 +184,7 @@ export function EmailSchedule() {
             </Box>
 
             <Flex direction='row' align='center' justify='start' w="100%" gap={15}>
-                <TagsInput variant="unstyled" placeholder="Filter" bg='gray.1' pl="5" pr="sm" className=" rounded-md overflow-hidden" leftSection={<IconSearch stroke={2} opacity={0.6} className=" mr-2" />} onChange={handleSearch} maw={256} classNames={{ pill: ' !bg-gray-300' }} tt='uppercase' />
+                <TagsInput variant="unstyled" placeholder="Filter" bg='gray.1' pl="5" pr="sm" className=" rounded-md overflow-hidden" leftSection={<IconSearch stroke={2} opacity={0.6} className=" mr-2" />} onChange={handleSearch} value={searchQuery ?? []} maw={256} classNames={{ pill: ' !bg-gray-300' }} tt='uppercase' />
                 <ActionIcon variant="light" color='gray.5' w={36} h={36} onClick={handleRefresh}><IconRefresh size={24} /></ActionIcon>
 
                 <Button variant="outline" color="blue" ml='auto' mr={16} onClick={() => setCreateManual(true)} leftSection={<IconMailPlus size={20} strokeWidth={2.5} />} >Add Email</Button>
