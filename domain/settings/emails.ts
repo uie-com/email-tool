@@ -8,7 +8,7 @@
 
 export const EMAIL_TYPES: Settings<string[]> = <const>{
     options: {
-        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA']
+        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA', 'Other']
     },
     'TUXS': {
         options: {
@@ -40,6 +40,11 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     'LoA': {
         options: {
             'Email Type': ['Content'],
+        },
+    },
+    'Other': {
+        options: {
+            'Email Type': ['Content', 'Vessel'],
         },
     },
     'Metrics': {

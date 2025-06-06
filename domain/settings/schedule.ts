@@ -142,16 +142,6 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                 'Before Break': {
                     'Send Date': '{Session Date(Friday After)(2:00pm)}',
                 }
-            },
-            'Topic:Pillar 2': {
-                'Session Type:Live Lab 2': {
-                    emails: {
-                        'Before Break': {},
-                        'Before Break Transition': {
-                            'Send Date': '{Session Date (Friday After)(2:00pm)}',
-                        }
-                    }
-                }
             }
         },
         'Is First Session Of Program': {

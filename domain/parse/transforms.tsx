@@ -276,7 +276,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                     },
                     ul: {
                         ...defaultStyles,
-                        // 'marginTop': '-0.5rem',
+                        'marginTop': '-0.66rem',
                     },
                     h1: {
                         ...defaultStyles,

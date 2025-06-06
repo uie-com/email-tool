@@ -8,7 +8,7 @@ export type AirtableSessionRecord = {
         "Record ID"?: string;
 
         "Date": string;
-        "Sync Source": string;
+        "Program": string[];
         "Calendar Title": string;
         "Cohort": string[];
 
@@ -103,7 +103,7 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
         records.forEach((record) => {
             const cohorts = record.fields["Cohort"];
             const date = record.fields["Date"];
-            const program = record.fields["Sync Source"];
+            const program = record.fields["Program"][0];
             const splitTitle = record.fields["Calendar Title"].split("•");
             let topic = (splitTitle.length === 3) ? splitTitle[1].trim() : undefined;
             let sessionType: string | undefined = (splitTitle.length === 3) ? splitTitle[2].trim() : splitTitle[1].trim();
