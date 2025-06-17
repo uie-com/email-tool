@@ -2,8 +2,8 @@
 
 import { getAllIdentifiers } from "@/domain/parse/parsePrograms";
 import { initializeSettings } from "@/domain/parse/parseSettings";
-import { SETTINGS } from "@/domain/settings/settings";
-import { EMAIL_TYPES } from "@/domain/settings/emails";
+import { SETTINGS } from "@/config/email-settings";
+import { EMAIL_TYPES } from "@/config/email-types";
 import { Flex, Table, TableData, Textarea } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Values } from "@/domain/schema/valueCollection";

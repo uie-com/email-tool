@@ -1,8 +1,8 @@
 "use client";
 
 import { createProgramForm } from "@/domain/parse/parsePrograms";
-import { SETTINGS } from "@/domain/settings/settings";
-import { EMAIL_TYPES } from "@/domain/settings/emails";
+import { SETTINGS } from "@/config/email-settings";
+import { EMAIL_TYPES } from "@/config/email-types";
 import { Flex, Textarea } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { initializeSettings } from "@/domain/parse/parseSettings";

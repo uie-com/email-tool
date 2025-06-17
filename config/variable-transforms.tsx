@@ -1,10 +1,10 @@
 import moment from "moment-timezone";
-import { shortenIdentifier } from "./parsePrograms";
+import { shortenIdentifier } from "../domain/parse/parsePrograms";
 
 import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
-import { Values } from "../schema/valueCollection";
-import { Variables } from "../schema/variableCollection";
+import { Values } from "../domain/schema/valueCollection";
+import { Variables } from "../domain/schema/variableCollection";
 import { parse } from "path";
 const renderToString = require('react-dom/server').renderToStaticMarkup;
 
@@ -115,7 +115,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             const number = parseInt(iterateTransform.substring(iterateTransform.indexOf('x') + 1, iterateTransform.length));
             const textToRepeat = value;
             const repeatedText = Array.from({ length: number }, (_, i) => {
-                return textToRepeat.replaceAll('#1', '#' + (i + 1).toString()).replaceAll('[', '{').replaceAll(']', '}');
+                return textToRepeat.replaceAll('#1', '#' + (i + 1).toString()).replaceAll('|[', '{|{').replaceAll(']|', '}|}').replaceAll('[', '{').replaceAll(']', '}').replaceAll('{|{', '[').replaceAll('}|}', ']');
             }).join('');
             if (context.initialValues.length > 0)
                 value = new Variables(repeatedText).resolveWith(context);
@@ -226,6 +226,40 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = value.replaceAll('  ', ' ').replaceAll(' ', '-');
         remainingTransforms = remainingTransforms.filter(transform => transform !== tagTransform);
 
+        // Convert number to once, twice, etc. ex. (Number to Adverb)
+        const numberToAdverbTransform = remainingTransforms.find(transform =>
+            transform.includes('Number to Adverb')
+        );
+        if (numberToAdverbTransform) {
+            const number = parseInt(value);
+            if (!isNaN(number)) {
+                if (number === 1) {
+                    value = 'once';
+                } else if (number === 2) {
+                    value = 'twice';
+                } else {
+                    value = numberToName(number);
+                }
+            } else {
+                console.warn('Value is not a number for Number to Adverb transform:', value);
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== numberToAdverbTransform);
+
+        // Convert number to once, twice, etc. ex. (Number to Word)
+        const numberToWordTransform = remainingTransforms.find(transform =>
+            transform.includes('Number to Word')
+        );
+        if (numberToWordTransform) {
+            const number = parseInt(value);
+            if (!isNaN(number)) {
+                value = numberToName(number);
+            } else {
+                console.warn('Value is not a number for Number to Word transform:', value);
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== numberToWordTransform);
+
         // Convert TUXS Descriptions to (1st Person)
         const tuxsTransform = remainingTransforms.find(transform =>
             transform.includes('1st Person')
@@ -303,7 +337,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         'color': context && context.getCurrentValue ? context.getCurrentValue('Link Color') as string : '#007bff',
                     }
                 }}
-            >{(value as string)}</Markdown >))
+            >{removeEscapes(value as string)}</Markdown >))
                 .replaceAll('<li', '<li><p')
                 .replaceAll('/li>', '/p></li>')
         }
@@ -314,4 +348,14 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         console.warn('Unrecognized transforms: ', remainingTransforms);
 
     return value;
+}
+
+
+function removeEscapes(str: string): string {
+    return str.replaceAll('\\_', '_').replaceAll('\\**', '**').replaceAll('\\-', '-');
+}
+
+import converter from 'number-to-words';
+function numberToName(i: number): string {
+    return converter.toWords(i);
 }

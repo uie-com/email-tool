@@ -1,11 +1,11 @@
 "use client";
 
-import { SETTINGS } from "@/domain/settings/settings";
+import { SETTINGS } from "@/config/email-settings";
 import { Flex, Textarea } from "@mantine/core";
 import { useState } from "react";
 import { initializeSettings } from "@/domain/parse/parseSettings";
 import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
-import { EMAILS_PER_SESSION } from "@/domain/settings/schedule";
+import { EMAILS_PER_SESSION } from "@/config/email-schedule";
 import { getSessionSchedule } from "@/domain/data/sessions";
 
 export default function ProgramSchema() {

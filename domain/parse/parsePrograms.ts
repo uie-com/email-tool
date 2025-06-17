@@ -1,5 +1,5 @@
 import { Settings } from "../schema/settingsCollection";
-import { EMAIL_TYPES } from "../settings/emails";
+import { EMAIL_TYPES } from "../../config/email-types";
 import { parseVariableName } from "./parse";
 
 export type Form = {

@@ -8,7 +8,7 @@ import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variable, Variables } from "@/domain/schema/variableCollection";
 import { VariableInput } from "./components/form";
-import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
+import { PRE_APPROVED_VALUES } from "@/config/email-settings";
 import { EMAIL_EDIT_VALUES, EmailEditCard } from "./components/email";
 import { EditorState, Email } from "@/domain/schema";
 import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/data/saveData";

@@ -3,7 +3,7 @@ import { Email } from "../schema";
 import { SettingDict, Settings } from "../schema/settingsCollection";
 import { Session } from "../data/sessions";
 import { Values } from "../schema/valueCollection";
-import { EMAILS_PER_SESSION } from "../settings/schedule";
+import { EMAILS_PER_SESSION } from "../../config/email-schedule";
 
 
 /**

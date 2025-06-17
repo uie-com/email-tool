@@ -2,7 +2,7 @@ import { getPreview } from "@/domain/data/preview";
 import { isValidHttpUrl } from "@/domain/parse/parseUtility";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variables, Variable } from "@/domain/schema/variableCollection";
-import { PRE_APPROVED_VALUES } from "@/domain/settings/settings";
+import { PRE_APPROVED_VALUES } from "@/config/email-settings";
 import { Flex, HoverCard, Loader, MantineSize, TextInput, Textarea, ThemeIcon } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
 import { IconCalendar, IconCalendarEventFilled, IconCalendarFilled, IconCalendarMonthFilled, IconCalendarWeek, IconCalendarWeekFilled, IconExternalLink, IconExternalLinkOff, IconLink, IconLinkOff, IconRefresh } from "@tabler/icons-react";
@@ -13,10 +13,11 @@ import { useEffect, useMemo, useState } from "react";
 
 const DEBUG = false;
 const prependVariables = [new Variable('{Send Date}', 0), new Variable('{Subject}', 0), new Variable('{Preview}', 0)];
+const appendVariables = [new Variable('{Global Styles}', 0)];
 
 export function VariableForm({ variables, values, setValue, showHidden }: { variables: Variables, values?: Values, setValue: (values: Values) => void, showHidden?: boolean }) {
     const formVariables = useMemo(() => {
-        return variables.getDisplayVariables(values, prependVariables)
+        return variables.getDisplayVariables(values, prependVariables, showHidden ? appendVariables : [])
     }, [variables, values]);
 
     return (

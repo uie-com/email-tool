@@ -8,7 +8,7 @@
 
 export const EMAIL_TYPES: Settings<string[]> = <const>{
     options: {
-        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA', 'Other']
+        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA', 'Other', 'Maven'],
     },
     'TUXS': {
         options: {
@@ -34,6 +34,21 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
                 // 'First Session Date': [],
                 // 'Second Session Date': [],
                 // 'Third Session Date': [],
+            },
+        },
+    },
+    'Maven': {
+        options: {
+            'Email Type': ['Lightning Talk', 'Vessel', 'Content'],
+        },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL'],
+            },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL'],
             },
         },
     },
@@ -265,7 +280,7 @@ function generateWeeklyDefaultTopics(limit: number = 6) {
 }
 
 import moment from "moment";
-import { Settings } from "../schema/settingsCollection";
+import { Settings } from "../domain/schema/settingsCollection";
 function generateMonthOptions() {
     let options = [], currentYear = moment().year();
     for (let year = currentYear - 2; year < currentYear + 1; year++) {

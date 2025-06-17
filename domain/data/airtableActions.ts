@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache";
 import { EditorState, Saves } from "../schema";
 import { AT_EMAIL_BASE, AT_EMAIL_TABLE } from "../settings/save";
-import { SESSION_BASE, SESSION_TABLE } from "../settings/schedule";
+import { SESSION_BASE, SESSION_TABLE } from "../../config/email-schedule";
 import { AirtableSessionRecord } from "./sessions";
 
 export async function fetchAirtableData(url: string): Promise<any> {

@@ -7,7 +7,7 @@
 
 import { SettingDict, Settings } from "../schema/settingsCollection";
 import { ValuePart, Values } from "../schema/valueCollection";
-import { SETTINGS } from "../settings/settings";
+import { SETTINGS } from "../../config/email-settings";
 
 const DEBUG = false;
 // Returns a one-level bundle of the final settings for a given set of tags

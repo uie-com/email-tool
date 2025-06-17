@@ -2,8 +2,8 @@ import moment from "moment-timezone";
 import { parseVariableName } from "../parse/parse";
 import { VARIABLE_OVERRIDES, VARIABLE_TYPES, VariableType } from "../settings/variables";
 import { Value, Values } from "./valueCollection";
-import { resolveTransforms } from "../parse/transforms";
-import { PRE_APPROVED_VALUES } from "../settings/settings";
+import { resolveTransforms } from "../../config/variable-transforms";
+import { PRE_APPROVED_VALUES } from "../../config/email-settings";
 
 const DEBUG = false;
 export class Variables {
@@ -43,7 +43,7 @@ export class Variables {
         return uniqueVariables;
     }
 
-    getDisplayVariables(values?: Values, prepend?: Variable[]): Variable[] {
+    getDisplayVariables(values?: Values, prepend?: Variable[], append?: Variable[]): Variable[] {
         let sum = [
             ...(prepend ? prepend : []),
             ...this.variables.map(variable => {
@@ -56,6 +56,7 @@ export class Variables {
             ...(values ? this.getIterableVariables(values).map(variable => {
                 return variable.resolveDependencies(values);
             }) : []),
+            ...(append ? append : [])
         ]
         sum = sum.filter(variable => PRE_APPROVED_VALUES.includes(variable.name) === false);
         return this.getUniqueVariables(sum);

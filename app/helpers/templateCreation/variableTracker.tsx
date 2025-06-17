@@ -5,7 +5,7 @@ import { getAllIdentifiers, getAllPossibleEmailTypes } from "@/domain/parse/pars
 import { initializeSettings } from "@/domain/parse/parseSettings";
 import { Values } from "@/domain/schema/valueCollection";
 import { Variable, Variables } from "@/domain/schema/variableCollection";
-import { EMAIL_TYPES } from "@/domain/settings/emails";
+import { EMAIL_TYPES } from "@/config/email-types";
 import { PROGRAM_COLORS } from "@/domain/settings/interface";
 import { Accordion, Badge, Box, Code, Flex, Pill, ScrollArea, ScrollAreaAutosize, Text } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";

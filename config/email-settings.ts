@@ -1,7 +1,7 @@
 
-import { initializeSettings } from "../parse/parseSettings";
-import { Settings } from "../schema/settingsCollection";
-import { ValuePart, ValueSource } from "../schema/valueCollection";
+import { initializeSettings } from "../domain/parse/parseSettings";
+import { Settings } from "../domain/schema/settingsCollection";
+import { ValuePart, ValueSource } from "../domain/schema/valueCollection";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
@@ -149,6 +149,25 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551147', hide },
 
             'Subject': { value: '{Program Name}: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
+
+            'Session Title Number': { value: '[[Next Week] Session #1 Topic (#)]', hide },
+
+            'Session Message': {
+                value: `
+                <p class="x" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px">On [[Next Week] Session #1 Date (dddd, MMMM Do)], we'll cover <strong>[[Next Week] Session #1 Topic]: [[Next Week] Session #1 Title]</strong>.</p>
+                
+                <p class="x" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"><br></p>
+                
+                <p class="x" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"><b>To Prepare for [[Next Week] Session #1 Topic]: [[Next Week] Session #1 Title]</b></p> 
+                
+                <ul style="font-family:arial, 'helvetica neue', helvetica, sans-serif;padding:0px 0px 0px 40px;margin-top:15px;margin-bottom:15px"> 
+                <li style="color:#333333;margin:0px 0px 15px;font-size:16px"><p class="x" style="Margin:0;mso-line-height-rule:exactly;mso-margin-bottom-alt:15px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px;mso-margin-top-alt:15px"><b><a href="[[Next Week] Session #1 Lecture Link]" target="_blank" style="mso-line-height-rule:exactly;text-decoration:underline;color:#75de43;font-size:16px">Watch the pre-recorded lecture</a></b> on your own or attend the <a target="_blank" href="[[Next Week] Session #1 Lecture Event Link]" style="mso-line-height-rule:exactly;text-decoration:underline;color:#75de43;font-size:16px"><strong>Watch the Lecture Session on [[Next Week] Session #1 Lecture Date (dddd, MMMM Do |[at]| h:mma z)(:00)]</strong></a>.</p>
+                </li> 
+                <li style="color:#333333;margin:0px 0px 15px;font-size:16px">
+                <p class="x" style="Margin:0;mso-line-height-rule:exactly;mso-margin-bottom-alt:15px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"><strong><a target="_blank" href="[[Next Week] Session #1 Coaching Event Link]" style="mso-line-height-rule:exactly;text-decoration:underline;color:#75de43;font-size:16px">Attend the Live Coaching Session on [[Next Week] Session #1 Coaching Date (dddd, MMMM Do |[at]| h:mma z)(:00)]</a></strong>.</p>
+                </li> 
+                </ul>`, hide
+            }
         },
         'Next Week:Week 2': {
             settings: {
@@ -768,6 +787,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Automation ID': { value: '300', hide },
             }
         },
+        'Cohort:August 2025': {
+            settings: {
+                'Automation ID': { value: '319', hide },
+            }
+        },
     },
     'Program:LoA': {
         settings: {
@@ -1010,6 +1034,42 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
             },
         },
+    },
+    'Program:Maven': {
+        settings: {
+            'Course Link': { value: 'https://www.maven.com/courses/how-to-win-stakeholders-and-influence-decisions' },
+        },
+        'Email Type:Lightning Talk': {
+            settings: {
+                'Send Type': { value: 'CAMPAIGN', hide },
+                'Email Name': { value: 'Lightning Talk', part: 1 },
+                'Template': { value: '/maven/lightning-talk.html', part: 1 },
+                'Send To': { value: 'LoA', hide },
+
+                'Subject': { value: 'TODAY: {Title}' },
+                'Preview': { value: '⚡️ Going live for a free Lightning Talk on Maven' },
+
+                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9792363', hide },
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1US3XMScU1sF2qrRTTCVMT8iLmEdSaoSINo1gkny1Yvk/edit?tab=t.0' },
+            }
+        },
+        'Email Type:Vessel': {
+            settings: {
+                'Promo Banner': { value: 'https://content.app-us1.com/O8aW3/2025/06/04/83f01f0d-0e49-4d7e-bfac-8b61142dc247.png?id=39727400' },
+                'Banner Alt': { value: 'UX & Design in an AI World; Host Jared Spool' },
+                'Program Website': { value: 'https://maven.com/centercentre/uxai' },
+                'Link Color': { value: '#bd1f23' },
+            }
+        },
+        'Email Type:Content': {
+            settings: {
+                'Promo Banner': { value: 'https://content.app-us1.com/O8aW3/2025/06/04/83f01f0d-0e49-4d7e-bfac-8b61142dc247.png?id=39727400' },
+                'Banner Alt': { value: 'UX & Design in an AI World; Host Jared Spool' },
+                'Program Website': { value: 'https://maven.com/centercentre/uxai' },
+                'Link Color': { value: '#bd1f23' },
+            }
+        }
+
     },
 
 

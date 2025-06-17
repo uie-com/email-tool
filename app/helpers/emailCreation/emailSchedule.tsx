@@ -1,11 +1,10 @@
-import { EditorState, getStatusFromEmail, Saves, STATUS_COLORS } from "@/domain/schema";
-import { DAYS_IN_PAST, EMAILS_IN_PAGE, getSessionSchedule, Session } from "@/domain/data/sessions";
+import { getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
+import { DAYS_IN_PAST, EMAILS_IN_PAGE, Session } from "@/domain/data/sessions";
 import { openPopup, parseVariableName } from "@/domain/parse/parse";
 import { shortenIdentifier } from "@/domain/parse/parsePrograms";
-import { createEmailsFromSession } from "@/domain/parse/parseSchedule";
 import { Email } from "@/domain/schema";
 import { DAY_OF_WEEK_COLOR, HOURS_TO_COLOR, PROGRAM_COLORS } from "@/domain/settings/interface";
-import { ActionIcon, Badge, Box, Button, Center, em, Flex, Image, Loader, Modal, Pill, ScrollArea, TagsInput, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
 import { IconArrowRight, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconDots, IconEdit, IconEditCircle, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { ForwardedRef, JSX, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -28,7 +27,7 @@ export function EmailSchedule() {
     const isLoading = useRef(false);
 
     const [sessionOffset, setSessionOffset] = useState<number>(0);
-    const [refresh, setRefresh] = useState(true);
+    const [refresh, setRefresh] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState<string[] | null>(null);
     if (searchQuery === null) {
@@ -42,25 +41,33 @@ export function EmailSchedule() {
     const ref = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
+        async function fetchSchedule() {
+            console.log('[SCHEDULE] Fetching schedule with offset ' + sessionOffset + ', refresh ' + refresh + ', searchQuery ' + searchQuery);
 
-        if (refresh)
-            setSessionOffset(0);
+            if (refresh)
+                setSessionOffset(0);
 
-        if (isLoading.current && !refresh) return;
+            if (isLoading.current && !refresh) return;
 
-        if (searchQuery !== null && searchQuery.length > 0) {
-            saveStringToLocalStorage('scheduleSearch', JSON.stringify(searchQuery));
-        }
+            if (searchQuery !== null && searchQuery.length > 0) {
+                saveStringToLocalStorage('scheduleSearch', JSON.stringify(searchQuery));
+            }
 
-        isLoading.current = true;
-        const params = new URLSearchParams({ sessionOffset: sessionOffset + '', refresh: refresh ? 'true' : 'false', searchQuery: searchQuery?.join(',') ?? '' });
-        fetch('/api/schedule?' + params).then(async (res) => {
-            const data = (await res.json()) as {
+            isLoading.current = true;
+            const params = new URLSearchParams({ sessionOffset: sessionOffset + '', refresh: refresh ? 'true' : 'false', searchQuery: searchQuery?.join(',') ?? '' });
+
+            let data: {
                 emails: string;
                 offset: number;
                 totalEmails: number;
             };
-            console.log(data)
+
+            if (!refresh && hasStringInLocalStorage('schedule?' + params)) {
+                console.log('[SCHEDULE] Hit cache for schedule with params ' + params);
+                data = JSON.parse(loadStringFromLocalStorage('schedule?' + params));
+            }
+            else
+                data = (await (await fetch('/api/schedule?' + params)).json());
 
             totalEmails.current = data?.totalEmails ?? 0;
             let newEmails = JSON.parse(data.emails) ?? [];
@@ -69,6 +76,7 @@ export function EmailSchedule() {
                 email: email.email ? new Email(email.email.values, email.email) : undefined,
                 session: email.session,
             }));
+
             setLoadedEmails((prev) => {
 
                 let emailsBefore = prev?.slice(0, data.offset) ?? [];
@@ -83,13 +91,19 @@ export function EmailSchedule() {
                 return emailsBefore.concat((newEmails ?? []), emailsAfter) ?? newEmails ?? []
             });
 
+            saveStringToLocalStorage('schedule?' + params, JSON.stringify(data));
+
             isLoading.current = false;
-        });
 
-        if (sessionOffset === 0)
-            setLastRefreshed(moment().toDate());
+            if (refresh)
+                setLastRefreshed(moment().toDate());
 
-        setRefresh(false);
+            setRefresh(false);
+        }
+
+        setTimeout(() => {
+            fetchSchedule();
+        }, 400);
     }, [refresh, sessionOffset, searchQuery]);
 
     useEffect(() => {
@@ -205,12 +219,30 @@ export function EmailSchedule() {
                         return (
                             <SessionEntry key={'s' + i} session={session.session} email={session.email} emailType={session.emailType ?? ''} />
                         )
-                    }) : <Flex className="w-full min-h-96" justify="center" align="center"><Loader color="gray" /></Flex>}
+                    }) : <Flex className="w-full min-h-96" justify="center" align="center"><TimedProgress seconds={15} /></Flex>}
                 </Flex>
                 {sessionsByEmail && sessionsByEmail.length > 0 && sessionsByEmail.length < totalEmails.current ? <Loader className=" my-6 ml-auto mr-auto" color="blue" size="md" type="bars" /> : null}
             </ScrollArea>
         </Flex >
     )
+}
+
+function TimedProgress({ seconds }: { seconds: number }) {
+    const [progress, setProgress] = useState(0);
+    const intervalTime = 500;
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setProgress((prev) => {
+                return prev + (intervalTime / (seconds * 1000)) * 100;
+            });
+        }, intervalTime);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <Progress value={progress} transitionDuration={intervalTime * 2} w="100%" h={10} mx={20} />
+    );
 }
 
 function SessionEntry({ session, email, emailType }: { session: Session, email?: Email, emailType?: string }) {

@@ -1,5 +1,5 @@
 
-import { Settings } from "../schema/settingsCollection";
+import { Settings } from "../domain/schema/settingsCollection";
 
 
 // Emails of the same type will override previously resolved emails of that type
