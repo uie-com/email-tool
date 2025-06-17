@@ -12,14 +12,14 @@ import { HadIssue, RemoteStep, StateContent } from "../components/remote";
 import moment from "moment-timezone";
 import { AuthStatus } from "./emailPublisher";
 import { createEmailInSlack, deleteEmailInSlack, markEmailSentInSlack, markEmailUnsentInSlack } from "@/domain/data/slackActions";
-import { MARKETING_REVIEWERS, GET_REVIEW_INDEX, GET_DEFAULT_PRIORITY, PRIORITY_FLAGS, PRIORITY_ICONS, MARKETING_REVIEWER_IDS, SLACK_LIST_URL } from "@/domain/settings/slack";
+import { MARKETING_REVIEWERS, GET_REVIEW_INDEX, GET_DEFAULT_PRIORITY, PRIORITY_FLAGS, PRIORITY_ICONS, MARKETING_REVIEWER_IDS, SLACK_LIST_URL } from "@/config/integration-settings";
 import { copy, openPopup } from "@/domain/parse/parse";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
 import { Values } from "@/domain/schema/valueCollection";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
-import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { NOTION_CALENDAR } from "@/config/integration-settings";
 import { isPreApprovedTemplate, loadState, markReviewedEmails, SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
-import { REVIEW_ACTIVE_REFRESH_INTERVAL, REVIEW_PASSIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
+import { REVIEW_ACTIVE_REFRESH_INTERVAL, REVIEW_PASSIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 
 export function CampaignPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);

@@ -3,7 +3,7 @@ import { DAYS_IN_PAST, EMAILS_IN_PAGE, Session } from "@/domain/data/sessions";
 import { openPopup, parseVariableName } from "@/domain/parse/parse";
 import { shortenIdentifier } from "@/domain/parse/parsePrograms";
 import { Email } from "@/domain/schema";
-import { DAY_OF_WEEK_COLOR, HOURS_TO_COLOR, PROGRAM_COLORS } from "@/domain/settings/interface";
+import { DAY_OF_WEEK_COLOR, TIME_OF_DAY_COLOR, PROGRAM_COLORS } from "@/config/app-settings";
 import { ActionIcon, Badge, Box, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
 import { IconArrowRight, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCalendarWeekFilled, IconCheck, IconCheckbox, IconClock, IconDots, IconEdit, IconEditCircle, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMessage, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
@@ -299,9 +299,9 @@ function SessionEntry({ session, email, emailType }: { session: Session, email?:
                 {
                     session["Is Combined Workshop Session"] === undefined
                         && session["Is Combined Options Session"] === undefined ?
-                        <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                        <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
                             <Flex pt={2.5} gap={6}>
-                                <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(moment(session["Session Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
                                     {moment(session["Session Date"])?.format('h:mma').replace(':00', '')}
                                 </Text>
                             </Flex>
@@ -311,16 +311,16 @@ function SessionEntry({ session, email, emailType }: { session: Session, email?:
                 {
                     session["Is Combined Workshop Session"] !== undefined ?
                         <>
-                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                            <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
                                 <Flex pt={2.5} gap={6}>
-                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                    <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(moment(session["Lecture Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
                                         {moment(session["Lecture Date"])?.format('h:mma').replace(':00', '')}
                                     </Text>
                                 </Flex>
                             </Pill>
-                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                            <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
                                 <Flex pt={2.5} gap={6}>
-                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                    <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(moment(session["Coaching Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
                                         {moment(session["Coaching Date"])?.format('h:mma').replace(':00', '')}
                                     </Text>
                                 </Flex>
@@ -331,16 +331,16 @@ function SessionEntry({ session, email, emailType }: { session: Session, email?:
                 {
                     session["Is Combined Options Session"] !== undefined ?
                         <>
-                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                            <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
                                 <Flex pt={2.5} gap={6}>
-                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                    <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(moment(session["First Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
                                         {moment(session["First Date"])?.format('h:mma').replace(':00', '')}
                                     </Text>
                                 </Flex>
                             </Pill>
-                            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
+                            <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.2'} radius={5} mr={-3} >
                                 <Flex pt={2.5} gap={6}>
-                                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
+                                    <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(moment(session["Second Date"])?.format('H') ?? '0')) + '.9'} mt={-2}>
                                         {moment(session["Second Date"])?.format('h:mma').replace(':00', '')}
                                     </Text>
                                 </Flex>
@@ -465,9 +465,9 @@ function EmailEntry({ email }: { email: Email, }) {
                     <Text fw={700} size="sm" c={DAY_OF_WEEK_COLOR[sendDateMoment?.format('dddd') as keyof typeof DAY_OF_WEEK_COLOR] + '.9'} mt={-2}>{sendDateMessage}</Text>
                 </Flex>
             </Pill>
-            <Pill fw={700} bg={HOURS_TO_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.2'} radius={5} ml={-3} >
+            <Pill fw={700} bg={TIME_OF_DAY_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.2'} radius={5} ml={-3} >
                 <Flex pt={2.5} gap={6}>
-                    <Text fw={700} size="sm" c={HOURS_TO_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.9'} mt={-2}>{sendDateMoment?.format('h:mma').replace(':00', '')}</Text>
+                    <Text fw={700} size="sm" c={TIME_OF_DAY_COLOR(parseInt(sendDateMoment?.format('H') ?? '0')) + '.9'} mt={-2}>{sendDateMoment?.format('h:mma').replace(':00', '')}</Text>
                 </Flex>
             </Pill>
             {/* {sendDate ? (

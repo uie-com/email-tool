@@ -1,11 +1,11 @@
 import moment from "moment-timezone";
 import { shortenIdentifier } from "../domain/parse/parsePrograms";
 
-import { render } from '@react-email/render';
 import { Markdown } from "@react-email/markdown";
 import { Values } from "../domain/schema/valueCollection";
 import { Variables } from "../domain/schema/variableCollection";
-import { parse } from "path";
+
+// import { render } from '@react-email/render';
 const renderToString = require('react-dom/server').renderToStaticMarkup;
 
 

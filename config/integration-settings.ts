@@ -1,5 +1,9 @@
-import { loadStringFromLocalStorage, saveStringToLocalStorage } from "../data/localStorage";
-import { Email } from "../schema";
+import { loadStringFromLocalStorage, saveStringToLocalStorage } from "../domain/data/localStorage";
+import { Email } from "../domain/schema";
+
+
+export const NOTION_CALENDAR = 'https://www.notion.so/centercentre/Email-Calendar-View-087ddad9c1d840fc92dd19179c01f89d?pvs=4'
+
 
 
 export const MARKETING_REVIEWERS = ['Jalia', 'JyMae', 'Amy'];

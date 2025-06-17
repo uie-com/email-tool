@@ -5,7 +5,7 @@ import { delCampaign, delTemplate } from "@/domain/data/activeCampaignActions";
 import { SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
 import { openPopup, parseVariableName } from "@/domain/parse/parse";
 import { Values } from "@/domain/schema/valueCollection";
-import { PROGRAM_COLORS } from "@/domain/settings/interface";
+import { PROGRAM_COLORS } from "@/config/app-settings";
 import { ActionIcon, Anchor, Badge, Box, Button, Flex, Loader, Menu, ScrollArea, Switch, Text, ThemeIcon } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
 import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconArrowRightBar, IconBackspace, IconBrandTelegram, IconCalendar, IconCalendarCheck, IconCalendarFilled, IconCheck, IconCheckbox, IconDots, IconEdit, IconExternalLink, IconFile, IconFileX, IconLayoutSidebar, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailCheck, IconMailFilled, IconMailPlus, IconMailX, IconMessageQuestion, IconPlus, IconRoute, IconRouteOff, IconSend, IconSend2, IconTrash } from "@tabler/icons-react";

@@ -1,8 +1,6 @@
 
 import { Settings } from "../domain/schema/settingsCollection";
 
-
-// Emails of the same type will override previously resolved emails of that type
 export const SESSION_BASE = 'applHtcejl4tEXatp';
 export const SESSION_TABLE = 'tbl73qUZ2BTDEeBV9';
 

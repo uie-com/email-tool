@@ -131,6 +131,9 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
                         "Lab": lab,
                         Cohort: cohort,
 
+                        'Other Cohorts': cohorts.filter((c) => c !== cohort).join(', '),
+                        'All Cohorts': cohorts.map((c) => c.substring(0, 3)).join('/'),
+
                         TopicType: topicType,
 
                         "Title": record.fields["Title"],

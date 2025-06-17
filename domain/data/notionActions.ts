@@ -3,7 +3,7 @@
 import { Client } from '@notionhq/client';
 import { matchEmailName, shortenIdentifier } from '../parse/parsePrograms';
 import { error } from 'console';
-import { NOTION_NEW_TEMPLATE, NOTION_PRE_APPROVED_TEMPLATE } from '../settings/notion';
+import { NOTION_NEW_TEMPLATE, NOTION_PRE_APPROVED_TEMPLATE } from '../../config/integration-settings';
 import { BlockObjectRequest, BlockObjectResponse, PartialBlockObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN });

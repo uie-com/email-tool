@@ -14,13 +14,13 @@ import { copy, openPopup } from "@/domain/parse/parse";
 import { AuthStatus } from "./emailPublisher";
 import { CopyOverlay } from "../components/clipboard";
 import { copyGoogleDocByUrl, deleteGoogleDocByUrl } from "@/domain/data/googleActions";
-import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWER_IDS, MARKETING_REVIEWERS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/domain/settings/slack";
+import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWER_IDS, MARKETING_REVIEWERS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/config/integration-settings";
 import { createEmailInSlack, deleteEmailInSlack, markEmailSentInSlack, markEmailUnsentInSlack } from "@/domain/data/slackActions";
 import { Values } from "@/domain/schema/valueCollection";
-import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { NOTION_CALENDAR } from "@/config/integration-settings";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/data/notionActions";
 import { loadState, markReviewedEmails, SavedEmailsContext, saveScheduleOpen } from "@/domain/data/saveData";
-import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
+import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 
 export function AutomationPublisher() {
     const [editorState, setEditorState] = useContext(EditorContext);

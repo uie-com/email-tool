@@ -3,7 +3,7 @@
 import { decompressText, compressText, parseVariableName } from "../parse/parse";
 import { Saves, EditorState } from "../schema";
 import { Value, ValuePart, Values } from "../schema/valueCollection";
-import { AT_EMAIL_BASE, AT_EMAIL_TABLE } from "../settings/save";
+import { AT_EMAIL_BASE, AT_EMAIL_TABLE } from "../../config/save-settings";
 import { airtableFetch, fetchRecords } from "./airtableActions";
 
 /**

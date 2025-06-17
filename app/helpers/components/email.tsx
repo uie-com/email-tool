@@ -7,7 +7,7 @@ import { TemplateView } from "./template";
 import { IconCalendarEventFilled, IconCopy, IconCopyCheck, IconCopyCheckFilled, IconCopyleftFilled, IconRosetteDiscountCheck, IconRosetteDiscountCheckFilled } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { CopyOverlay } from "./clipboard";
-import { PROGRAM_COLORS } from "@/domain/settings/interface";
+import { PROGRAM_COLORS } from "@/config/app-settings";
 import { EditorContext } from "@/domain/schema/context";
 import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/data/saveData";
 

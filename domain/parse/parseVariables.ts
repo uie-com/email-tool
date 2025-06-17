@@ -1,5 +1,5 @@
 import Quill, { Delta, Op } from "quill";
-import { VARIABLE_TYPES, VariableType } from "../settings/variables";
+import { VARIABLE_TYPES, VariableType } from "../../config/variable-settings";
 import moment from "moment-timezone";
 import { parseVariableName } from "./parse";
 import { Values } from "../schema/valueCollection";

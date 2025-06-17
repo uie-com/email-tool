@@ -18,7 +18,7 @@ export const DAY_OF_WEEK_COLOR = {
     'Sunday': 'grape',
 }
 
-export const HOURS_TO_COLOR = (hour: number) => {
+export const TIME_OF_DAY_COLOR = (hour: number) => {
     if (hour < 12) {
         return 'yellow'
     } else if (hour >= 12 && hour <= 17) {

@@ -1,4 +1,4 @@
-import { Settings } from "../schema/settingsCollection";
+import { Settings } from "../domain/schema/settingsCollection";
 
 export type VariableType = keyof typeof VARIABLE_TYPES;
 export const VARIABLE_TYPES: Settings<string[]> = {
@@ -18,5 +18,5 @@ export const VARIABLE_TYPES: Settings<string[]> = {
 
 
 export const VARIABLE_OVERRIDES: { [key: string]: string } = {
-    'Time': 'Date', // Since date objects contain time, we need 'Time' variables to point to their date equivalents. 'Session Time' -> 'Session Date'
+    'Time': 'Date', // Since date objects contain time, 'Time' variables to point to their date equivalents. 'Session Time' -> 'Session Date'
 }

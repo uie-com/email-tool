@@ -1,6 +1,6 @@
 import moment from "moment-timezone";
 import { parseVariableName } from "../parse/parse";
-import { VARIABLE_OVERRIDES, VARIABLE_TYPES, VariableType } from "../settings/variables";
+import { VARIABLE_OVERRIDES, VARIABLE_TYPES, VariableType } from "../../config/variable-settings";
 import { Value, Values } from "./valueCollection";
 import { resolveTransforms } from "../../config/variable-transforms";
 import { PRE_APPROVED_VALUES } from "../../config/email-settings";

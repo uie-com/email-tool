@@ -3,7 +3,7 @@
 import { EditorState } from "@/domain/schema";
 import { SavedEmailsContext, recoverCurrentEditorState, saveState, saveAllRemotely, deleteState, loadAllRemotely, markReviewedEmails, loadState } from "@/domain/data/saveData";
 import { Saves } from "@/domain/schema";
-import { LOCAL_SAVE_INTERVAL, REMOTE_REFRESH_INTERVAL, REMOTE_SAVE_INTERVAL, REVIEW_PASSIVE_REFRESH_INTERVAL } from "@/domain/settings/save";
+import { LOCAL_SAVE_INTERVAL, REMOTE_REFRESH_INTERVAL, REMOTE_SAVE_INTERVAL, REVIEW_PASSIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { Box, Flex, Loader, Text } from "@mantine/core";
 import { ReactNode, useContext, useEffect, useState, createContext, useRef } from "react";
 import { EditorContext } from "@/domain/schema/context";

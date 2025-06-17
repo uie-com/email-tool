@@ -19,7 +19,7 @@ import { getEmailFromSchedule } from "@/domain/data/scheduleActions";
 import { copyGoogleDocByUrl, createSiblingGoogleDoc, deleteGoogleDocByUrl, getGoogleDocContentByUrl } from "@/domain/data/googleActions";
 import { IconClipboardText, IconClipboardX, IconExternalLink, IconLink, IconClipboardCheck, IconCopy, IconListDetails, IconPlaylistX, IconFile, IconFileText, IconPdf, IconFileTypePdf, IconSticker2, IconFileAlert } from "@tabler/icons-react";
 import { findNotionCard, createNotionCard, updateNotionCard, deleteNotionCard } from "@/domain/data/notionActions";
-import { NOTION_CALENDAR } from "@/domain/settings/notion";
+import { NOTION_CALENDAR } from "@/config/integration-settings";
 import { AuthStatus } from "./emailPublishing/emailPublisher";
 import { saveNotesDoc, undoSaveNotesDoc } from "@/domain/data/notesActions";
 
