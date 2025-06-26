@@ -1,10 +1,9 @@
 
-import moment from "moment-timezone";
-import { initializeSettings } from "./parse/parseSettings";
-import { Values } from "./schema/valueCollection";
-import { Variables } from "./schema/variableCollection";
+import { MessageType } from "@/app/context/modal-context";
 import { IconBrandTelegram, IconCalendarCheck, IconEdit, IconFileText, IconMailCheck, IconMessageQuestion } from "@tabler/icons-react";
-import { MessageType } from "@/app/helpers/contexts/messageContext";
+import moment from "moment-timezone";
+import { initializeSettings } from "./values/parseSettings";
+import { Values } from "./values/valueCollection";
 
 export type GlobalSettings = {
     activeCampaignToken?: string;
@@ -105,3 +104,10 @@ export const STATUS_COLORS = {
 };
 
 
+
+
+
+export type Settings<T> = {
+    [identifier: string]: Settings<T> | SettingDict<T>;
+}
+export type SettingDict<T> = { [key: string]: T };

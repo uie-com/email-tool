@@ -1,0 +1,464 @@
+import { createContext } from "react";
+import { loadStringFromSessionStorage, saveStringToSessionStorage } from "../../browser/localStorage";
+import { deleteEmailStateRecord, listReviewedEmails, loadAirtableSave, loadAirtableSaves, saveStateToAirtable } from "../../integrations/airtable/saveActions";
+import { EditorState, Email, Saves } from "../../schema";
+
+const DEBUG = true;
+
+export const SavedEmailsContext = createContext<[Saves, (id?: string) => Promise<EditorState | undefined>, (id?: string) => Promise<boolean>, (editedState?: EditorState) => Promise<boolean>]>([{} as Saves, async () => ({} as EditorState), async () => false, async () => false]);
+
+const CURRENT_EMAIL_NAME_KEY = 'currentEmail';
+const EMAILS_KEY = 'emails';
+const REMOTE_SAVE_SNAPSHOT_KEY = 'remoteEmails';
+
+export async function saveScheduleOpen() {
+    saveCurrentEmailName('');
+}
+
+export async function markReviewedEmails(saves: Saves) {
+    if (DEBUG) console.log('[SAVE] Marking reviewed emails', saves);
+    const reviewedIDs = await listReviewedEmails();
+    if (DEBUG) console.log('[SAVE] Reviewed emails', reviewedIDs);
+    const emails = [...saves];
+    const reviewedEmails = [];
+    for (const state of emails) {
+        if (state.email?.name && !state.email?.isReviewed && reviewedIDs.includes(state.email?.name)) {
+            state.email.isReviewed = true;
+            reviewedEmails.push(state.email.name);
+        }
+    }
+    if (DEBUG) console.log('[SAVE] Finished marking reviewed emails', emails);
+    return reviewedEmails;
+}
+
+export async function recoverCurrentEditorState(): Promise<EditorState> {
+    const currentEmailName = getCurrentEmailName();
+    if (DEBUG) console.log('[SAVE] Recovering email state', currentEmailName);
+    if (!currentEmailName) return { step: 0 } as EditorState;
+
+    const email = await loadState(currentEmailName);
+    if (email) {
+        if (DEBUG) console.log('[SAVE] Recovered email state', email);
+        return email;
+    }
+
+    console.log('[SAVE] No email state found for id', currentEmailName);
+    return { step: 0 } as EditorState;
+}
+
+export async function loadState(id: string): Promise<EditorState | undefined> {
+    if (DEBUG) console.log('[SAVE] Loading email state', id);
+    if (!id) return undefined;
+
+    const email = await loadAirtableSave(id);
+    if (email) {
+        if (DEBUG) console.log('[SAVE] Loaded email state', email);
+        return reconstructEmail(email);
+    }
+
+    console.log('[SAVE] No email state found for id', id);
+    return undefined;
+}
+
+export async function saveState(state: EditorState | undefined, saves: Saves, isCurrent: boolean = true) {
+    if (DEBUG) console.log('[SAVE] Saving email state locally', state);
+    if (!state?.email?.name) return DEBUG ? console.log('[SAVE] No email name found, not saving', state) : undefined;
+
+    const airtableId = await saveStateToAirtable(JSON.stringify(state));
+
+    const emails = [...saves];
+    const index = emails.findIndex((email) => email.email?.name === state.email?.name);
+    if (index !== -1) {
+        if (DEBUG) console.log('[SAVE] Found email state, updating it', emails[index]);
+        emails[index] = state;
+    } else {
+        if (DEBUG) console.log('[SAVE] No email state found, adding it', state);
+        emails.push(state);
+    }
+    saves = addAirtableIdToEmailState(emails, airtableId, state.email?.name);
+    if (DEBUG) console.log('[SAVE] Finished saving emails ', emails);
+
+    saveCurrentEmailName(isCurrent ? state.email?.name ?? '' : '');
+    return saves;
+}
+
+export async function deleteState(saves: Saves, id: string) {
+    if (DEBUG) console.log('[SAVE] Deleting email state', id);
+
+    const isDone = await deleteEmailStateRecord(id);
+
+    const emails = [...saves];
+    const index = emails.findIndex((state) => state.email?.airtableId === id);
+    const localIndex = emails.findIndex((state) => state.email?.name === id);
+    if (index === -1) {
+        console.error('No remote email state found for id', id);
+
+        if (localIndex !== -1) {
+            if (DEBUG) console.log('[SAVE] Found local email state, deleting it', emails[localIndex]);
+            emails.splice(localIndex, 1);
+        } else
+            console.error('[SAVE] No local email state found for id', id);
+
+        return emails;
+    }
+
+    if (index !== -1 && isDone) {
+        if (DEBUG) console.log('[SAVE] Deleted email state from remote storage', emails);
+
+        emails.splice(index, 1);
+    } else
+        console.error('[SAVE] Failed to delete email state from remote storage', emails);
+
+    saveCurrentEmailName('');
+
+
+    return isDone ? emails : saves;
+}
+
+export async function loadAllRemotely() {
+    const res = await loadAirtableSaves();
+    if (DEBUG) console.log('[SAVE] Loaded remote emails', res);
+    return reconstructEmails(res);
+}
+
+export async function saveAllRemotely(saves: Saves) {
+    if (DEBUG) console.log('[SAVE] Saving emails remotely', saves);
+    for (const state of saves) {
+        const airtableId = await saveStateToAirtable(JSON.stringify(state));
+        saves = addAirtableIdToEmailState(saves, airtableId, state.email?.name);
+    }
+    return saves;
+}
+
+export function isPreApprovedTemplate(templatePath?: string, saves?: Saves) {
+    if (DEBUG) console.log('[SAVE] Checking if template is pre-approved', templatePath, saves);
+    if (!templatePath || !saves) return false;
+    const emails = saves.filter((email) => email.email?.template === templatePath);
+    if (emails.length > 3) {
+        if (DEBUG) console.log('[SAVE] Found pre-approved template', emails);
+        return true;
+    }
+    return false;
+}
+
+// function getUnsavedStates() {
+//     const localEmails = loadLocally();
+//     const remoteEmails = loadLocally(REMOTE_SAVE_SNAPSHOT_KEY);
+
+//     const filteredEmails = localEmails.filter((state) => {
+//         return remoteEmails.find((remoteState) => {
+//             if (state.email?.name === remoteState.email?.name
+//                 || state.email?.airtableId === remoteState.email?.airtableId) {
+//                 return JSON.stringify(state) !== JSON.stringify(remoteState);
+//             }
+//             return false;
+//         }) !== undefined || !state.email?.airtableId;
+//     });
+
+//     return filteredEmails;
+// }
+
+function addAirtableIdToEmailState(saves: Saves, id?: string, originalKey?: string): Saves {
+    const states = saves;
+    if (!states || !states.length) return [];
+    if (!id || !originalKey || originalKey === id) return states;
+
+    const markedEmails = states.map((state) => {
+        if (state.email?.name === originalKey) {
+            return {
+                ...state,
+                email: {
+                    ...state.email,
+                    airtableId: id
+                }
+            }
+        }
+        return state;
+    });
+
+    return markedEmails;
+}
+
+// function saveSnapshot() {
+//     const emails = loadLocally();
+//     if (DEBUG) console.log('[SAVE] Saving snapshot', emails);
+//     saveLocally(emails, REMOTE_SAVE_SNAPSHOT_KEY);
+// }
+
+// export function loadLocally(key: string = EMAILS_KEY): Saves {
+//     const str = loadStringFromLocalStorage(key);
+//     try {
+//         if (!str) return [];
+//         let emails = JSON.parse(str) as Saves;
+//         emails = reconstructEmails(emails);
+//         if (DEBUG) console.log('[SAVE] Loaded emails', emails);
+//         return emails;
+//     }
+//     catch (e) {
+//         console.error('Couldn\'t load saved emails from local storage.', e);
+//         return [];
+//     }
+// }
+
+// export function saveLocally(emails: Saves, key: string = EMAILS_KEY) {
+//     if (DEBUG) console.log('[SAVE] Saving emails locally', emails);
+//     saveStringToLocalStorage(key, JSON.stringify(emails));
+// }
+
+export function saveCurrentEmailName(id: string) {
+    console.log('[SAVE] Saving current email name', id);
+    saveStringToSessionStorage(CURRENT_EMAIL_NAME_KEY, id);
+}
+
+export function getCurrentEmailName() {
+    const id = loadStringFromSessionStorage(CURRENT_EMAIL_NAME_KEY);
+    if (DEBUG) console.log('[SAVE] Loaded current email name', id);
+    return id;
+}
+
+function reconstructEmails(states: Saves) {
+    return states.map((state) => ({ ...state, email: new Email(undefined, state.email) }));
+}
+
+function reconstructEmail(state: EditorState) {
+    return { ...state, email: new Email(undefined, state.email) };
+}
+
+
+
+
+
+
+// export async function syncEmails() {
+//     clearEmailStates();
+//     const emails = await loadAirtableSaves();
+//     if (DEBUG) console.log('[SAVE] Loaded emails', emails);
+//     saveEmails('emails', emails);
+//     markEmailStatesAsSavedRemote();
+// }
+
+// export function saveState(editorState: EditorState) {
+//     if (!editorState?.email?.name) return;
+
+//     const savedId = getCurrentEmailName();
+
+//     if (savedId !== editorState.email?.name) {
+//         if (DEBUG) console.log('[SAVE] Switch to new email', editorState);
+//         setCurrentEmailId(editorState);
+//     }
+// }
+
+// export function saveStates(editorStates: Saves) {
+//     if (DEBUG) console.log('[SAVE] Saving email states', editorStates);
+//     saveEmails('emails', editorStates);
+
+// }
+
+// export function recoverState(editorState: EditorState, setEditorState: Dispatch<SetStateAction<EditorState>>) {
+//     if (editorState.email) return null;
+
+//     const recoveredEmailId = getCurrentEmailName();
+//     const recoveredState = getEmailStateById(recoveredEmailId);
+
+//     if (DEBUG) console.log('[SAVE] Recovered email state', recoveredState);
+
+//     if (!recoveredState) return null;
+
+//     setEditorState(recoveredState);
+//     return recoveredState;
+// }
+
+// export function saveEmailLocally(editorState: EditorState) {
+//     if (!editorState.email?.airtableId && !editorState.email?.name) return;
+//     if (editorState.step === 0 || editorState.email?.name && (editorState.email?.name.includes('{') || editorState.email?.name?.length < 8)) return;
+
+//     if (DEBUG) console.log('[SAVE] Saving email edits locally', editorState);
+//     saveEmailStateLocally(editorState.email?.airtableId ?? editorState.email?.name ?? '', editorState);
+// }
+
+// export async function saveEmailRemotely(editorState: EditorState, setEditorState: Dispatch<SetStateAction<EditorState>>) {
+//     if (Object.keys(getChangedEmailStates()).length === 0) return console.log('[SAVE] No local changes to save.', editorState);
+
+//     const editedEmails = getChangedEmailStates();
+//     if (DEBUG) console.log('[SAVE] Saving email edits remotely', editedEmails);
+
+//     for (const index in Object.keys(editedEmails)) {
+//         const key = Object.keys(editedEmails)[index];
+//         const editedEmail = editedEmails[key].email;
+
+//         if (editedEmails[key].step === 0 || editedEmails[key].email?.name && (editedEmails[key].email?.name.includes('{') || editedEmails[key].email?.name?.length < 8)) return console.log('[SAVE] No real email ID found, "' + editedEmail?.name + '" not saving');
+
+//         if (!editedEmail?.airtableId && !editedEmail?.name)
+//             return console.log('[SAVE] No email ID found, "' + editedEmail?.name + '" not saving');
+
+//         if (DEBUG) console.log('[SAVE] Saving email state for ' + key, editedEmails[key]);
+
+//         const airtableId = await saveStateToAirtable(editedEmails[key]);
+
+//         addAirtableIdToEmailState(airtableId, key);
+
+//         if (getCurrentEmailName() === key && !editorState.email?.airtableId) {
+//             console.log('[SAVE] Saved this new email to airtable ', { ...editorState, email: { ...editorState.email, airtableId: airtableId } });
+
+//             setEditorState((prev) => ({ ...prev, email: { ...prev.email, airtableId: airtableId } }));
+//         }
+//     };
+
+//     markEmailStatesAsSavedRemote();
+// }
+
+
+
+
+// export function saveEmailStateLocally(id: string, state: EditorState) {
+//     let emailDict = loadEmails('emails');
+//     if (!emailDict) {
+//         emailDict = {};
+//     }
+//     emailDict[id] = state;
+//     saveEmails('emails', emailDict);
+// }
+
+// export function deleteEmailStateLocally(id: string) {
+//     let emailDict = loadEmails('emails');
+//     if (!emailDict) {
+//         emailDict = {};
+//     }
+//     delete emailDict[id];
+//     saveEmails('emails', emailDict);
+// }
+
+// export function getEmailStateLocally(id: string) {
+//     const emails = loadEmails();
+//     if (emails[id]) {
+//         return emails[id];
+//     }
+//     return null;
+// }
+
+// export function getEmailStateById(id: string) {
+//     const emails = loadEmails();
+//     if (emails[id]) {
+//         return emails[id];
+//     } else {
+//         const key = Object.keys(emails).find((k) => emails[k].email?.name === id);
+//         if (key) {
+//             const state = emails[key];
+//             state.email = {
+//                 ...state.email,
+//                 values: new Values(state.email?.values?.initialValues ?? [])
+//             }
+//             if (state.step === 0)
+//                 return null;
+//             return state;
+//         }
+//     }
+//     return null;
+// }
+
+// export function markEmailStatesAsSavedRemote() {
+//     const emails = loadEmails();
+//     saveEmails('remoteemails', emails);
+// }
+
+// export function getChangedEmailStates() {
+//     const emails = loadEmails();
+//     const remoteemails = loadEmails('remoteemails');
+//     if (!emails && !remoteemails) return {};
+//     if (!emails) return {};
+//     if (!remoteemails) return emails;
+//     const changedEmails: Saves = {};
+//     Object.keys(emails).forEach((localKey) => {
+//         if (!emails[localKey]) return;
+//         const remoteEquivalentKey = Object.keys(remoteemails).find((remoteKey) => remoteemails[remoteKey].email?.name === localKey);
+//         if (!remoteEquivalentKey || JSON.stringify(emails[localKey]) !== JSON.stringify(remoteemails[remoteEquivalentKey])) {
+//             console.log('[SAVE] Found changed email', emails[localKey], remoteemails[remoteEquivalentKey ?? '']);
+//             changedEmails[localKey] = emails[localKey];
+//         }
+//     });
+//     return changedEmails;
+// }
+
+// export function getEmailStates() {
+//     return loadEmails();
+// }
+
+// export function deleteEmailState(id: string) {
+//     const emails = loadEmails();
+//     if (!emails) {
+//         console.error('No emails found');
+//         return;
+//     }
+//     if (!emails[id]) {
+//         console.error('No email found for id', id);
+//         return;
+//     }
+//     delete emails[id];
+//     saveEmails('emails', emails);
+// }
+
+// // export function addAirtableIdToEmailState(id: string, originalKey: string) {
+// //     const emails = loadEmails();
+// //     if (!emails) {
+// //         console.error('No emails found');
+// //         return;
+// //     }
+// //     if (!emails[originalKey]) {
+// //         console.error('No email found for key', originalKey);
+// //         return;
+// //     }
+
+// //     if (originalKey === id) {
+// //         emails[id].email = {
+// //             ...emails[originalKey].email,
+// //             airtableId: id
+// //         }
+// //     } else {
+// //         emails[id] = {
+// //             ...emails[originalKey],
+// //             email: {
+// //                 ...emails[originalKey].email,
+// //                 airtableId: id
+// //             }
+// //         }
+// //         delete emails[originalKey];
+// //     }
+
+// //     saveEmails('emails', emails);
+// // }
+
+// export function clearEmailStates() {
+//     if (typeof window === 'undefined' || !localStorage) return;
+//     localStorage.removeItem('emails');
+//     localStorage.removeItem('remoteemails');
+// }
+
+// function loadEmails(key: string = 'emails') {
+//     if (typeof window === 'undefined' || !localStorage) return {};
+//     let emails: any = localStorage.getItem(key);
+//     if (!emails) return {};
+//     try {
+//         emails = JSON.parse(decompressText(emails)) as Saves;
+//     } catch (e) {
+//         console.error('Error loading emails', e);
+//         return {};
+//     }
+//     return emails as Saves;
+// }
+
+// export function saveEmails(key: string = 'emails', emails: Saves) {
+//     if (typeof window === 'undefined' || !localStorage) return {};
+//     localStorage.setItem(key, compressText(JSON.stringify(emails)));
+// }
+
+// export function setCurrentEmailId(state: EditorState) {
+//     if (typeof window === 'undefined' || !localStorage) return;
+//     localStorage.setItem('currentEmail', state.email?.name ?? '');
+// }
+
+// // export function getCurrentEmailId() {
+// //     if (typeof window === 'undefined' || !localStorage) return '';
+// //     const email = localStorage.getItem('currentEmail');
+// //     if (!email) return '';
+// //     return email;
+// // }

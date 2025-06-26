@@ -1,9 +1,9 @@
 import moment from "moment-timezone";
-import { shortenIdentifier } from "../domain/parse/parsePrograms";
+import { shortenIdentifier } from "../domain/email/identifiers/parsePrograms";
 
 import { Markdown } from "@react-email/markdown";
-import { Values } from "../domain/schema/valueCollection";
-import { Variables } from "../domain/schema/variableCollection";
+import { Values } from "../domain/values/valueCollection";
+import { Variables } from "../domain/variables/variableCollection";
 
 // import { render } from '@react-email/render';
 const renderToString = require('react-dom/server').renderToStaticMarkup;
@@ -294,7 +294,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             margin: 0,
             'color': '#333333',
             'letterSpacing': '0',
-            'marginBottom': '1.33rem',
+            'marginBottom': '1.35rem',
             'lineHeight': '24px',
             'fontSize': '16px',
         };
@@ -331,13 +331,20 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         'paddingTop': '1.25rem',
                         'paddingBottom': '0.25rem',
                     },
-
+                    blockQuote: {
+                        'margin': 0,
+                        'background': 'none',
+                        'borderLeft': 'none',
+                        'padding': 0,
+                        'marginLeft': '1.5rem'
+                    },
                     link: {
                         'textDecoration': context && context.getCurrentValue ? context.getCurrentValue('Link Text Decoration') as string ?? 'underline' : 'underline',
                         'color': context && context.getCurrentValue ? context.getCurrentValue('Link Color') as string : '#007bff',
                     }
-                }}
-            >{removeEscapes(value as string)}</Markdown >))
+                }
+                }
+            >{fixLineBreak(removeEscapes(value as string))}</Markdown >))
                 .replaceAll('<li', '<li><p')
                 .replaceAll('/li>', '/p></li>')
         }
@@ -353,6 +360,9 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
 
 function removeEscapes(str: string): string {
     return str.replaceAll('\\_', '_').replaceAll('\\**', '**').replaceAll('\\-', '-');
+}
+function fixLineBreak(str: string): string {
+    return str.replaceAll('\n\n', '<newline />').replaceAll('\n', '<br />').replaceAll('<br />* ', '\n* ').replaceAll('<br />- ', '\n- ').replaceAll('<newline />', '\n\n');
 }
 
 import converter from 'number-to-words';

@@ -1,6 +1,7 @@
-import { getEmailSchedule } from '@/domain/data/scheduleActions';
+import { getEmailSchedule } from '@/domain/email/schedule/scheduleActions';
 import { NextRequest } from 'next/server';
 
+// This route allows the server to process and cache schedule-generation logic.
 export async function GET(request: NextRequest) {
     const offset = request.nextUrl.searchParams.get('sessionOffset') || '0';
     const queries = request.nextUrl.searchParams.get('searchQuery') || '';

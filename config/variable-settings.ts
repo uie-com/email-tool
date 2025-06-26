@@ -1,4 +1,4 @@
-import { Settings } from "../domain/schema/settingsCollection";
+import { Settings } from "../domain/schema";
 
 export type VariableType = keyof typeof VARIABLE_TYPES;
 export const VARIABLE_TYPES: Settings<string[]> = {

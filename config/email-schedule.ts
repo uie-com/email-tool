@@ -1,5 +1,5 @@
 
-import { Settings } from "../domain/schema/settingsCollection";
+import { Settings } from "../domain/schema";
 
 export const SESSION_BASE = 'applHtcejl4tEXatp';
 export const SESSION_TABLE = 'tbl73qUZ2BTDEeBV9';

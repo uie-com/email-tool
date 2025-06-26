@@ -1,7 +1,6 @@
 
-import { initializeSettings } from "../domain/parse/parseSettings";
-import { Settings } from "../domain/schema/settingsCollection";
-import { ValuePart, ValueSource } from "../domain/schema/valueCollection";
+import { Settings } from "../domain/schema";
+import { ValuePart } from "../domain/values/valueCollection";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
@@ -241,6 +240,13 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 settings: {
                     'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
                     'Last Week Notes #2': { value: `<strong><a href="{{Last Week} Session #2 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #2 Day of Week}'s session</a></strong>.` },
+                }
+            },
+            'Sessions in Prev Week:3': {
+                settings: {
+                    'Last Week Notes #1': { value: `<strong><a href="{{Last Week} Session #1 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #1 Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
+                    'Last Week Notes #2': { value: `<strong><a href="{{Last Week} Session #2 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #2 Day of Week}'s Materials Critique session</a></strong>.<br/><br/>` },
+                    'Last Week Notes #3': { value: `<strong><a href="{{Last Week} Session #3 Collab Notes Link}" target="_blank" style="color:#ec621d;font-size:16px">Here is a link to the collaborative notes from last {{Last Week} Session #3 Day of Week}'s session</a></strong>.` },
                 }
             },
             'Sessions in Week:1': {
@@ -548,14 +554,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Footer Tag': { value: `{Cohort (Caps)(3 Letters)}` },
 
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002' },
-            'Promo Banner': { value: '{Rocket Banner}' },
+            'Promo Banner': { value: '{Rocket Banner}', hide },
 
             'Star Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/dec3bec9-f5a4-44f1-abdb-a256bd168d7a.png?id=39155998' },
             'Join Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/4756c528-8308-4f1b-a870-2a9c8dd8aa1b.png?id=39155999' },
             'Talk Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/c0ea1a89-f749-42a9-ae81-d332460b5b72.png?id=39156000' },
             'Coach Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/a7c536f3-19a0-47dd-a3e1-4639bc17d4fd.png?id=39156001' },
             'Jared Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/dfcf1d99-748d-4bb9-9af3-d4479dd93752.png?id=39156002' },
-            'Rocket Banner': { value: 'https://zetcej.stripocdn.email/content/guids/CABINET_ce778d85eefd06da75cd81462959769460c5adf56a7a55ed3017bf35314437e0/images/ioijfyes_93O.png' },
+            'Rocket Banner': { value: 'https://zetcej.stripocdn.email/content/guids/CABINET_ce778d85eefd06da75cd81462959769460c5adf56a7a55ed3017bf35314437e0/images/ioijfyes_93O.png', hide },
         },
         'Email Type: Content': {
             settings: {
@@ -733,7 +739,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Email Name': { value: 'Certificate', part: 2 },
                 'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
-                'Template': { value: '/certificate.html', part: 2 },
+                'Template': { value: '/certificate.html', part: 1 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1ak_mQJ_mBQkSi7gwoYJO2s5CHOUejvXvUnypv2CNCvo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496699', hide },
             },
@@ -950,7 +956,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                   <table cellspacing="0" width="100%" cellpadding="0">
                     <tbody>
                       <tr>
-                        <td valign="left" id="esd-menu-id-0" class="esd-block-menu-item" style="text-align:center;min-width:130px;max-width:130px">
+                        <td valign="left" id="esd-menu-id-0" class="esd-block-menu-item" style="text-align:center;width:28%;min-width:125px;max-width:130px">
                           <span class="es-button-border" style="border-width:0px;background:#9b0e5b;border-radius:5px">
                             <a target="_blank" href="[Upcoming Session #1 Event Link]" class="es-button es-button-1724857678642" style="font-weight:bold;padding:10px 20px;font-size:24px;border-radius:5px;white-space:nowrap;background:#0196a7;font-family:&quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif;color:#ffffff !important;text-decoration:none">
                               RSVP
@@ -958,7 +964,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                           </span>
                         </td>
                         <!-- Left Column -->
-                        <td align="left" valign="top" id="esd-menu-id-1" class="esd-block-menu-item" style="padding:20px 20px 20px 0px;min-width:300px;max-width:300px">
+                        <td align="left" valign="top" id="esd-menu-id-1" class="esd-block-menu-item" style="padding:20px 20px 20px 0px;width:100%;max-width:300px">
                           <a target="_blank" href="[Upcoming Session #1 Event Link]" style="line-height:28px;text-decoration:none;color:#ffffff;font-size:17px;font-family:&quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif;display:inline-block">
                             [Upcoming Session #1 Date (dddd, MMMM D)] at Noon [Upcoming Session #1 Date (z)] ([Upcoming Session #1 Date (GMT)(HH.mm z)])
                             <br>
@@ -1227,6 +1233,12 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Space Name': { value: 'Stand Out Community' }
             }
         },
+        'Program:Win': {
+            settings: {
+                'Template': { value: '/win/confirmation.html', part: 1 },
+                'Link Decoration': { value: 'underline' },
+            }
+        }
     },
 
     'Send Type:AUTOMATION': {

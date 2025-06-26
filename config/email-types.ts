@@ -280,7 +280,7 @@ function generateWeeklyDefaultTopics(limit: number = 6) {
 }
 
 import moment from "moment";
-import { Settings } from "../domain/schema/settingsCollection";
+import { Settings } from "../domain/schema";
 function generateMonthOptions() {
     let options = [], currentYear = moment().year();
     for (let year = currentYear - 2; year < currentYear + 1; year++) {
