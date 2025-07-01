@@ -982,7 +982,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 },
             }
         },
-        'Email Type:Onboarding Upcoming Topics': {
+        'Email Type:Onboarding Topics': {
             settings: {
                 'Template': { value: '/upcoming-topics.html', part: 2 },
                 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/667ec838-028d-4112-8be2-fe1effc217f9.png?id=39120670' },

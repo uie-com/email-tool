@@ -67,12 +67,15 @@ export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             rightContent: null
         }
     };
-    //
+
     const isReady = () => {
         return editorState.email?.templateId !== undefined
             && editorState.email?.templateId.length > 0
             && editorState.email?.sentTest !== undefined
-            && editorState.email?.sentTest === editorState.email?.templateId;
+            && (
+                editorState.email?.sentTest === editorState.email?.templateId
+                || editorState.email?.sentTest === editorState.email?.campaignId
+            );
     }
 
     const isDone = () => {

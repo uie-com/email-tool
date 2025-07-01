@@ -41,6 +41,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
 
         // Download all saves on load
         const loadSaves = async () => {
+
             setSaveStatus('Loading...');
             const saves = await loadAllRemotely();
             setSaves(saves);
@@ -48,7 +49,6 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
             setTimeout(() => {
                 setSaveStatus('');
             }, 4000);
-
         }
 
         loadSaves();
@@ -95,11 +95,18 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         }
     }, [saves]);
 
+    const warnUnsavedChanges = (e: BeforeUnloadEvent) => {
+        if (DEBUG) console.log('[SAVE] Before unload, saving state:', editorState);
+        e.preventDefault();
+        e.returnValue = '';
+    }
+
 
     // auto-save on edit
     useEffect(() => {
         if (!editorState.email || editorState.step === 0) return;
         setSaveStatus((p) => p === 'Loading...' ? 'Loading...' : '...');
+        window.addEventListener('beforeunload', warnUnsavedChanges);
 
         if (remoteTimeoutId.current)
             clearTimeout(remoteTimeoutId.current);
@@ -112,6 +119,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
                 setSaves(newSaves);
 
             setSaveStatus('Saved');
+            window.removeEventListener('beforeunload', warnUnsavedChanges);
 
             // setTimeout(() => {
             //     setSaveStatus('');

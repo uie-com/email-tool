@@ -1,3 +1,6 @@
+"use server";
+
+
 export async function ac_fetch(url: string, settings: {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     params?: URLSearchParams,

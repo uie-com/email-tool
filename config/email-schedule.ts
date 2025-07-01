@@ -16,7 +16,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
             'Recording': {
                 'Send Date': '{Session Date(+1d)(12:00pm)}',
             },
-            'Onboarding Upcoming Topics': {
+            'Onboarding Topics': {
                 'Send Date': '{Session Date(12:00pm)}',
             },
         },

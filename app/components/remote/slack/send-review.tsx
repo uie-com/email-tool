@@ -1,34 +1,54 @@
-import { GET_DEFAULT_PRIORITY, GET_REVIEW_INDEX, MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/config/integration-settings";
+import { MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/config/integration-settings";
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { EditorContext } from "@/domain/context";
-import { SavedEmailsContext, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
-import { createEmailInSlack, deleteEmailInSlack } from "@/domain/integrations/slack/slackActions";
+import { SavedEmailsContext, isPreApprovedTemplate, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
+import { calculatePriority, getLastReviewer, getNextReviewer, logReviewer } from "@/domain/integrations/slack/reviews";
+import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack } from "@/domain/integrations/slack/slackActions";
+import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Image, Loader, Select, Text, ThemeIcon } from "@mantine/core";
 import { IconArrowBackUp, IconCheck, IconExternalLink, IconMessageCheck, IconMessageSearch, IconMessageX } from "@tabler/icons-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { RemoteStep, StateContent } from "../step-template";
 
+
 export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
-    const [reviewer, setReviewer] = useState(MARKETING_REVIEWERS[GET_REVIEW_INDEX(editorState.email?.templateId ?? '') % MARKETING_REVIEWERS.length]);
-    const [priority, setPriority] = useState<string | undefined>(undefined);
-    const defaultPriority = useMemo(() => GET_DEFAULT_PRIORITY(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
+    const [reviewer, setReviewer] = useState<number>(getNextReviewer());
+    const [priority, setPriority] = useState<number>(1);
+    const defaultPriority = useMemo(() => calculatePriority(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
 
     const [isPostPending, setIsPostPending] = useState(false);
     const [hasPosted, setHasPosted] = useState(false);
+
+    const slackEmailId = useMemo(() => {
+        return editorState.email?.values?.resolveValue('Slack Email ID', true) ?? editorState.email?.values?.resolveValue('Email ID', true) ?? '';
+    }, [editorState.email?.values]);
+
+    const isPreApproved = isPreApprovedTemplate(editorState.email?.template, emailStates);
 
     const handleCreateTicket = async () => {
         if (isPostPending) return;
         setIsPostPending(true);
 
-        const priorityFlag = PRIORITY_FLAGS[PRIORITY_ICONS.indexOf(priority ?? '')] ?? defaultPriority;
-        const userId = MARKETING_REVIEWER_IDS[MARKETING_REVIEWERS.indexOf(reviewer)] ?? MARKETING_REVIEWER_IDS[0];
+        const priorityFlag = priority ? PRIORITY_FLAGS[priority] : PRIORITY_FLAGS[defaultPriority];
+        const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
+        const slackEmailId = editorState.email?.values?.resolveValue('Email ID', true) ?? '';
 
-        const res = await createEmailInSlack(notionUrl, editorState.email?.referenceDocURL ?? '', editorState.email?.values?.resolveValue('Subject', true), editorState.email?.values?.resolveValue('Email ID', true), userId, priorityFlag);
-        console.log("Created email in slack", res);
+        const res = await createTicketInSlack(
+            notionUrl,
+            editorState.email?.referenceDocURL ?? '',
+            editorState.email?.values?.resolveValue('Subject', true),
+            slackEmailId,
+            userId,
+            priorityFlag
+        );
+
+        console.log("Created ticket in slack", res);
+        editorState.email?.values?.setValue('Slack Email ID', slackEmailId);
+        logReviewer(reviewer);
 
         setHasPosted(true);
         setEditorState((prev) => ({
@@ -36,6 +56,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             email: {
                 ...prev.email,
                 hasSentReview: true,
+                values: new Values(editorState.email?.values?.initialValues ?? []),
             }
         }));
         setIsPostPending(false);
@@ -64,6 +85,26 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         }
     }
 
+    const checkIfApproved = async (): Promise<boolean> => {
+        console.log('Refreshing reviews...', emailStates);
+        const newSaves = await markReviewedEmails(emailStates);
+        const saveMatch = newSaves.find((s) => s === editorState.email?.name);
+
+        let fullSave = await loadState(saveMatch ?? '');
+        if (fullSave) {
+            fullSave = {
+                ...fullSave,
+                email: {
+                    ...fullSave.email,
+                    isReviewed: true,
+                }
+            }
+            await editEmail(fullSave);
+        }
+
+        return !!saveMatch;
+    }
+
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
         setEditorState((prev) => ({
             ...prev,
@@ -75,25 +116,10 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
         return await new Promise((resolve) => {
             setInterval(async () => {
-                console.log('Refreshing reviews...', emailStates);
-                const newSaves = await markReviewedEmails(emailStates);
-                const saveMatch = newSaves.find((s) => s === editorState.email?.name);
-
-                let fullSave = await loadState(saveMatch ?? '');
-                if (fullSave) {
-                    fullSave = {
-                        ...fullSave,
-                        email: {
-                            ...fullSave.email,
-                            isReviewed: true,
-                        }
-                    }
-                    await editEmail(fullSave);
-                }
+                const saveMatch = await checkIfApproved();
 
                 if (saveMatch)
                     resolve(true);
-
             }, REVIEW_ACTIVE_REFRESH_INTERVAL)
         });
     }
@@ -111,24 +137,23 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
     useEffect(() => { }, [editorState.email?.hasSentReview, editorState.email?.isReviewed]);
 
-
     const stateContent: StateContent = {
         waiting: {
             icon: <ThemeIcon w={50} h={50} color="gray.2"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Create Review Ticket',
-            subtitle: 'Create email review item in Slack.',
+            subtitle: 'Create Slack review ticket for \'' + slackEmailId + '\'.',
             rightContent: '',
         },
         ready: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Create Review Ticket',
-            subtitle: 'Create email review item in Slack.',
+            subtitle: 'Create Slack review ticket for \'' + slackEmailId + '\'.',
             rightContent: '',
         },
         manual: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Create Review Ticket',
-            subtitle: 'Create email review item in Slack.',
+            subtitle: 'Create Slack review ticket for \'' + slackEmailId + '\'.',
             rightContent:
                 !hasPosted ? <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending} > Already has Ticket</Button> :
                     <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
@@ -140,30 +165,29 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                             {
                                 !hasPosted ?
                                     <Flex gap={10} direction="row" align="start" justify="space-between">
-
                                         <Box className=" relative w-full mt-2">
                                             <Select
                                                 description='Reviewer'
-                                                value={reviewer}
+                                                value={MARKETING_REVIEWERS[reviewer]}
                                                 data={MARKETING_REVIEWERS}
-                                                onChange={(v) => setReviewer(v ?? '')}
+                                                onChange={(v) => setReviewer(MARKETING_REVIEWERS.indexOf(v ?? ''))}
                                                 disabled={isPostPending || hasPosted}
                                             />
                                         </Box>
                                         <Box className=" relative w-24 mt-2">
                                             <Select
                                                 description='Priority'
-                                                value={priority}
-                                                defaultValue={PRIORITY_ICONS[PRIORITY_FLAGS.indexOf(defaultPriority)]}
+                                                value={PRIORITY_ICONS[priority]}
+                                                defaultValue={PRIORITY_ICONS[defaultPriority]}
                                                 data={PRIORITY_ICONS}
-                                                onChange={(v) => setPriority(v ?? '')}
+                                                onChange={(v) => setPriority(PRIORITY_ICONS.indexOf(v ?? ''))}
                                                 disabled={isPostPending || hasPosted}
                                             />
                                         </Box>
                                     </Flex>
                                     :
                                     <Flex gap={20} direction="column" align="start" justify="space-between">
-                                        <Text size="xs">Add screenshots and switch Review to 'Template Email Review' to post the review ticket. Then mark sent.</Text>
+                                        <Text size="xs">Add screenshots and switch Review to '{isPreApproved ? 'Pre-Approved' : ''} Template Email Review' to post the review ticket. Then mark sent.</Text>
 
                                         <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={100} >
                                             <Image src={'./tutorials/upload-screenshots.gif'} />
@@ -193,22 +217,22 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
 
                         }
                     </Flex>
-                    {/* <Box px={10}>
-                        <Text size="xs">Remember to add screenshots and switch Review to 'Template Email Review'.</Text>
-                        <Text size="xs" c="dimmed" >Remember to screenshot the final wait action for review.</Text>
-                    </Box> */}
+                    <Box px={10}>
+                        {!hasPosted ? '' :
+                            <Text size="xs">The last reviewer was {MARKETING_REVIEWERS[getLastReviewer()]}.</Text>
+                        }
+                    </Box>
                 </Flex>
         },
         pending: {
             icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMessageSearch size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Waiting for Reviews',
-            subtitle: 'Sent review ticket to ' + (reviewer ?? MARKETING_REVIEWER_IDS[0]) + '.',
+            subtitle: 'Polling for ticket \'' + slackEmailId + '\'.',
             rightContent: <Loader variant="bars" color="blue.5" size={30} />,
             expandedContent:
                 <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
                     <Flex gap={20} direction="row" p={10} align="start" justify="space-between" w='100%'>
                         <Flex direction="row" align="end" justify="end" mt={10} mr={-5} gap={20} w='100%'>
-
                             <Button variant="outline" color="red" h={40} mr={'auto'} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket(true)} >
                                 Delete Ticket
                             </Button>
@@ -240,12 +264,12 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         succeeded: {
             icon: <ThemeIcon w={50} h={50} color="green.6"><IconMessageCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Email Approved',
-            subtitle: 'Final email review marked as approved.',
+            subtitle: 'Ticket was marked as approved.',
             rightContent: null
             // rightContent: <ThemeIcon size={36} bg='none' c='blue' ml={12} mr={0}><IconConfetti strokeWidth={2.5} size={36} /></ThemeIcon>
         }
     };
-    //
+
     const isReady = () => {
         return editorState.email?.templateId !== undefined
             && editorState.email?.templateId.length > 0
@@ -267,6 +291,8 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                     && editorState.email?.campaignId === editorState.email?.campaignId
                 )
             )
+            && editorState.email?.isDevReviewed !== undefined
+            && editorState.email?.isDevReviewed === true
     }
 
     const isDone = () => {

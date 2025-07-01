@@ -2,16 +2,18 @@ import { EmailMenu } from "@/app/components/email/action-menu";
 import { RemoteSource } from "@/app/components/remote/step-template";
 import { DAY_OF_WEEK_COLOR, PROGRAM_COLORS, TIME_OF_DAY_COLOR } from "@/config/app-settings";
 import { hasStringInLocalStorage, loadStringFromLocalStorage, saveStringToLocalStorage } from "@/domain/browser/localStorage";
-import { EditorContext } from "@/domain/context";
+import { EditorContext, GlobalSettingsContext } from "@/domain/context";
 import { shortenIdentifier } from "@/domain/email/identifiers/parsePrograms";
-import { SavedEmailsContext } from "@/domain/email/save/saveData";
+import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/email/save/saveData";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, Session } from "@/domain/email/schedule/sessions";
+import { createReferenceDoc } from "@/domain/integrations/google-drive/reference-doc";
 import { AIRTABLE_LINK } from "@/domain/integrations/links";
+import { createNotionCardForEmail } from "@/domain/integrations/notion/cards";
 import { openPopup } from "@/domain/interface/popup";
 import { Email, getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
 import { normalizeName } from "@/domain/variables/normalize";
 import { ActionIcon, Badge, Box, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
-import { IconArrowRight, IconBrandTelegram, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EmailCreator } from "./selector-manual";
@@ -52,6 +54,7 @@ export function EmailSchedule() {
 
             isLoading.current = true;
             const params = new URLSearchParams({ sessionOffset: sessionOffset + '', refresh: refresh ? 'true' : 'false', searchQuery: searchQuery?.join(',') ?? '' });
+            const cacheKey = sessionOffset + '+' + searchQuery?.join(',');
 
             let data: {
                 emails: string;
@@ -59,9 +62,9 @@ export function EmailSchedule() {
                 totalEmails: number;
             };
 
-            if (!refresh && hasStringInLocalStorage('schedule?' + params)) {
-                console.log('[SCHEDULE] Hit cache for schedule with params ' + params);
-                data = JSON.parse(loadStringFromLocalStorage('schedule?' + params));
+            if (!refresh && hasStringInLocalStorage('schedule?' + cacheKey)) {
+                console.log('[SCHEDULE] Hit cache for schedule with params ' + cacheKey);
+                data = JSON.parse(loadStringFromLocalStorage('schedule?' + cacheKey));
             }
             else
                 data = (await (await fetch('/api/schedule?' + params)).json());
@@ -88,7 +91,8 @@ export function EmailSchedule() {
                 return emailsBefore.concat((newEmails ?? []), emailsAfter) ?? newEmails ?? []
             });
 
-            saveStringToLocalStorage('schedule?' + params, JSON.stringify(data));
+            console.log('[SCHEDULE] Saving cache for schedule with params ' + cacheKey);
+            saveStringToLocalStorage('schedule?' + cacheKey, JSON.stringify(data));
 
             isLoading.current = false;
 
@@ -368,7 +372,8 @@ function SessionEntry({ session, email, emailType }: { session: Session, email?:
 
 function EmailEntry({ email }: { email: Email, }) {
     const [editorState, setEditorState, isLoading, setEditorStateDelayed] = useContext(EditorContext);
-    const [savedStates, deleteEmail] = useContext(SavedEmailsContext);
+    const [savedStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
+    const [globalSettings] = useContext(GlobalSettingsContext);
     const [hovering, setHovering] = useState(false);
 
     useEffect(() => { }, [JSON.stringify(savedStates)]);
@@ -423,6 +428,47 @@ function EmailEntry({ email }: { email: Email, }) {
     };
 
     const emailStatus = getStatusFromEmail(isManual ? email : emailSave?.email);
+
+
+    const isPreApproved = useMemo(() => {
+        if (!emailSave || !emailSave.email) return false;
+        return isPreApprovedTemplate(emailSave.email.template, savedStates);
+    }, [emailSave]);
+
+    const needsNotionCard = useMemo(() => {
+        if (!emailSave || !emailSave.email) return true;
+        return (!emailSave.email.notionURL || emailSave.email.notionURL.length == 0) && emailStatus !== 'Scheduled' && emailStatus !== 'Sent';
+    }, [emailSave]);
+
+    const [cardPending, setCardPending] = useState(false);
+
+    const createCard = async () => {
+        if (cardPending) return;
+
+        setCardPending(true);
+        let state = emailSave;
+        if (emailSave) {
+            state = await loadEmail(emailSave.email?.values?.resolveValue('Email ID', true) ?? '');
+        }
+
+        let newEmail = await createReferenceDoc(state?.email ?? email, globalSettings.googleAccessToken ?? '');
+        newEmail = await createNotionCardForEmail(newEmail, isPreApproved);
+        if (!newEmail) {
+            console.error('Failed to create Notion card for email', email);
+            return;
+        }
+
+        const newState = {
+            step: 1,
+            ...state,
+            email: newEmail
+        };
+
+        await editEmail(newState);
+
+        setCardPending(false);
+    }
+
     const button = useMemo(() => {
         const sharedProps = {
             h: 24,
@@ -453,8 +499,10 @@ function EmailEntry({ email }: { email: Email, }) {
 
 
 
+
+
     return (
-        <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300`}
+        <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300 max-w-[545px]`}
             style={{ backgroundColor: colorMain }}
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
@@ -495,6 +543,17 @@ function EmailEntry({ email }: { email: Email, }) {
                     <Loader color="white" type="dots" size={16} />
                 </ActionIcon>
             } />
+            {needsNotionCard ? <ActionIcon
+                color={((STATUS_COLORS[emailStatus ?? 'Ready'][1] as string).split('.')[0] + '.6')}
+                size={24}
+                onMouseUp={createCard}
+            >
+                {
+                    !cardPending ?
+                        <IconCalendarPlus size={16} strokeWidth={2.5} className="" />
+                        : <Loader color="white" type="oval" size={12} />
+                }
+            </ActionIcon> : null}
             {button}
         </Flex>
     )

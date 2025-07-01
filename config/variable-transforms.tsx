@@ -294,7 +294,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             margin: 0,
             'color': '#333333',
             'letterSpacing': '0',
-            'marginBottom': '1.35rem',
+            'marginBottom': '1.33rem',
             'lineHeight': '24px',
             'fontSize': '16px',
         };
@@ -336,7 +336,8 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         'background': 'none',
                         'borderLeft': 'none',
                         'padding': 0,
-                        'marginLeft': '1.5rem'
+                        'marginLeft': '1.5rem',
+                        'marginBottom': '1.5rem',
                     },
                     link: {
                         'textDecoration': context && context.getCurrentValue ? context.getCurrentValue('Link Text Decoration') as string ?? 'underline' : 'underline',

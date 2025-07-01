@@ -7,7 +7,7 @@ import { BlockObjectRequest, BlockObjectResponse } from '@notionhq/client/build/
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.NOTION_EMAIL_DB_ID as string;
 
-export async function updateNotionCard(cardId: string, referenceDoc: string, isDone: boolean, isPreApproved?: boolean): Promise<{ success: boolean; error?: string | null }> {
+export async function updateNotionCard(cardId: string, referenceDoc: string | undefined, isDone: boolean, isPreApproved?: boolean): Promise<{ success: boolean; error?: string | null }> {
     let blocks: (BlockObjectRequest)[] = [];
     // if (isPreApproved !== undefined) {
     //     const pageId = !isPreApproved ? NOTION_NEW_TEMPLATE : NOTION_PRE_APPROVED_TEMPLATE;
@@ -19,7 +19,7 @@ export async function updateNotionCard(cardId: string, referenceDoc: string, isD
             properties: {
                 'Google Docs': {
                     id: 'Google Docs',
-                    url: referenceDoc,
+                    url: referenceDoc ?? 'https://www.google.com',
                 },
                 'Checkbox': {
                     id: 'Checkbox',

@@ -13,6 +13,8 @@ let emailCache: {
 
 export async function getEmailSchedule(offset: number, queries: string[], refresh: boolean = false) {
 
+    console.log('[SCHEDULE] Fetching emails with offset:', offset, 'queries:', queries, 'refresh:', refresh);
+
     let sortedEmails = (emailCache.length > 0 && !refresh) ? emailCache : await getAllEmails(refresh);
     emailCache = sortedEmails;
 
