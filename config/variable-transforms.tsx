@@ -294,7 +294,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             margin: 0,
             'color': '#333333',
             'letterSpacing': '0',
-            'marginBottom': '1.33rem',
+            'marginBottom': '24px',
             'lineHeight': '24px',
             'fontSize': '16px',
         };
@@ -363,7 +363,12 @@ function removeEscapes(str: string): string {
     return str.replaceAll('\\_', '_').replaceAll('\\**', '**').replaceAll('\\-', '-');
 }
 function fixLineBreak(str: string): string {
-    return str.replaceAll('\n\n', '<newline />').replaceAll('\n', '<br />').replaceAll('<br />* ', '\n* ').replaceAll('<br />- ', '\n- ').replaceAll('<newline />', '\n\n');
+    return str
+        .replaceAll('\n\n', '<newline />')
+        .replaceAll('\n', '<br />')
+        .replaceAll('<br />* ', '\n* ')
+        .replaceAll('<br />- ', '\n- ')
+        .replaceAll('<newline />', '\n\n');
 }
 
 import converter from 'number-to-words';
