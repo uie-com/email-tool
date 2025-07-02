@@ -136,6 +136,12 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         // setSaves(loadLocally());
 
         setRequestSave(false);
+
+        return () => {
+            if (remoteTimeoutId.current)
+                clearTimeout(remoteTimeoutId.current);
+            window.removeEventListener('beforeunload', warnUnsavedChanges);
+        }
     }, [JSON.stringify(editorState), requestSave]);
 
     const handleSaveEdit = async (editedState: EditorState | undefined) => {

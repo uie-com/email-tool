@@ -28,9 +28,9 @@ export async function updateNotionCard(cardId: string, referenceDoc: string | un
                 'Email Task/Status:': {
                     id: 'Email Task/Status:',
                     status: {
-                        id: isDone ? '4438c2fc-a667-469e-b9f1-69227231716c' : ':IMV',
-                        name: isDone ? 'Sent/Scheduled' : 'Review Email FSOEs',
-                        color: isDone ? 'green' : 'pink',
+                        id: isDone ? '4438c2fc-a667-469e-b9f1-69227231716c' : 'fe8e79fc-138f-46fd-a5ea-04e986b1725b',
+                        name: isDone ? 'Sent/Scheduled' : 'Not started',
+                        color: isDone ? 'green' : 'default',
                     },
                 },
             },
