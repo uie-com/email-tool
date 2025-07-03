@@ -858,6 +858,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Research Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/799c6af9-72d1-4c02-9b3e-48c6a05462d2.png?id=39120975' }, } },
             'Session Type:Win Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/661e13f2-952e-4f64-ae67-7455592fc53d.png?id=39120979' }, } },
             'Session Type:Vision Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/ef883949-c485-4551-bcac-7e63d185b3a0.png?id=39120978' }, } },
+            'Session Type:AI Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/07/02/67ff76ea-642b-4721-aff9-aacc587b25e8.png?id=40219538' }, } },
         },
         'Email Type:Recording': {
             settings: {
@@ -877,6 +878,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Research Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/66bdae7d-f06e-4efe-8166-9a75ca75870a.png?id=39120943' }, } },
             'Session Type:Win Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/1936e392-5619-4048-b663-1e3a691df378.png?id=39120939' }, } },
             'Session Type:Vision Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/46e37013-49b9-4334-a5c7-67965201938d.png?id=39120941' }, } },
+            'Session Type:AI Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/07/02/51156b8b-bb19-4889-a941-87d93b2be818.png?id=40219554' }, } },
         },
         'Email Type:New Topic': {
             settings: {
@@ -894,20 +896,21 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Research Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/9557c441-0626-45d4-95bf-15d762f9b12c.png?id=39120557' }, } },
             'Session Type:Win Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/44ab5264-62d7-47cb-bf51-6b1634ff07f6.png?id=39120553' }, } },
             'Session Type:Vision Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/02/9c31bc20-2032-4d9e-9d7f-ebb6969c9f54.png?id=39120555' }, } },
+            'Session Type:AI Topic': { settings: { 'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/07/02/c736a2f2-be3c-450f-8abd-e683b3c4049e.png?id=40219568' }, } },
         },
         // Topic settings
         'Session Type:Job Search Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: 'eb621d' },
-                'Banner Topic': { value: 'UX Job Search' },
+                'Banner Topic': { value: 'Job Search' },
             }
         },
         'Session Type:Metrics Topic': {
             settings: {
                 'Primary Color': { value: '9b0e5b' },
                 'Accent Color': { value: '00a1b3' },
-                'Banner Topic': { value: 'UX Metrics' },
+                'Banner Topic': { value: 'Metrics' },
 
             }
         },
@@ -915,21 +918,28 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Primary Color': { value: '662547' },
                 'Accent Color': { value: '00a1b3' },
-                'Banner Topic': { value: 'UX Research' },
+                'Banner Topic': { value: 'Research' },
             }
         },
         'Session Type:Win Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: '8c9b29' },
-                'Banner Topic': { value: 'UX Influence' },
+                'Banner Topic': { value: 'Influence' },
             }
         },
         'Session Type:Vision Topic': {
             settings: {
                 'Primary Color': { value: '00a1b3' },
                 'Accent Color': { value: '9b0e5b' },
-                'Banner Topic': { value: 'UX Vision' },
+                'Banner Topic': { value: 'Vision' },
+            }
+        },
+        'Session Type:AI Topic': {
+            settings: {
+                'Primary Color': { value: '00a1b3' },
+                'Accent Color': { value: 'bc2123' },
+                'Banner Topic': { value: 'AI' },
             }
         },
         'Email Type:Upcoming Topics': {

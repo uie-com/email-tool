@@ -364,6 +364,8 @@ function removeEscapes(str: string): string {
 }
 function fixLineBreak(str: string): string {
     return str
+        .split('\n').map(line => line.trim())
+        .join('\n')
         .replaceAll('\n\n', '<newline />')
         .replaceAll('\n', '<br />')
         .replaceAll('<br />* ', '\n* ')
