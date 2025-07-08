@@ -739,7 +739,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Email Name': { value: 'Certificate', part: 2 },
                 'Subject': { value: 'Your Certificate for The How to Win Stakeholders & Influence Decisions program' },
-                'Template': { value: '/certificate.html', part: 1 },
+                'Template': { value: '/win/certificate.html', part: 1 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1ak_mQJ_mBQkSi7gwoYJO2s5CHOUejvXvUnypv2CNCvo/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496699', hide },
             },
