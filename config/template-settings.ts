@@ -1,6 +1,6 @@
-import { Values } from "../../values/valueCollection";
+import { Values } from "../domain/values/valueCollection";
 
-export function fixTemplate(template: string | undefined, values: Values) {
+export function parseTemplate(template: string | undefined, values: Values) {
     if (!template)
         return undefined;
 

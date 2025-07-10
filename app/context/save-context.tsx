@@ -92,6 +92,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
             if (refreshReviewsInterval.current)
                 clearInterval(refreshReviewsInterval.current);
             window.removeEventListener('focus', () => refreshReviews());
+            window.removeEventListener('load', () => refreshReviews(0));
         }
     }, [saves]);
 

@@ -102,7 +102,7 @@ export function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean })
         if (!email || !values) return setMessage('No email found.');
 
         const emailName = values.resolveValue("Email Name", true) ?? '';
-        const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
+        const sendDate = moment(values.resolveValue("Send Date", true) ?? '').toISOString(true);
         const shareReviewBy = values.resolveValue((values.resolveValue("Share Reviews By", true) ?? ''), true);
         const referenceDocURL = email?.referenceDocURL ?? '';
 

@@ -41,6 +41,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Name': { value: '{Program} ', part: 0, hide },
         'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
+        'Slack Email ID': { value: '{Send Date (YYYY-MM-DD h:mma)} {Email Name (Shorthand)}', hide },
         'Email Tag': { value: '{Send Date (YYYY-MM-DD)(Tag)}-{Email Name(Tag)}', hide },
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -137,7 +138,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Subject': { value: '{Program Name}: {Week}: {Topic}: ​​{Title}' },
 
-            'Uses Collab Notes': { value: 'true', hide },
+            'Uses Collab Notes': { value: 'Uses Collab Notes', hide },
         }
     },
     'Email Type:Before Week': {
@@ -274,7 +275,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                     'Subject': { value: 'Today’s Stand Out Community Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1AC2E0gWyShIPsZ7xHncWgjgolly3AwyxltTtVQLFoog/edit' },
-                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1ZGQ09ANNM4W2gCC8BmJQjswUGZs9CTfguX3dnpkKEK4/edit' }
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1ZGQ09ANNM4W2gCC8BmJQjswUGZs9CTfguX3dnpkKEK4/edit' },
+
+                    'Uses Collab Notes': { value: 'Uses Collab Notes', hide },
                 }
             },
             'Session Type:Materials Critique': {
@@ -284,7 +287,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                     'Subject': { value: 'Today’s Materials Critique Session' },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1LZaqUgGa5mIMKg3ZeS3DskPkqO1pBFND4suzQqpq0SE/edit' },
-                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/14fcUiSQHJ51Na_OgNhU1BOAfQZHVItLznb8xPyCbf-M/edit' }
+                    'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/14fcUiSQHJ51Na_OgNhU1BOAfQZHVItLznb8xPyCbf-M/edit' },
+
+                    'Uses Collab Notes': { value: 'Uses Collab Notes', hide },
                 }
             }
         }

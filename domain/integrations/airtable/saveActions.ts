@@ -25,7 +25,7 @@ export async function loadAirtableSaves(): Promise<Saves> {
             const data = decompressText(record.fields['Data']);
             const parsedData = JSON.parse(data);
 
-            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date'];
+            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date', 'Collab Notes Link', 'Uses Collab Notes', 'Collab PDF Link'];
             const shortValues = minimalKeys.map((key: string) => {
                 return { initialValues: [{ value: (new Values(parsedData.email?.values.initialValues)?.resolveValue(key, true) ?? ''), source: 'email' }], name: key, key: normalizeName(key) };
             });
@@ -215,11 +215,20 @@ export async function isEmailReviewed(emailId: string): Promise<boolean> {
 }
 
 export async function listReviewedEmails(): Promise<string[]> {
-    const response = await airtableFetch(AT_EMAIL_BASE, AT_EMAIL_TABLE, 'GET', `?filterByFormula={Reviewed}="true"&fields[]=Email ID`, undefined, false);
-    if (!response.ok || response.status !== 200)
+    // Limit to the most recent 100 reviewed emails
+    const formula = '?filterByFormula={Reviewed}="true"&fields[]=Email ID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
+    const response = await airtableFetch(AT_EMAIL_BASE, AT_EMAIL_TABLE, 'GET', formula, undefined, false);
+
+
+    if (!response.ok || response.status !== 200) {
+        console.log('Error checking if record exists:', await response.text());
         return [];
+    }
+
     try {
         const data = await response.json();
+        console.log('[REVIEW-POLL] Found ' + data.records.length + ' reviewed emails.');
+
         return data.records.map((record: any) => record.fields['Email ID']);
     }
     catch (error) {

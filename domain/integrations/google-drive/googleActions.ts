@@ -112,7 +112,7 @@ export async function copyGoogleDocByUrl(docUrl: string, newName: string, access
 }
 
 
-type GetContentDocResult = {
+export type GetContentDocResult = {
     success: boolean;
     content?: any;
     title?: string;

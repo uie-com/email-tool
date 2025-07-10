@@ -2,8 +2,8 @@
 
 import { TemplateEditor, TemplateView } from "@/app/components/template/html-preview";
 import { VariableForm } from "@/app/components/variables/variable-form";
+import { parseTemplate } from "@/config/template-settings";
 import { EditorContext } from "@/domain/context";
-import { fixTemplate } from "@/domain/email/templates/parseTemplates";
 import { Values } from "@/domain/values/valueCollection";
 import { Variables } from "@/domain/variables/variableCollection";
 import { Anchor, Box, Button, Flex, Image, ScrollArea, Text } from "@mantine/core";
@@ -32,8 +32,8 @@ export function TemplateFill() {
     }
 
     const handleSubmit = async () => {
-        console.log('Approved template. Editor state: ', { ...editorState, step: 3, email: { ...editorState.email, HTML: new Variables(fixTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } });
-        setEditorState((prev) => ({ ...prev, step: 3, email: { ...prev.email, HTML: new Variables(fixTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } }));
+        console.log('Approved template. Editor state: ', { ...editorState, step: 3, email: { ...editorState.email, HTML: new Variables(parseTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } });
+        setEditorState((prev) => ({ ...prev, step: 3, email: { ...prev.email, HTML: new Variables(parseTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } }));
     }
 
     const switchEditorMode = () => {

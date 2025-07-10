@@ -32,6 +32,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         emails: {
             'Today\'s Session': {
                 'Send Date': '{Session Date(8:00am)}',
+
             },
         },
         'Is First Session Of Week': {
@@ -46,6 +47,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         emails: {
             'Today\'s Session': {
                 'Send Date': '{Session Date(8:00am)}',
+
             }
         },
         'Is First Session Of Program': {
@@ -75,6 +77,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         emails: {
             'Today\'s Session': {
                 'Send Date': '{Session Date(8:00am)}',
+
             }
         },
         'Is First Session Of Program': {
@@ -104,6 +107,7 @@ export const EMAILS_PER_SESSION: Settings<string> = {
         emails: {
             'Today\'s Session': {
                 'Send Date': '{Session Date(8:00am)}',
+
             }
         },
         'Is First Session Of Program': {

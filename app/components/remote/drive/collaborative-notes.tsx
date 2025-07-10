@@ -1,4 +1,5 @@
 import { EditorContext, GlobalSettingsContext } from "@/domain/context";
+import { createVariableEdits } from "@/domain/integrations/google-drive/collabNotes";
 import { createSiblingGoogleDoc, getGoogleDocContentByUrl } from "@/domain/integrations/google-drive/googleActions";
 import { saveNotesDoc, undoSaveNotesDoc } from "@/domain/integrations/google-drive/notesActions";
 import { createGoogleDocLink } from "@/domain/integrations/links";
@@ -151,54 +152,11 @@ export function CreateCollaborativeNotes({ shouldAutoStart, hasResolvedRemote }:
                 return setMessage(contentRes.error);
             }
 
-            const content = contentRes.content;
-
-            const buildEdits = (content: any): any[] => {
-                const requests: any[] = [];
-
-                const walkAndCollect = (obj: any) => {
-                    if (!obj) return;
-
-                    if (obj.textRun?.content && typeof obj.textRun.content === 'string') {
-                        const variables = obj.textRun.content.match(/\{[^\}]+\}/g) || [];
-                        for (const variable of variables) {
-                            const originalText = variable;
-                            const resolvedText = new Variables(originalText).resolveWith(values);
-
-                            if (resolvedText !== originalText) {
-                                requests.push({
-                                    replaceAllText: {
-                                        containsText: {
-                                            text: originalText,
-                                            matchCase: true,
-                                        },
-                                        replaceText: resolvedText,
-                                    },
-                                });
-                            }
-
-                        }
-                    }
-
-                    for (const key in obj) {
-                        if (typeof obj[key] === 'object' && obj[key] !== null) {
-                            walkAndCollect(obj[key]);
-                        }
-                    }
-                };
-
-                walkAndCollect(content);
-
-                return requests;
-            }
-
-
-            const requests = buildEdits(content);
+            const requests = createVariableEdits(contentRes, values);
 
             console.log("Resolved edits: ", requests);
 
             const newTitle = new Variables(contentRes.title).resolveWith(values);
-
 
             const createRes = await createSiblingGoogleDoc(sourceDoc, newTitle, requests, globalSettings.googleAccessToken ?? '');
 

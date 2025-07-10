@@ -1,21 +1,27 @@
 import { EmailMenu } from "@/app/components/email/action-menu";
 import { RemoteSource } from "@/app/components/remote/step-template";
 import { DAY_OF_WEEK_COLOR, PROGRAM_COLORS, TIME_OF_DAY_COLOR } from "@/config/app-settings";
-import { hasStringInLocalStorage, loadStringFromLocalStorage, saveStringToLocalStorage } from "@/domain/browser/localStorage";
+import { hasStringInLocalStorage, listKeysInLocalStorage, loadStringFromLocalStorage, saveStringToLocalStorage } from "@/domain/browser/localStorage";
 import { EditorContext, GlobalSettingsContext } from "@/domain/context";
 import { shortenIdentifier } from "@/domain/email/identifiers/parsePrograms";
 import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/email/save/saveData";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, Session } from "@/domain/email/schedule/sessions";
+import { createVariableEdits } from "@/domain/integrations/google-drive/collabNotes";
+import { createSiblingGoogleDoc, getGoogleDocContentByUrl } from "@/domain/integrations/google-drive/googleActions";
+import { saveNotesDoc } from "@/domain/integrations/google-drive/notesActions";
 import { createReferenceDoc } from "@/domain/integrations/google-drive/reference-doc";
-import { AIRTABLE_LINK } from "@/domain/integrations/links";
+import { AIRTABLE_LINK, createGoogleDocLink } from "@/domain/integrations/links";
 import { createNotionCardForEmail } from "@/domain/integrations/notion/cards";
 import { openPopup } from "@/domain/interface/popup";
-import { Email, getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
+import { EditorState, Email, getStatusFromEmail, STATUS_COLORS } from "@/domain/schema";
+import { Values } from "@/domain/values/valueCollection";
 import { normalizeName } from "@/domain/variables/normalize";
-import { ActionIcon, Badge, Box, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
-import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { Variables } from "@/domain/variables/variableCollection";
+import { ActionIcon, Badge, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
+import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconFilePlus, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { AuthStatus } from "../publish/publish";
 import { EmailCreator } from "./selector-manual";
 
 export function EmailSchedule() {
@@ -27,6 +33,7 @@ export function EmailSchedule() {
 
     const [sessionOffset, setSessionOffset] = useState<number>(0);
     const [refresh, setRefresh] = useState(false);
+    const loadedSessions = useRef<string[]>([]);
 
     const [searchQuery, setSearchQuery] = useState<string[] | null>(null);
     if (searchQuery === null) {
@@ -41,20 +48,38 @@ export function EmailSchedule() {
 
     useEffect(() => {
         async function fetchSchedule() {
-            console.log('[SCHEDULE] Fetching schedule with offset ' + sessionOffset + ', refresh ' + refresh + ', searchQuery ' + searchQuery);
+            console.log('[SCHEDULE] Fetching schedule with offset ' + sessionOffset + ', refresh ' + refresh + ', searchQuery ' + searchQuery + '\nAlready loaded sessions: ' + loadedSessions.current.join(', '));
 
-            if (refresh)
+            if (refresh) {
                 setSessionOffset(0);
+                loadedSessions.current = [];
+                const keys = listKeysInLocalStorage();
+                keys.forEach((key) => {
+                    if (key.startsWith('schedule?')) {
+                        console.log('[SCHEDULE] Removing cache for ' + key);
+                        localStorage.removeItem(key);
+                    }
+                });
+            }
 
             if (isLoading.current && !refresh) return;
 
             if (searchQuery !== null && searchQuery.length > 0) {
                 saveStringToLocalStorage('scheduleSearch', JSON.stringify(searchQuery));
+            } else {
+                saveStringToLocalStorage('scheduleSearch', '[]');
             }
 
             isLoading.current = true;
             const params = new URLSearchParams({ sessionOffset: sessionOffset + '', refresh: refresh ? 'true' : 'false', searchQuery: searchQuery?.join(',') ?? '' });
             const cacheKey = sessionOffset + '+' + searchQuery?.join(',');
+
+            if (loadedSessions.current.includes(cacheKey) && !refresh) {
+                console.log('[SCHEDULE] Already loaded schedule with params ' + cacheKey);
+                isLoading.current = false;
+                return;
+            }
+            loadedSessions.current.push(cacheKey);
 
             let data: {
                 emails: string;
@@ -85,7 +110,7 @@ export function EmailSchedule() {
 
                 let emailsAfter = prev?.slice(data.offset + EMAILS_IN_PAGE) ?? [];
 
-                console.log('[SCHEDULE] Loaded ' + newEmails.length + ' emails (' + data.offset + ' -> ' + (data.offset + EMAILS_IN_PAGE) + ') out of ' + totalEmails.current + ' - schedule is [' + emailsBefore.length + ' old + ' + (newEmails ?? []).length + ' new + ' + emailsAfter.length + ' old]');
+                console.log('[SCHEDULE] Loaded ' + newEmails.length + ' emails (' + data.offset + ' -> ' + (data.offset + EMAILS_IN_PAGE) + ') out of ' + totalEmails.current + ' - schedule is [' + emailsBefore.length + ' old + ' + (newEmails ?? []).length + ' new + ' + emailsAfter.length + ' old]', prev, emailsBefore.concat((newEmails ?? []), emailsAfter));
 
 
                 return emailsBefore.concat((newEmails ?? []), emailsAfter) ?? newEmails ?? []
@@ -111,6 +136,8 @@ export function EmailSchedule() {
         handleScroll();
     }, [loadedEmails, searchQuery]);
 
+    const inBoundary = useRef<boolean>(false);
+
     const handleScroll = async () => {
         if (!loadedEmails || !ref.current) return;
         const clientHeight = ref.current?.getBoundingClientRect().height;
@@ -118,12 +145,13 @@ export function EmailSchedule() {
         const scrollHeight = ref.current?.scrollHeight;
 
         if (scrollTop + clientHeight >= scrollHeight - 1000) {
+            if (inBoundary.current) return;
             if (isLoading.current) return;
-            setSessionOffset((prevCount) => Math.min(prevCount + EMAILS_IN_PAGE, totalEmails.current ?? 0));
 
-            setTimeout(() => {
-                handleScroll();
-            }, 1000);
+            inBoundary.current = true;
+            setSessionOffset((prevCount) => Math.min(prevCount + EMAILS_IN_PAGE, totalEmails.current ?? 0));
+        } else {
+            inBoundary.current = false;
         }
     }
 
@@ -182,7 +210,7 @@ export function EmailSchedule() {
         return sortedEmailsBySession;
     }, [loadedEmails, manualEmails, refresh]);
 
-    console.log('Rendering. total emails ' + sessionsByEmail?.length + ', offset ' + sessionOffset + ', searchQuery ' + searchQuery + ', refresh ' + refresh);
+    console.log('Rendering. total emails ' + sessionsByEmail?.length + ', offset ' + sessionOffset + ', searchQuery ' + searchQuery + ', refresh ' + refresh, sessionsByEmail);
     const className = ' !bg-gray-300';
 
     return (
@@ -192,7 +220,7 @@ export function EmailSchedule() {
 
 
                 <Flex align="start" justify="center" direction='column' className="p-4 border-gray-200 rounded-lg w-[38rem]  !bg-gray-50 border-1 relative" h={920} gap={20} pr={15}>
-                    <Box className=" absolute " top={-35} left={-5} ml={4} >
+                    <Flex className=" absolute " top={-35} left={-5} ml={4} justify='space-between' w='38rem' dir="row" align='center' >
                         <RemoteSource
                             name="Airtable"
                             icon={<Flex className="" justify='center' align='center' w={16} h={16} mr={-2} ml={-4}><Image src='./interface/airtable.png' h={12} w={12} /></Flex>}
@@ -201,7 +229,8 @@ export function EmailSchedule() {
                             date={lastRefreshed}
                             className="!border-gray-200 !bg-gray-50 border-1 "
                         />
-                    </Box>
+                        <AuthStatus className="pb-1" showAC={false} />
+                    </Flex>
 
                     <Flex direction='row' align='center' justify='start' w="100%" gap={15}>
                         <TagsInput variant="unstyled" placeholder="Filter" bg='gray.1' pl="5" pr="sm" className=" rounded-md overflow-hidden" leftSection={<IconSearch stroke={2} opacity={0.6} className=" mr-2" />} onChange={handleSearch} value={searchQuery ?? []} maw={256} classNames={{ pill: ' !bg-gray-300' }} tt='uppercase' />
@@ -400,9 +429,10 @@ function EmailEntry({ email }: { email: Email, }) {
 
     const sendDateMessage = useMemo(() => {
         if (!sendDateMoment) return null;
-        const diffFromToday = sendDateMoment.diff(moment(), 'days');
-        if (diffFromToday === 0) return 'Today';
-        if (diffFromToday === 1) return 'Tomorrow';
+        const day1 = sendDateMoment.dayOfYear();
+        const day2 = moment().dayOfYear();
+        if (day1 === day2) return 'Today';
+        if (day1 - 1 === day2) return 'Tomorrow';
         return sendDateMoment?.format('ddd, MMM D');
     }, [])
 
@@ -446,28 +476,140 @@ function EmailEntry({ email }: { email: Email, }) {
         if (cardPending) return;
 
         setCardPending(true);
-        let state = emailSave;
-        if (emailSave) {
-            state = await loadEmail(emailSave.email?.values?.resolveValue('Email ID', true) ?? '');
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: email };
+
+        if (!state || !state.email) {
+            console.error('No state to create Notion card for email', email);
+            setCardPending(false);
+            return;
         }
 
+        state.email.values = new Values(state.email.values?.initialValues);
+
         let newEmail = await createReferenceDoc(state?.email ?? email, globalSettings.googleAccessToken ?? '');
+        console.log('[INLINE-NOTION] Created reference doc for email', newEmail);
+
         newEmail = await createNotionCardForEmail(newEmail, isPreApproved);
         if (!newEmail) {
             console.error('Failed to create Notion card for email', email);
             return;
         }
+        console.log('[INLINE-NOTION] Created Notion card for email', newEmail);
 
         const newState = {
-            step: 1,
             ...state,
             email: newEmail
         };
 
         await editEmail(newState);
+        console.log('[INLINE-NOTION] Saved email with new Notion card', newState);
 
         setCardPending(false);
     }
+
+    const [notesPending, setNotesPending] = useState(false);
+
+    const needsCollabNotes = useMemo(() => {
+        let state = emailSave?.email ?? email;
+
+        const usesCollabNotes = state?.values?.getCurrentValue('Uses Collab Notes') === 'Uses Collab Notes';
+
+        if (!usesCollabNotes) return false;
+
+        const collabNotes = state?.values?.getCurrentValue('Collab Notes Link');
+        if (!collabNotes || collabNotes.length === 0)
+            return true;
+
+    }, [email, emailSave]);
+
+    const createCollabNotes = async () => {
+        if (notesPending) return;
+
+        setNotesPending(true);
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: email };
+
+
+        const values = new Values(state?.email?.values?.initialValues);
+        if (!values)
+            return console.error('No values for email', email);
+
+        const sourceDoc = values.resolveValue("Source Collab Notes Doc", true) ?? '';
+        if (!sourceDoc || sourceDoc.length === 0) {
+            console.error('No source doc for collab notes', email);
+            setNotesPending(false);
+            return;
+        }
+        console.log("[INLINE-NOTES] Creating collab notes from source doc", sourceDoc);
+
+        const contentRes = await getGoogleDocContentByUrl(sourceDoc, globalSettings.googleAccessToken ?? '');
+
+        if (!contentRes.success || !contentRes.content || !contentRes.title) {
+            console.log("Error getting doc content", contentRes.error);
+            return;
+        }
+        console.log("[INLINE-NOTES] Got content for collab notes doc", contentRes.title);
+
+        const requests = createVariableEdits(contentRes, values);
+
+        const newTitle = new Variables(contentRes.title).resolveWith(values);
+
+        const createRes = await createSiblingGoogleDoc(sourceDoc, newTitle, requests, globalSettings.googleAccessToken ?? '');
+
+        const { success, newFileId, error } = createRes;
+        if (!success || !newFileId) {
+            console.log("Error creating sibling doc", error);
+            return;
+        }
+        console.log("[INLINE-NOTES] Created collab notes doc", createRes);
+
+
+        const url = createGoogleDocLink(newFileId);
+
+        console.log("[INLINE-NOTES] Created new collaborative notes doc: ", url);
+        values.setValue('Collab Notes Link', { value: url, source: 'remote' });
+
+        if (!state) {
+            console.error('No state to edit email with new collab notes', email);
+            setNotesPending(false);
+            return;
+        }
+
+        const notesName = values.resolveValue('Collab Notes Name', true) ?? new Variables('{Send Date (YYYY-MM-DD)} {Email Name}').resolveWith(values);
+        let pdfUrl = values.resolveValue('Collab PDF Link', true) ?? '';
+        let ids = [values.resolveValue('id', true)];
+        let originalIds = [values.resolveValue('Original ID', true)];
+
+        if (values.getCurrentValue('Is Combined Workshop Session') === 'Is Combined Workshop Session') {
+            ids = [values.getCurrentValue('Lecture ID'), values.getCurrentValue('Coaching ID')];
+            originalIds = [values.getCurrentValue('Original Lecture ID'), values.getCurrentValue('Original Coaching ID')];
+        }
+        if (values.getCurrentValue('Is Combined Options Session') === 'Is Combined Options Session') {
+            ids = [values.getCurrentValue('First ID'), values.getCurrentValue('Second ID')];
+            originalIds = [values.getCurrentValue('Original First ID'), values.getCurrentValue('Original Second ID')];
+        }
+
+        const pdfRes = await saveNotesDoc(notesName, url, ids, values.resolveValue('Calendar Table ID', true), originalIds, pdfUrl);
+        console.log("[INLINE-NOTES] Saved notes doc as PDF", pdfRes);
+
+        if (!pdfRes.success) {
+            console.log("Error saving notes doc", pdfRes.error);
+            return;
+        }
+        pdfUrl = pdfRes.pdfUrl;
+
+        values.setValue('Collab PDF Link', { value: pdfUrl, source: 'remote' });
+
+        const newState = {
+            ...state,
+            email: { ...state.email, values: new Values(values.initialValues) }
+        };
+
+        await editEmail(newState);
+        console.log("[INLINE-NOTES] Edited email with new collab notes", newState);
+
+        setNotesPending(false);
+    }
+
 
     const button = useMemo(() => {
         const sharedProps = {
@@ -534,27 +676,44 @@ function EmailEntry({ email }: { email: Email, }) {
 
                 </>
             ) : null} */}
-            <EmailMenu editorState={emailSave ?? { step: 1, email: email }} target={
-                <ActionIcon c={colorPill} bg='none' radius='sm' size={24} w={24} ml='auto' opacity={hovering ? 1 : 0} className=" transition-opacity duration-200 ease-in-out" >
-                    <IconDots size={30} strokeWidth={2} />
-                </ActionIcon>
-            } loader={
-                <ActionIcon radius='sm' size={24} w={30} ml='auto' opacity={1} className=" transition-opacity duration-200 ease-in-out">
-                    <Loader color="white" type="dots" size={16} />
-                </ActionIcon>
-            } />
-            {needsNotionCard ? <ActionIcon
-                color={((STATUS_COLORS[emailStatus ?? 'Ready'][1] as string).split('.')[0] + '.6')}
-                size={24}
-                onMouseUp={createCard}
-            >
-                {
-                    !cardPending ?
-                        <IconCalendarPlus size={16} strokeWidth={2.5} className="" />
-                        : <Loader color="white" type="oval" size={12} />
-                }
-            </ActionIcon> : null}
-            {button}
+            {
+                savedStates && savedStates.length > 0 ? (
+                    <>
+                        <EmailMenu editorState={emailSave ?? { step: 1, email: email }} target={
+                            <ActionIcon c={colorPill} bg='none' radius='sm' size={24} w={24} ml='auto' opacity={hovering ? 1 : 0} className=" transition-opacity duration-200 ease-in-out" >
+                                <IconDots size={30} strokeWidth={2} />
+                            </ActionIcon>
+                        } loader={
+                            <ActionIcon radius='sm' size={24} w={30} ml='auto' opacity={1} className=" transition-opacity duration-200 ease-in-out">
+                                <Loader color="white" type="dots" size={16} />
+                            </ActionIcon>
+                        } />
+                        {needsNotionCard ? <ActionIcon
+                            color={((STATUS_COLORS[emailStatus ?? 'Ready'][1] as string).split('.')[0] + '.6')}
+                            size={24}
+                            onMouseUp={createCard}
+                        >
+                            {
+                                !cardPending ?
+                                    <IconCalendarPlus size={16} strokeWidth={2.5} className="" />
+                                    : <Loader color="white" type="oval" size={12} />
+                            }
+                        </ActionIcon> : null}
+                        {needsCollabNotes ? <ActionIcon
+                            color={((STATUS_COLORS[emailStatus ?? 'Ready'][1] as string).split('.')[0] + '.6')}
+                            size={24}
+                            onMouseUp={createCollabNotes}
+                        >
+                            {
+                                !notesPending ?
+                                    <IconFilePlus size={16} strokeWidth={2.5} className="" />
+                                    : <Loader color="white" type="oval" size={12} />
+                            }
+                        </ActionIcon> : null}
+                        {button}
+                    </>)
+                    : (<Loader color={colorPill} size={24} type="oval" className=" ml-auto mr-2" />)
+            }
         </Flex>
     )
 }

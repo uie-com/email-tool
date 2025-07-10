@@ -1,5 +1,5 @@
+import { parseTemplate } from "@/config/template-settings";
 import { EditorContext } from "@/domain/context";
-import { fixTemplate } from "@/domain/email/templates/parseTemplates";
 import { Values } from "@/domain/values/valueCollection";
 import { Variables } from "@/domain/variables/variableCollection";
 import { Anchor, Flex, Loader, Text, Textarea } from "@mantine/core";
@@ -27,17 +27,20 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
     }, [editorState.email?.templateHTML]);
 
     useEffect(() => {
+        console.log('[TEMPLATE] useEffect for fetching template', values.getValueObj('template')?.source('user', 'settings').currentValue);
         const fetchTemplate = async () => {
-            const templateObject = values.getValueObj('template');
+            const templateObject = new Values(values.initialValues).getValueObj('template');
             if (!templateObject) return console.log('[TEMPLATE] No template object found', values);
             const templateValue = templateObject.source('user', 'settings');
-            if (DEBUG) console.log('[TEMPLATE] Fetching template', templateValue);
+            if (DEBUG) console.log('[TEMPLATE] Fetching template from URL: ', templateValue);
             if (!templateValue) return console.log('[TEMPLATE] No template value found', templateObject);
             try {
                 await templateValue?.populateRemote(values);
 
-                if (DEBUG) console.log('[TEMPLATE] Fetched template', templateValue);
-                setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } });
+                if (DEBUG) console.log('[TEMPLATE] Fetched template contents', templateValue);
+                setEditorState((prev) => (
+                    { ...prev, email: { ...prev.email, templateHTML: templateValue.source('remote').currentValue, template: templateObject.source('user', 'settings').currentValue } }
+                ));
             } catch {
                 console.error('Error fetching template', templateValue);
                 setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: templateObject.source('user', 'settings').currentValue } });
@@ -50,18 +53,21 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
             setFilledTemplate('');
             fetchTemplate();
         }
-    }, [JSON.stringify(values.getValueObj('template'))]);
+    }, [JSON.stringify(values.getValueObj('template')), editorState.email?.referenceDocURL, editorState.email?.notionURL]);
 
     useEffect(() => {
+        console.log('[TEMPLATE] Scheduling template render with delay of ' + RENDER_DELAY + 'ms');
+
         if (waitingTimeout.current)
             clearTimeout(waitingTimeout.current);
 
         waitingTimeout.current = setTimeout(() => {
             waitingTimeout.current = null;
 
-            const templateHTML = fixTemplate(editorState.email?.templateHTML, values);
+            const templateHTML = parseTemplate(editorState.email?.templateHTML, values);
             if (!templateHTML) return;
             if (templateHTML.includes('data-mantine-color-scheme')) {
+                console.warn('[TEMPLATE] Template HTML contains data-mantine-color-scheme, meaning it wasnt found.');
                 return setEditorState({ ...editorState, email: { ...editorState.email, templateHTML: '', template: '' } });
             }
             const variables = new Variables(templateHTML);
@@ -82,10 +88,18 @@ export function TemplateView({ setVariables, className, showToggle }: { setVaria
             }
 
         }, RENDER_DELAY);
+
+        return () => {
+            if (waitingTimeout.current) {
+                clearTimeout(waitingTimeout.current);
+                waitingTimeout.current = null;
+            }
+        }
     }, [editorState.email?.templateHTML, JSON.stringify(values)]);
 
-    if (DEBUG) console.log('[TEMPLATE] Rendering template view of ' + editorState.email?.template + ' with ' + ((currentlyRenderedEmail.current !== editorState.email?.template) ? 0 : filledTemplate.length) + ' characters');
-    if (DEBUG) console.log('[TEMPLATE] Filled template', editorState.email);
+    console.log('[TEMPLATE] Rendering. Editor state:', editorState.email, 'Rendered template state:', { filledTemplate }, 'Current templates string ref:', currentlyRenderedEmail.current, 'No template found:', noTemplateFound);
+    // if (DEBUG) console.log('[TEMPLATE] Rendering template view of ' + editorState.email?.template + ' with ' + ((currentlyRenderedEmail.current !== editorState.email?.template) ? 0 : filledTemplate.length) + ' characters');
+    // if (DEBUG) console.log('[TEMPLATE] Filled template', editorState.email);
 
     return (
         <div className={className + ' relative'} >

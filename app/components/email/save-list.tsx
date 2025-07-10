@@ -118,7 +118,7 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                         <Text fz={14} fw={600} c='dimmed'>{showFinished ? 'All Saved Emails' : 'Pending Emails'}</Text>
                         <Anchor fz={14} fw={400} c='dimmed' onClick={handleToggleShowFinished}>{showFinished ? 'Hide Finished' : 'Show All'}</Anchor>
                     </Flex>
-                    {sortedEmailStates.map((state) => {
+                    {sortedEmailStates.length > 0 ? sortedEmailStates.map((state) => {
                         const selected = selectedEmail === state.email?.name;
 
                         if (!selected && !showFinished && (getStatusFromEmail(state.email) === 'Sent' || getStatusFromEmail(state.email) === 'Scheduled'))
@@ -134,7 +134,7 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                                 setIsSidebarOpen={setIsSidebarOpen}
                             />
                         );
-                    })}
+                    }) : <Loader className="mt-4" size="md" color="gray" type='oval' />}
                 </Flex>
             </ScrollArea>
 

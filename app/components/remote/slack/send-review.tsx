@@ -16,14 +16,14 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const [reviewer, setReviewer] = useState<number>(getNextReviewer());
-    const [priority, setPriority] = useState<number>(1);
     const defaultPriority = useMemo(() => calculatePriority(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
+    const [priority, setPriority] = useState<number>(defaultPriority);
 
     const [isPostPending, setIsPostPending] = useState(false);
     const [hasPosted, setHasPosted] = useState(false);
 
     const slackEmailId = useMemo(() => {
-        return editorState.email?.values?.resolveValue('Slack Email ID', true) ?? editorState.email?.values?.resolveValue('Email ID', true) ?? '';
+        return editorState.email?.values?.resolveValue('Sent Slack Email ID', true) ?? editorState.email?.values?.resolveValue('Slack Email ID', true) ?? '';
     }, [editorState.email?.values]);
 
     const isPreApproved = isPreApprovedTemplate(editorState.email?.template, emailStates);
@@ -35,7 +35,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         const priorityFlag = priority ? PRIORITY_FLAGS[priority] : PRIORITY_FLAGS[defaultPriority];
         const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
-        const slackEmailId = editorState.email?.values?.resolveValue('Email ID', true) ?? '';
+        const slackEmailId = editorState.email?.values?.resolveValue('Slack Email ID', true) ?? '';
 
         const res = await createTicketInSlack(
             notionUrl,
@@ -47,7 +47,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         );
 
         console.log("Created ticket in slack", res);
-        editorState.email?.values?.setValue('Slack Email ID', slackEmailId);
+        editorState.email?.values?.setValue('Sent Slack Email ID', slackEmailId);
         logReviewer(reviewer);
 
         setHasPosted(true);

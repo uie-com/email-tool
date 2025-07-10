@@ -55,3 +55,10 @@ export function hasStringInSessionStorage(key: string) {
     if (DEBUG) console.log('[SESSION] Checking local storage', key, value);
     return value !== null;
 }
+
+export function listKeysInLocalStorage() {
+    if (typeof window === 'undefined' || !localStorage) return [];
+    const keys = Object.keys(localStorage);
+    if (DEBUG) console.log('[LOCAL] Listing keys in local storage', keys);
+    return keys;
+}
