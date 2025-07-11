@@ -508,8 +508,11 @@ function EmailEntry({ email }: { email: Email, }) {
     }
 
     const [notesPending, setNotesPending] = useState(false);
+    const [madeNotes, setMadeNotes] = useState(false);
 
     const needsCollabNotes = useMemo(() => {
+        if (madeNotes) return false;
+
         let state = emailSave?.email ?? email;
 
         const usesCollabNotes = state?.values?.getCurrentValue('Uses Collab Notes') === 'Uses Collab Notes';
@@ -604,7 +607,8 @@ function EmailEntry({ email }: { email: Email, }) {
             email: { ...state.email, values: new Values(values.initialValues) }
         };
 
-        await editEmail(newState);
+        // await editEmail(newState);
+        setMadeNotes(true);
         console.log("[INLINE-NOTES] Edited email with new collab notes", newState);
 
         setNotesPending(false);

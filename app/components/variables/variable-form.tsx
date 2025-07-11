@@ -1,4 +1,5 @@
 import { PRE_APPROVED_VALUES } from "@/config/email-settings";
+import { fuzzyParseDateToIsoString } from "@/domain/date/dates";
 import { isValidHttpUrl } from "@/domain/values/validation";
 import { Values } from "@/domain/values/valueCollection";
 import { Variable, Variables } from "@/domain/variables/variableCollection";
@@ -95,12 +96,23 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
     } else if (variable.type === 'Number') {
 
     } else if (variable.type === 'Date') {
-        let date: Moment | undefined | Date = moment(value ?? moment().hour(12).minute(0)), time = '00:00';
-        if (!date.isValid()) {
+        let date: Moment | undefined | Date = value ? moment(value) : undefined, time = '08:00';
+        if (!date?.isValid()) {
             date = undefined;
         } else {
             date = moment(value).toDate();
             time = moment(value).format('HH:mm');
+        }
+
+        const handleDatePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+            e.preventDefault();
+            const text = e.clipboardData.getData('text/plain');
+            const parsedDate = fuzzyParseDateToIsoString(text);
+            if (parsedDate) {
+                setValue(parsedDate);
+            } else {
+                console.warn('Invalid date pasted:', text);
+            }
         }
 
         return (
@@ -113,6 +125,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                     onChange={e => setValue(e)}
                     {...sharedProps}
                     styles={{ input: { minWidth: '1px' } }}
+                    onPasteCapture={handleDatePaste}
                 />
 
                 <TimeInput
@@ -126,6 +139,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                     label={''}
                     key={'vi' + index + 'time'}
                     mb={variant === 'unstyled' ? -0.25 : 0}
+                    onPasteCapture={handleDatePaste}
                 />
             </Flex>
         )

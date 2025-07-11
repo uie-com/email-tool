@@ -92,12 +92,13 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
 
         // THIS CODE NEEDS TO BE LAST, WE CAN'T INTERPRET VALUE AS A DATE AFTER
         // Format date into string ex. (YYYY-MM-DD)
+        // NOTE: Ordinals are manually removed here for new style guide compliance
         const formatTransform = remainingTransforms.find(transform =>
             transform.includes('YY') || transform.includes('MM') || transform.includes('DD')
             || transform.includes('hh') || transform.includes('mm') || transform.includes('ss') || transform.includes('dd') || transform === 'z'
         );
         if (formatTransform)
-            value = moment(value).format(formatTransform);
+            value = moment(value).format(formatTransform.replaceAll('Do', 'D'));
         remainingTransforms = remainingTransforms.filter(transform => transform !== formatTransform);
     }
 

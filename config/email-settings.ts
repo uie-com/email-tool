@@ -327,7 +327,15 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Type:Today\'s Session': {
             settings: {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1iRsenQPN-SaZggLQU5o2L4WOM1a5-GgZ/edit' },
-            }
+            },
+            'Topic:Topic 1': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1Dy_7_M6xvf9mTN5YD4r6s5tctHjmZb2-mr09-AdZE2g/edit?usp=share_link' } } },
+            'Topic:Topic 2': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1o_regKE4wutOUuFYOPRjZKiP9uTYhuLZ5pd9QRWoDkY/edit?usp=share_link' } } },
+            'Topic:Topic 3': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1xiwrFrUexIoAuPYNW-IWcLuERScEhZDk8ckKAfD6K6A/edit?usp=share_link' } } },
+            'Topic:Topic 4': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1K4OKwuy7A1qNGdnAJuD4YVLylZQx_bdYCaElizTX3no/edit?usp=sharing' } } },
+            'Topic:Topic 5': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1haVAUgRTKaFTYCKq30l33DxtB91y7pvoOiOOVHWEIV8/edit?usp=share_link' } } },
+            'Topic:Topic 6': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1dBb7Z_Dw5xbauiFCxQpr1DFf_SyrECHBoZtTnHDNjQc/edit?usp=share_link' } } },
+            'Topic:Topic 7': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1HyGA0Y8g1y-5qD7yosf49thbNJ7JNwWfmQfNeh-f4fw/edit?usp=share_link' } } },
+            'Topic:Topic 8': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1LAl9W8OUmMTVSzRayc-0Q9Am0YZP9BZm9IW2rh8N6Pw/edit?usp=share_link' } } },
         },
         'Email Type:Before Week': {
             settings: {
@@ -506,7 +514,15 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Type:Today\'s Session': {
             settings: {
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/160P5IwlEDgvg53zrCMTH1NwW7p0V0cnEqb-CV3VY-bc/edit' },
-            }
+            },
+            'Topic:Topic 1': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/17VTL3sgEXmWUGu1s-YKgD_xUBenEGytuarlsV02TBaI/edit?usp=sharing' } } },
+            'Topic:Topic 2': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/17aRSWdHCRehgk-PuLd305Pa3THUbQvedznJxVU5QLi8/edit?usp=sharing' } } },
+            'Topic:Topic 3': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1ES80oE15Ps5jCNoNTRUtfgS22Fl91PVVv-93nvd-Glk/edit?usp=sharing' } } },
+            'Topic:Topic 4': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1LsuOGJ0YquStDH0WhA8n7p3wqehCSq_7x8dl9GOmfjs/edit?usp=sharing' } } },
+            'Topic:Topic 5': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1_HtbVbWNxbkOMFXMQaRU_Ud8BSjGZo1IvFyT5P8dPnA/edit?usp=sharing' } } },
+            'Topic:Topic 6': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1oMoS_Zjsgru27AW6B_Zi8fZxsMd6AHf7fxpT7bc2_M0/edit?usp=sharing' } } },
+            'Topic:Topic 7': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1pUNgTjKv62VERiLcHlVnuaoDgvnKo9t2_JRadvztxlg/edit?usp=sharing' } } },
+            'Topic:Topic 8': { settings: { 'Source Collab Notes Doc': { value: 'https://docs.google.com/document/d/1poajikSzWpfzD8N8lBps0jCZFHy5QCyGKxkWEb2BaBA/edit?usp=sharing' } } },
         },
         'Email Type:Before Week': {
             settings: {
