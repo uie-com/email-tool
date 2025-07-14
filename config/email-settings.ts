@@ -41,7 +41,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Name': { value: '{Program} ', part: 0, hide },
         'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
-        'Slack Email ID': { value: '{Send Date (YYYY-MM-DD h:mma)} {Email Name (Shorthand)}', hide },
+        'Slack Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)} {Email Name (Shorthand)}', hide },
         'Email Tag': { value: '{Send Date (YYYY-MM-DD)(Tag)}-{Email Name(Tag)}', hide },
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },

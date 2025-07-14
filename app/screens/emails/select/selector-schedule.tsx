@@ -716,7 +716,7 @@ function EmailEntry({ email }: { email: Email, }) {
                         </ActionIcon> : null}
                         {button}
                     </>)
-                    : (<Loader color={colorPill} size={24} type="oval" className=" ml-auto mr-2" />)
+                    : (<Loader color={colorPill} size={24} type="bars" className=" ml-auto mr-2" />)
             }
         </Flex>
     )
