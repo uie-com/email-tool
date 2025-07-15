@@ -1,24 +1,34 @@
 import { VariableInput } from "@/app/components/variables/variable-form";
+import { MULTI_SELECT_MANUAL_EMAIL_PARAMS } from "@/config/email-types";
 import { EditorContext } from "@/domain/context";
 import { createProgramForm, Form } from "@/domain/email/identifiers/parsePrograms";
 import { focusOnNext, focusOnPrev } from "@/domain/interface/focus";
 import { Email } from "@/domain/schema";
 import { Values } from "@/domain/values/valueCollection";
 import { normalizeName } from "@/domain/variables/normalize";
-import { Button, Combobox, Flex, TextInput, useCombobox } from "@mantine/core";
+import { Button, Combobox, Flex, MultiSelect, TextInput, useCombobox } from "@mantine/core";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 export function EmailCreator() {
     const [editorState, setEditorState] = useContext(EditorContext);
-    const [values, setValues] = useState<{ [key: string]: string | Date }>({});
+    const [values, setValues] = useState<{ [key: string]: string | Date }>({
+        'Send Date': new Date(),
+        'Audience': '',
+    });
+
 
     const formSchema = useMemo(() => {
         return createProgramForm(values);
     }, [values]);
 
     const handleValueChange = (key: string, value: string | Date) => {
+        if (key === 'Send To') {
+            values['Audience'] = value as string;
+            value = (value as string).split(',')[0].trim();
+        }
+
         const newValues = Object.keys(values).filter((key) => {
-            return Object.keys(formSchema).includes(key) || key === 'Send Date';
+            return Object.keys(formSchema).includes(key) || key === 'Send Date' || key === 'Audience';
         }).reduce<{ [key: string]: string | Date }>((acc, key) => {
             acc[key] = values[key];
             return acc;
@@ -58,6 +68,22 @@ function FormBuilder({ form, values, handleValueChange }: { form: Form, values: 
     return (
         <>
             {Object.keys(form).map((key, index) => {
+                if (MULTI_SELECT_MANUAL_EMAIL_PARAMS.includes(key))
+                    return (
+                        <MultiSelect
+                            key={key}
+                            label={key}
+                            data={form[key].options}
+                            onChange={(value) => {
+                                handleValueChange(key, value.join(', '));
+                            }}
+                            searchable
+                            clearable
+                            placeholder={`Select ${key}`}
+                            maxDropdownHeight={300}
+                            style={{ width: '100%' }}
+                        />
+                    )
                 return (
                     <QuickAutocomplete
                         key={key}

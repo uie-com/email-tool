@@ -38,6 +38,9 @@ export function ValueReview() {
 
     const showMessage = useContext(MessageContext);
 
+    const isVariation = useMemo(() => {
+        return editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation';
+    }, [editorState.email?.values]);
 
 
     const variables = useMemo(() => {
@@ -91,6 +94,12 @@ export function ValueReview() {
         setRefresh(false);
     }, [refresh]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            setRefresh(true);
+        }, 400);
+    }, []);
+
     const templateId = useMemo(() => editorState.email?.templateId, [editorState.email]);
     const campaignId = useMemo(() => editorState.email?.campaignId, [editorState.email]);
 
@@ -138,6 +147,42 @@ export function ValueReview() {
         }
     }
 
+    const handleRefresh = async (force: boolean = false) => {
+        if ((templateId || campaignId) && !force)
+            return showMessage('Deleting While Uploaded', {
+                templateId: templateId,
+                campaignId: campaignId,
+                deleteEmail: () => handleRefresh(true),
+            });
+
+        if (isLoading) return;
+        setIsLoading(true);
+
+        const userValues = values.source('user');
+        console.log('Refreshing email with user values: ', userValues.asDict(), ' from state: ', editorState);
+
+        const emailId = editorState.email?.name;
+        const newEmailStr = await getEmailFromSchedule(emailId);
+        let newEmail = JSON.parse(newEmailStr ?? '{}');
+        if (newEmail && newEmail.values) {
+            newEmail = new Email(newEmail.values, newEmail);
+            newEmail.values.setValue('Last Populated', { value: new Date(), source: 'remote' });
+
+            userValues.initialValues.map((value) => {
+                newEmail.values.addValue(value.name, { value: value.getCurrentValue(), source: 'user' });
+            });
+
+            console.log('Refreshing email: ', newEmail.values.getValueObj('title'), ' from state: ', editorState);
+            setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail, referenceDocURL: editorState.email?.referenceDocURL, notionURL: editorState.email?.notionURL, notionId: editorState.email?.notionId } });
+            setIsLoading(false);
+            setRefresh(true);
+        } else {
+            console.log('Error refreshing email: ', newEmail, ' from state: ', editorState);
+            setIsLoading(false);
+            setRefresh(true);
+        }
+    }
+
     // const handleBack = () => {
     //     setEditorState({ ...editorState, step: 0 });
     //     console.log('Returning to state: ', { ...editorState, step: 0 });
@@ -157,7 +202,7 @@ export function ValueReview() {
 
                     <EmailEditCard />
 
-                    <Flex direction='column' align="center" justify="center" className="w-[38rem]" gap={10} mt={-10} mb={6} >
+                    <Flex direction='column' align="center" justify="center" className="w-[38rem]" gap={10} mt={-10} mb={isVariation ? 0 : 6} >
                         <Box w='100%' mt={10} mb={10} >
                             <AuthStatus className=" !justify-start " showAC={false} />
                         </Box>
@@ -176,7 +221,7 @@ export function ValueReview() {
                                 name="Airtable"
                                 icon={<Flex className="" justify='center' align='center' w={16} h={16} mr={-2} ml={-4}><Image src='./interface/airtable.png' h={12} w={12} /></Flex>}
                                 edit={() => openPopup(AIRTABLE_LINK)}
-                                refresh={() => handleReset()}
+                                refresh={() => handleRefresh()}
                                 date={values?.resolveValue('Last Populated', true)}
                                 className="!border-gray-200 !bg-gray-0 border-1 "
                                 refreshMessage="Reset"

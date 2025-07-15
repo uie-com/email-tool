@@ -5,10 +5,11 @@
 // For each object, 'defaults' will generate the default values for the option.
 // For options that show up based on other options, put them inside the object for the option they depend on.
 
+export const MULTI_SELECT_MANUAL_EMAIL_PARAMS = ['Send To'];
 
 export const EMAIL_TYPES: Settings<string[]> = <const>{
     options: {
-        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'LoA', 'Other', 'Maven'],
+        'Program': ['TUXS', 'Metrics', 'Research', 'Win', 'Stand Out', 'Visions', 'AI', 'LoA', 'Other'],
     },
     'TUXS': {
         options: {
@@ -37,24 +38,34 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
             },
         },
     },
-    'Maven': {
+    'AI': {
         options: {
             'Email Type': ['Lightning Talk', 'Vessel', 'Content'],
         },
         'Vessel': {
             options: {
-                'Send To': ['LoA', 'BL'],
+                'Send To': ['LoA', 'BL', 'N2LoA', 'Maven'],
             },
         },
         'Content': {
             options: {
-                'Send To': ['LoA', 'BL'],
+                'Send To': ['LoA', 'BL', 'Maven'],
             },
         },
     },
     'LoA': {
         options: {
-            'Email Type': ['Content'],
+            'Email Type': ['Content', 'Vessel'],
+        },
+        'Vessel': {
+            options: {
+                'Send To': ['LoA', 'BL', 'Maven'],
+            },
+        },
+        'Content': {
+            options: {
+                'Send To': ['LoA', 'BL', 'Maven'],
+            },
         },
     },
     'Other': {

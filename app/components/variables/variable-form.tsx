@@ -168,7 +168,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                                         />
                                     </ThemeIcon>)
                                     : linkState === 'broken'
-                                        ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className=" cursor-pointer transition-all" onMouseUp={() => { window.open(value as string, '_blank'); }} />)
+                                        ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className="transition-all cursor-pointer " onMouseUp={() => { window.open(value as string, '_blank'); }} />)
                                         : null)}
 
                     </>
@@ -180,7 +180,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                 className="relative"
                 classNames={{ input: '!text-[#228BE6]' }}
             // leftSection={
-            //     <iframe src={value as string ?? ''} className=" absolute left-0 right-0"></iframe>
+            //     <iframe src={value as string ?? ''} className="absolute left-0 right-0 "></iframe>
             // }
             />
         )
@@ -211,7 +211,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                                     </HoverCard>
                                 )
                                     : linkState === 'broken'
-                                        ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className=" cursor-pointer transition-all" onMouseUp={() => { window.open(value as string, '_blank'); }} />)
+                                        ? (<IconExternalLinkOff size={20} opacity={1} strokeWidth={1.5} className="transition-all cursor-pointer " onMouseUp={() => { window.open(value as string, '_blank'); }} />)
                                         : null)}
 
                     </>
@@ -223,7 +223,7 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
                 className="relative"
                 classNames={{ input: '!text-[#228BE6]' }}
             // leftSection={
-            //     <iframe src={value as string ?? ''} className=" absolute left-0 right-0"></iframe>
+            //     <iframe src={value as string ?? ''} className="absolute left-0 right-0 "></iframe>
             // }
             />
         )

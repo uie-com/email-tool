@@ -31,7 +31,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Settings Table ID': { value: 'tblDFifdIAEJzKFLS', hide },
         'Airtable Settings Query': { value: '{Airtable URL}/{Settings Table ID}?filterByFormula=SEARCH("{Program}", %7BProgram%7D)', hide },
 
-
         'From Name': { value: 'Jared Spool', hide },
         'From Email': { value: 'jared.m.spool@centercentre.com', hide },
         'Reply To': { value: 'jared.m.spool@centercentre.com', hide },
@@ -40,8 +39,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
         'Email Name': { value: '{Program} ', part: 0, hide },
         'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
+        'QA Email Name': { value: '{Email Name}', hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
-        'Slack Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)} {Email Name (Shorthand)}', hide },
+        'QA Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)} {QA Email Name (Shorthand)}', hide },
         'Email Tag': { value: '{Send Date (YYYY-MM-DD)(Tag)}-{Email Name(Tag)}', hide },
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -52,10 +52,13 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'LoA Segment ID': { value: '1258', hide },
         'BL ID': { value: '108', hide },
         'BL Segment ID': { value: '0', hide },
+        'Maven ID': { value: '170', hide },
+        'Maven Segment ID': { value: '0', hide },
 
         'Footer Email Reason': { value: `You're receiving this email because you're a member of {Cohort} of the {Program Name} Online Course.`, hide },
 
-        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Unsubscribe</a> from ALL Leaders of Awesomeness Emails.<br/><br/>`, hide },
+        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Unsubscribe</a> from ALL {Footer Organization Name} Emails.<br/><br/>`, hide },
+        'Footer Organization Name': { value: 'Center Centre', hide },
 
         'Footer Forward': {
             value: `<a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Forward email to a friend</a>
@@ -635,6 +638,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
                 'Share Reviews By': { value: 'Cohort' },
                 'Last Session Phrase': { value: 'This past week in our', hide },
+
+                'Variation Variable': { value: 'Cohort', hide },
+                'Variation Values': { value: '{All Cohorts}', hide },
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab}', hide },
             },
             'Topic:Pillar 1': {
                 settings: {
@@ -698,6 +705,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Template': { value: '/before-break.html', part: 2 },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1XpRHEBaYCzGyWJ-BH_eWtXhT4Mo1dlsQUNHo8q6QUtI/edit' },
                 'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9695433', hide },
+
+                'Variation Variable': { value: 'Cohort', hide },
+                'Variation Values': { value: '{All Cohorts}', hide },
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab}', hide },
             },
             'Topic:Pillar 1': {
                 settings: {
@@ -1072,7 +1083,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             },
         },
     },
-    'Program:Maven': {
+    'Program:AI': {
         settings: {
             'Course Link': { value: 'https://www.maven.com/courses/how-to-win-stakeholders-and-influence-decisions' },
         },
@@ -1080,7 +1091,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             settings: {
                 'Send Type': { value: 'CAMPAIGN', hide },
                 'Email Name': { value: 'Lightning Talk', part: 1 },
-                'Template': { value: '/maven/lightning-talk.html', part: 1 },
+                'Template': { value: '/ai/lightning-talk.html', part: 1 },
                 'Send To': { value: 'LoA', hide },
 
                 'Subject': { value: 'TODAY: {Title}' },
@@ -1096,6 +1107,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Banner Alt': { value: 'UX & Design in an AI World; Host Jared Spool' },
                 'Program Website': { value: 'https://maven.com/centercentre/uxai' },
                 'Link Color': { value: '#bd1f23' },
+
             }
         },
         'Email Type:Content': {
@@ -1110,8 +1122,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
     },
 
 
-
-
     'Email Type: Vessel': {
         settings: {
             'Send Type': { value: 'CAMPAIGN', hide },
@@ -1122,6 +1132,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
             'Button': { value: '{Program Name} Course Details' },
+
+            'Variation Variable': { value: 'Send To', hide },
+            'Variation Values': { value: '{Audience}', hide },
+            'QA Email Name': { value: '{Program} Vessel {Audience (/)}', hide },
         },
         'Program:Win': {
             settings: {
@@ -1137,6 +1151,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop/content.html', part: 1 },
             'Banner': { value: '{Promo Banner}' },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
+
+            'Variation Variable': { value: 'Send To', hide },
+            'Variation Values': { value: '{Audience}', hide },
+
+            'QA Email Name': { value: '{Program} Content {Audience (/)}', hide },
         },
         'Program:Win': {
             settings: {
@@ -1157,6 +1176,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
             'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `LOA` },
+            'Footer Organization Name': { value: 'Leaders of Awesomeness', hide },
         }
     },
     'Send To:BL': {
@@ -1170,6 +1190,18 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Footer Email Reason': { value: `You're receiving this email because you've subscribed to Center Centre emails.` },
             'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `BL` },
+        }
+    },
+    'Send To:Maven': {
+        settings: {
+            'List ID': { value: '{Maven ID}', hide },
+            'Segment ID': { value: '{Maven Segment ID}', hide },
+
+            'Greeting': { value: 'Hello,' },
+
+            'Footer Email Reason': { value: `You're receiving this email because you've attended a Center Centre course or talk with Maven.` },
+            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
+            'Footer Tag': { value: `UXAI` },
         }
     },
 

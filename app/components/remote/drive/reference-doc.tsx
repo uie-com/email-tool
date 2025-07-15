@@ -15,6 +15,10 @@ export function CreateReferenceDoc({ shouldAutoStart }: { shouldAutoStart: boole
 
     useEffect(() => { }, [shouldAutoStart]);
 
+    if (editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation') {
+        return null; // Skip if this is a variation email
+    }
+
     const stateContent: StateContent = {
         waiting: {
             icon: <ThemeIcon w={50} h={50} color="gray.2"><IconClipboardText size={30} strokeWidth={2.5} /></ThemeIcon>,

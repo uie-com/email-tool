@@ -195,6 +195,32 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = value.replace(/[^0-9]/g, '');
         remainingTransforms = remainingTransforms.filter(transform => transform !== numberTransform);
 
+        // Turn ', ' into '/' ex. (/)
+        const slashTransform = remainingTransforms.find(transform =>
+            transform === '/'
+        );
+        if (slashTransform) {
+            value = value.split(',').map((v: string) => v.trim()).join('/');
+
+            // Shorten to X letters ex. (3 Letters) in array
+            const shortenTransform = remainingTransforms.find(transform =>
+                transform.includes('Letters')
+            );
+            if (shortenTransform)
+                value = value.split('/').map((v: string) => v.substring(0, parseInt(shortenTransform.replace(' Letters', '')))).join('/');
+            remainingTransforms = remainingTransforms.filter(transform => transform !== shortenTransform);
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== slashTransform);
+
+        // Turn '/' into ', ' ex. (, )
+        const commaTransform = remainingTransforms.find(transform =>
+            transform === ', ' || transform === ','
+        );
+        if (commaTransform)
+            value = value.replaceAll('/', ', ');
+        remainingTransforms = remainingTransforms.filter(transform => transform !== commaTransform);
+
+
         // All Caps ex. (Caps)
         const capsTransform = remainingTransforms.find(transform =>
             transform.includes('Caps')
@@ -213,7 +239,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
 
         // Shorten to X letters ex. (3 Letters)
         const shortenTransform = remainingTransforms.find(transform =>
-            transform.includes('Letters')
+            transform.includes(' Letters')
         );
         if (shortenTransform)
             value = value.substring(0, parseInt(shortenTransform.replace(' Letters', '')));

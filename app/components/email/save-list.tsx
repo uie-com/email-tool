@@ -4,6 +4,7 @@ import { PROGRAM_COLORS } from "@/config/app-settings";
 import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/context";
 import { markEmailDone, markEmailIncomplete } from "@/domain/email/email-actions";
 import { SavedEmailsContext, saveScheduleOpen } from "@/domain/email/save/saveData";
+import { getEmailFromSchedule } from "@/domain/email/schedule/scheduleActions";
 import { deleteCampaign, deleteTemplate } from "@/domain/integrations/active-campaign/api";
 import { createAutomationLink, createCampaignLink, createTemplateLink } from "@/domain/integrations/links";
 import { openPopup } from "@/domain/interface/popup";
@@ -11,7 +12,7 @@ import { EditorState, Email, STATUS_COLORS, Saves, getStatusFromEmail } from "@/
 import { Values } from "@/domain/values/valueCollection";
 import { ActionIcon, Anchor, Badge, Box, Button, Flex, Loader, Menu, ScrollArea, Text, ThemeIcon } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
-import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconBackspace, IconCalendarFilled, IconCheck, IconDots, IconExternalLink, IconFile, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconPlus, IconRouteOff, IconTrash } from "@tabler/icons-react";
+import { IconArrowBackUp, IconArrowLeft, IconArrowRight, IconBackspace, IconCalendarFilled, IconCheck, IconDots, IconExternalLink, IconFile, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconMail, IconMailPlus, IconPlus, IconRouteOff, IconTrash } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -19,7 +20,7 @@ export function EmailMenuWrapper() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <Flex className="absolute top-0 left-0 w-0 bottom-0" gap={0} >
+        <Flex className="absolute top-0 bottom-0 left-0 w-0" gap={0} >
             <SidebarBumper setIsSidebarOpen={setIsSidebarOpen} />
             <ScheduleButton isSidebarOpen={isSidebarOpen} />
             <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
@@ -114,7 +115,7 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
             <ScrollArea className="w-full h-full" type="hover" offsetScrollbars scrollbarSize={8} styles={{ scrollbar: { backgroundColor: 'transparent' } }} viewportProps={{ onClick: handleDefaultClick }}>
                 <Flex className=" flex-col items-center justify-start px-2.5" gap={12}>
                     {/* <NewEmailButton /> */}
-                    <Flex justify='space-between' align='center' direction='row' className=" w-full mt-4 pl-2">
+                    <Flex justify='space-between' align='center' direction='row' className="w-full pl-2 mt-4 ">
                         <Text fz={14} fw={600} c='dimmed'>{showFinished ? 'All Saved Emails' : 'Pending Emails'}</Text>
                         <Anchor fz={14} fw={400} c='dimmed' onClick={handleToggleShowFinished}>{showFinished ? 'Hide Finished' : 'Show All'}</Anchor>
                     </Flex>
@@ -195,6 +196,16 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
     const templateId = useMemo(() => email?.templateId, [email]);
     const campaignId = useMemo(() => email?.campaignId, [email]);
     const automationId = useMemo(() => values.resolveValue('Automation ID', true), [email]);
+
+    const variationVariable = editorState?.email?.values?.resolveValue('Variation Variable', true);
+    const variationValues = editorState?.email?.values?.resolveValue('Variation Values', true);
+    const currentVariationValue = values.getCurrentValue(variationVariable);
+    const isVariation = email?.values?.getCurrentValue('Is Variation') === 'Is Variation';
+    const hasVariation = variationVariable && variationValues && !isVariation;
+    console.log(currentVariationValue, variationVariable, variationValues);
+
+    if (variationVariable)
+        console.log('EmailMenu: hasVariation', variationVariable, variationValues);
 
     // Rerender ever time the email states change
     useEffect(() => { }, [JSON.stringify(editorState), JSON.stringify(emailStates)]);
@@ -319,6 +330,91 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
         }
     }
 
+    const getIdForVariation = (variationValue: string) => {
+        if (!variationVariable || !variationValues || !values) return;
+
+        variationValue = variationValue.trim();
+
+        if (variationValue.includes('20')) // Shorten Win cohorts
+            variationValue = variationValue.substring(0, 3);
+
+        let oldVariationValue = values.getCurrentValue(variationVariable);
+
+        if (oldVariationValue && oldVariationValue.includes('20')) // Shorten Win cohorts
+            oldVariationValue = oldVariationValue.substring(0, 3);
+
+        const newId = editorState?.email?.name?.replace(oldVariationValue, variationValue);
+
+        console.log('ID: ' + newId + ' existing: ' + emailStates.map((state) => state.email?.name));
+
+        return newId
+    }
+
+    const createVariation = async (variationValue: string) => {
+        if (!variationVariable || !variationValues || !values) return;
+
+        setProcessing(true);
+        setIsSidebarOpen(true);
+        setPinSidebar(true);
+
+
+        const userValues = values.source('user');
+
+        console.log('Creating variation for', editorState.email?.name + ' with ' + variationVariable + ' as value ' + variationValue + '. Saving user changes: ', userValues);
+
+        const newEmailId = getIdForVariation(variationValue);
+
+        const hasExisting = emailStates.find((state) => state.email?.name === newEmailId);
+
+        let newEmail: Email | undefined = undefined;
+
+        if (values.getCurrentValue('Creation Type') === 'manual') {
+            const manualValues = values.source('email');
+            const newValues = new Values(manualValues.initialValues);
+            newValues.setValue(variationVariable, { value: variationValue, source: 'email' });
+
+            newEmail = new Email(newValues);
+            newEmail.name = newEmailId;
+            newEmail.template = email?.template;
+        }
+        else {
+            const newEmailStr = await getEmailFromSchedule(newEmailId);
+            newEmail = JSON.parse(newEmailStr ?? '{}');
+            newEmail = new Email(newEmail?.values, newEmail);
+        }
+
+        if (!newEmail || !newEmail.values) {
+            console.error('Failed to create new email:', newEmailId);
+            setProcessing(false);
+            setPinSidebar(false);
+            return;
+        }
+
+        newEmail.values.setValue('Last Populated', { value: new Date(), source: 'remote' });
+        newEmail.values.setValue('Is Variation', { value: 'Is Variation', source: 'user' });
+
+        newEmail.notionURL = editorState.email?.notionURL;
+        newEmail.notionId = editorState.email?.notionId;
+        newEmail.referenceDocURL = editorState.email?.referenceDocURL;
+
+
+        userValues.initialValues.map((value) => {
+            newEmail.values?.addValue(value.name, { value: value.getCurrentValue(), source: 'user' });
+        });
+
+        await (newEmail as Email).values?.populateRemote();
+
+
+
+        editEmail({ step: 1, email: newEmail });
+        setEditorState({ step: 1, email: newEmail });
+
+        setProcessing(false);
+        setProcessing(false);
+        setPinSidebar(false);
+
+    }
+
     return (
         <Flex
             className={"relative flex-col justify-start items-start w-full h-18 px-2.5 py-2.5 border-gray-200  rounded-sm border-1 cursor-pointer transition-all duration-75 " + (selected ? ' !border-blue-200 !border-1' : '') + (hovered ? ' scale-[103%] opacity-100 !border-gray-200' : ' opacity-95')}
@@ -331,8 +427,8 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
             onMouseLeave={() => { setHovered(false); setNewlySelected(false); }}
 
         >
-            <Flex gap={8} align='center' className="w-full z-40"  >
-                <Box className=" absolute top-0 left-0 right-0 bottom-0 z-40" onClick={handleSelect}></Box>
+            <Flex gap={8} align='center' className="z-40 w-full"  >
+                <Box className="absolute top-0 bottom-0 left-0 right-0 z-40 " onClick={handleSelect}></Box>
                 <Flex className={" justify-center items-center absolute top-0 left-0 right-0 bottom-0 z-30 pointer-events-none " + (processing ? ' backdrop-blur-xs' : '')}>
                     {processing ?
                         <Loader size="md" color="blue" type='dots' />
@@ -392,6 +488,22 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
 
                         <Menu.Divider />
 
+                        {
+                            hasVariation ?
+                                (
+                                    <>
+                                        <Menu.Label>Create Variation</Menu.Label>
+                                        {variationValues.split(',').filter((v: string) => !emailStates.find((state) => state.email?.name === getIdForVariation(v)) && v.trim() !== currentVariationValue).map((value: string) => (
+                                            <Menu.Item key={value} onClick={() => createVariation(value.trim())} leftSection={<IconMailPlus size={14} />}>
+                                                {variationVariable} - {value.trim()}
+                                            </Menu.Item>
+                                        ))}
+                                        <Menu.Divider />
+                                    </>
+                                )
+                                : null
+                        }
+
                         {/* Danger area */}
                         {templateId ? <Menu.Item color="red" onClick={handleDeleteTemplate} leftSection={<IconBackspace size={14} />}>
                             Delete Template
@@ -407,13 +519,13 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
                 </Menu>
 
 
-                <Badge tt='none' radius='sm' px={4} color={programColor} className=" pointer-events-none" >
+                <Badge tt='none' radius='sm' px={4} color={programColor} className="pointer-events-none " >
                     <Text fz={14} fw={600} c={'white'}>{program}</Text>
                 </Badge>
                 {/* <ThemeIcon color={programColor} autoContrast size={17} w={18} pb={0.1}>
                     <IconMail size={14} strokeWidth={2.5} className="" />
                 </ThemeIcon> */}
-                <Text fz={14} fw={600} className=" pointer-events-none">{emailNameMinusProgram}</Text>
+                <Text fz={14} fw={600} className="pointer-events-none ">{(isVariation ? '+ ' : '') + emailNameMinusProgram}</Text>
             </Flex>
             <Flex gap={6} ml={0} w={'100%'} align='center' className="w-full pointer-events-none">
                 <Badge tt='none' radius='sm' px={4} color='gray.3' autoContrast
@@ -474,6 +586,6 @@ function SidebarBumper({ setIsSidebarOpen }: { setIsSidebarOpen: (isOpen: boolea
     }
 
     return (
-        <Box className="absolute top-24 bottom-0 left-0 w-24 z-40" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseExit} />
+        <Box className="absolute bottom-0 left-0 z-40 w-24 top-24" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseExit} />
     );
 }

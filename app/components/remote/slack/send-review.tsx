@@ -12,6 +12,7 @@ import { RemoteStep, StateContent } from "../step-template";
 
 
 export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+
     const [editorState, setEditorState] = useContext(EditorContext);
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
@@ -23,7 +24,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [hasPosted, setHasPosted] = useState(false);
 
     const slackEmailId = useMemo(() => {
-        return editorState.email?.values?.resolveValue('Sent Slack Email ID', true) ?? editorState.email?.values?.resolveValue('Slack Email ID', true) ?? '';
+        return editorState.email?.values?.resolveValue('Sent QA Email ID', true) ?? editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
     }, [editorState.email?.values]);
 
     const isPreApproved = isPreApprovedTemplate(editorState.email?.template, emailStates);
@@ -35,7 +36,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         const priorityFlag = priority ? PRIORITY_FLAGS[priority] : PRIORITY_FLAGS[defaultPriority];
         const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
-        const slackEmailId = editorState.email?.values?.resolveValue('Slack Email ID', true) ?? '';
+        const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
 
         const res = await createTicketInSlack(
             notionUrl,
@@ -47,7 +48,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         );
 
         console.log("Created ticket in slack", res);
-        editorState.email?.values?.setValue('Sent Slack Email ID', slackEmailId);
+        editorState.email?.values?.setValue('Sent QA Email ID', slackEmailId);
         logReviewer(reviewer);
 
         setHasPosted(true);
@@ -136,6 +137,10 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     useEffect(() => { }, [editorState.email?.hasSentReview, editorState.email?.isReviewed]);
+
+    if (editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation') {
+        return null; // Skip if this is a variation email
+    }
 
     const stateContent: StateContent = {
         waiting: {

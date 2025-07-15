@@ -6,6 +6,7 @@ export const PROGRAM_COLORS = {
     'Stand Out': '#e26730',
     'Visions': '#00a5b7',
     'TUXS': '#00a3b4',
+    'AI': '#bd1f23',
 }
 
 export const DAY_OF_WEEK_COLOR = {

@@ -17,6 +17,10 @@ export function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean })
     const [didCreate, setDidCreate] = useState(false);
     const [updatingCard, setUpdatingCard] = useState(false);
 
+    if (editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation') {
+        return null; // Skip if this is a variation email
+    }
+
     const stateContent: StateContent = {
         waiting: {
             icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListDetails size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -101,7 +105,7 @@ export function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean })
 
         if (!email || !values) return setMessage('No email found.');
 
-        const emailName = values.resolveValue("Email Name", true) ?? '';
+        const emailName = values.resolveValue("QA Email Name", true) ?? '';
         const sendDate = moment(values.resolveValue("Send Date", true) ?? '').toISOString(true);
         const shareReviewBy = values.resolveValue((values.resolveValue("Share Reviews By", true) ?? ''), true);
         const referenceDocURL = email?.referenceDocURL ?? '';

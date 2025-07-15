@@ -35,7 +35,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
                             handleClose();
                         }}>Cancel</Button>
-                        <Button variant="outline" color="red" className="min-h-10 max-w-48 ml-auto" onClick={() => {
+                        <Button variant="outline" color="red" className="ml-auto min-h-10 max-w-48" onClick={() => {
                             deleteEmail();
                             handleClose();
                         }}>Just Remove Email</Button>
@@ -75,7 +75,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
                             handleClose();
                         }}>Cancel</Button>
-                        <Button variant="outline" color="red" className="min-h-10 max-w-48 ml-auto" onClick={() => {
+                        <Button variant="outline" color="red" className="ml-auto min-h-10 max-w-48" onClick={() => {
                             resetEmail();
                             handleClose();
                         }}>Just Remove Email</Button>
@@ -114,7 +114,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                         <Button variant="light" color="gray" className="min-h-10 max-w-48" onClick={() => {
                             handleClose();
                         }}>Cancel</Button>
-                        <Button variant="light" color="red" className="min-h-10 max-w-48 ml-auto" onClick={() => {
+                        <Button variant="light" color="red" className="ml-auto min-h-10 max-w-48" onClick={() => {
                             editEmail();
                             handleClose();
                         }}>Edit Out-of-Sync</Button>
@@ -136,7 +136,6 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                 </Flex>),
         };
     }
-
     const loginToActiveCampaign = (options: any) => {
 
         const onChange = options.onChange;
@@ -223,7 +222,7 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
                 title: '!text-2xl !font-bold',
                 content: 'p-2'
             }}>
-                {processing ? <Flex className=" absolute top-0 left-0 w-full h-full justify-center items-center "><Loader color="black" type="dots" opacity={0.1} /></Flex> : null}
+                {processing ? <Flex className="absolute top-0 left-0 items-center justify-center w-full h-full "><Loader color="black" type="dots" opacity={0.1} /></Flex> : null}
                 <Flex direction="column" align="center" justify="center" gap={10} className={"w-full h-full transition-opacity " + (processing ? 'opacity-0' : 'opacity-100')} >
                     {message?.body}
                 </Flex>

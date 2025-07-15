@@ -17,6 +17,8 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
 
     const [isLoading, setIsLoading] = useState(false);
 
+    const values = editorState?.email?.values;
+
     const id = editorState?.email?.airtableId ?? editorState?.email?.values?.resolveValue('Email ID', true);
     const templateId = editorState?.email?.templateId;
     const campaignId = editorState?.email?.campaignId;
@@ -24,6 +26,12 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
 
     const publishType = editorState?.email?.values?.resolveValue('Publish Type', true);
     const isMarkedDone = editorState?.email?.isSentOrScheduled;
+
+
+
+
+
+
 
 
     const handleToggleMarkDone = async () => {
@@ -155,6 +163,10 @@ export function EmailMenu({ editorState, target, loader }: { editorState?: Edito
                 </Menu.Item> : null}
 
                 <Menu.Divider />
+
+
+
+
 
                 {/* Danger area */}
                 {templateId ? <Menu.Item color="red" onClick={handleDeleteTemplate} leftSection={<IconBackspace size={14} />}>

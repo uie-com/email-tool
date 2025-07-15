@@ -25,7 +25,7 @@ export async function loadAirtableSaves(): Promise<Saves> {
             const data = decompressText(record.fields['Data']);
             const parsedData = JSON.parse(data);
 
-            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date', 'Collab Notes Link', 'Uses Collab Notes', 'Collab PDF Link'];
+            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date', 'Collab Notes Link', 'Uses Collab Notes', 'Collab PDF Link', 'Is Variation', 'Variation Variable', 'Variation Values'];
             const shortValues = minimalKeys.map((key: string) => {
                 return { initialValues: [{ value: (new Values(parsedData.email?.values.initialValues)?.resolveValue(key, true) ?? ''), source: 'email' }], name: key, key: normalizeName(key) };
             });
