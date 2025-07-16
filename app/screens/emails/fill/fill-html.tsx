@@ -3,11 +3,12 @@
 import { TemplateEditor, TemplateView } from "@/app/components/template/html-preview";
 import { VariableForm } from "@/app/components/variables/variable-form";
 import { parseTemplate } from "@/config/template-settings";
+import { REQUIRED_VARIABLES } from "@/config/variable-settings";
 import { EditorContext } from "@/domain/context";
 import { Values } from "@/domain/values/valueCollection";
 import { Variables } from "@/domain/variables/variableCollection";
 import { Anchor, Box, Button, Flex, Image, ScrollArea, Text } from "@mantine/core";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 
 const DEBUG = true;
@@ -19,6 +20,8 @@ export function TemplateFill() {
 
     const [showHidden, setShowHidden] = useState(false);
     const [showMobile, setShowMobile] = useState(false);
+
+    const [highlightMissing, setHighlightMissing] = useState(false);
 
 
     const handleValueInput = (values: Values) => {
@@ -32,13 +35,34 @@ export function TemplateFill() {
     }
 
     const handleSubmit = async () => {
+        if (!hasRequiredVariables() && !highlightMissing)
+            return setHighlightMissing(true);
+
         console.log('Approved template. Editor state: ', { ...editorState, step: 3, email: { ...editorState.email, HTML: new Variables(parseTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } });
+
         setEditorState((prev) => ({ ...prev, step: 3, email: { ...prev.email, HTML: new Variables(parseTemplate(editorState.email?.templateHTML ?? '', editorState.email?.values ?? new Values()) ?? '').resolveWith(editorState.email?.values ?? new Values()) } }));
+    }
+
+    const hasRequiredVariables = () => {
+        const requiredKeys = variables.variables.filter(v => v.writtenAs.includes('*')).map(v => v.key).concat(REQUIRED_VARIABLES);
+        const missingVariable = requiredKeys.find(v => editorState.email?.values?.getCurrentValue(v) === undefined || editorState.email?.values?.getCurrentValue(v) === '');
+
+        console.log('Checking required variables: ', requiredKeys, ' from keys:', variables.variables.map(v => v.key), ' Missing: ', missingVariable);
+
+        if (missingVariable) {
+            return false;
+        }
+        return true;
     }
 
     const switchEditorMode = () => {
         setEditorMode((prev) => prev === 'variables' ? 'code' : 'variables');
     }
+
+    useEffect(() => {
+        if (highlightMissing && hasRequiredVariables())
+            setHighlightMissing(false);
+    }, [JSON.stringify(editorState.email?.values)]);
 
     return (
         <Flex justify="center" className={" h-[calc(100vh)] p-20 " + (editorMode === 'code' ? "flex-col 2xl:flex-row" : 'flex-row')} gap={20}>
@@ -70,12 +94,11 @@ export function TemplateFill() {
                             <Text c='gray.5' fz='10' onClick={() => setShowHidden((prev) => !prev)} className=" !cursor-pointer !z-20 ">{showHidden ? 'Hide Internal Values' : 'Show Hidden Values'}</Text>
                         </Box>
                         <ScrollArea className=" overflow-y-scroll pb-4 pt-2  ">
-
-                            <VariableForm variables={variables} values={editorState.email?.values} setValue={handleValueInput} showHidden={showHidden} />
+                            <VariableForm variables={variables} values={editorState.email?.values} setValue={handleValueInput} showHidden={showHidden} highlightMissing={highlightMissing} />
                         </ScrollArea>
                         <Flex className="w-full" align="center" justify="start" gap={10}>
                             <Button variant="light" color="yellow" onClick={() => setShowMobile(prev => !prev)}>{showMobile ? 'Hide Mobile' : 'Show Mobile'}</Button>
-                            <Button variant="filled" onClick={handleSubmit} className=" ml-auto">Approve Email</Button>
+                            <Button color={highlightMissing ? 'red.8' : 'blue'} variant="filled" onClick={handleSubmit} className=" ml-auto">{highlightMissing ? 'Ignore Missing Values?' : 'Approve Email'}</Button>
                         </Flex>
                     </Flex>
 
@@ -87,6 +110,6 @@ export function TemplateFill() {
 
                     : null
             }
-        </Flex>
+        </Flex >
     );
 }

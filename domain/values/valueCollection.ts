@@ -332,6 +332,7 @@ export class Value<T> {
     async populateRemote(values: Values) {
         try {
             let resolvedValue = this.notSource('remote').resolveWith(values), promise = undefined;
+
             if (this.originalRemoteType && typeof resolvedValue === 'string' && this.currentSource !== 'remote' && (this.currentValue as string).length > 0)
                 promise = await this._fetchRemoteValue(resolvedValue);
             if (promise)
@@ -364,10 +365,13 @@ export class Value<T> {
     async _fetchRemoteValue(url: string) {
         const fetchDef = this.initialValues.reverse().find((part) => part.fetch);
         this.initialValues.reverse();
+
+        console.log('[VALUE][' + this.key.toUpperCase() + '] Populating remote value from ' + this.remoteType + ' at ' + url);
+
         if (fetchDef && fetchDef.fetch === 'airtable') {
             console.log('[Airtable] Fetching setting', this.name, 'with url', url);
             const response = await fetchAirtableData(url);
-            if (DEBUG) console.log('[Airtable] Fetched data', this.name, response);
+            console.log('[Airtable] Fetched data', this.name, response);
             if (response && response.records && response.records.length > 0) {
                 const fieldName = Object.keys(response.records[0].fields)[0];
                 return response.records[0].fields[fieldName];
@@ -376,9 +380,9 @@ export class Value<T> {
             console.log('[Text] Fetching setting', this.name, 'with url', url);
             const response = await fetch(url);
             if (response.ok) {
-                if (DEBUG) console.log('[Text] Fetched data', this.name, response);
+                console.log('[Text] Fetched data', this.name, response);
                 const text = await response.text();
-                if (DEBUG) console.log('[Text] Fetched data', this.name, text);
+                console.log('[Text] Fetched data', this.name, text);
                 return text;
             } else {
                 throw new Error('Failed to fetch text: ' + url);

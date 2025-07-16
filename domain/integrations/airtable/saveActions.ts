@@ -2,7 +2,7 @@
 
 import { compressText, decompressText } from "@/domain/values/compression";
 import { normalizeName } from "@/domain/variables/normalize";
-import { AT_EMAIL_BASE, AT_EMAIL_TABLE } from "../../../config/save-settings";
+import { AT_EMAIL_BASE, AT_EMAIL_TABLE, AT_REVIEW_BASE, AT_REVIEW_TABLE } from "../../../config/save-settings";
 import { EditorState, Saves } from "../../schema";
 import { Values } from "../../values/valueCollection";
 import { airtableFetch, fetchRecords } from "./airtableActions";
@@ -25,7 +25,7 @@ export async function loadAirtableSaves(): Promise<Saves> {
             const data = decompressText(record.fields['Data']);
             const parsedData = JSON.parse(data);
 
-            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date', 'Collab Notes Link', 'Uses Collab Notes', 'Collab PDF Link', 'Is Variation', 'Variation Variable', 'Variation Values'];
+            const minimalKeys = ['Email ID', 'Email Name', 'Program', 'Send Date', 'Send Type', 'Automation ID', 'Cohort', 'Email Type', 'Session Date', 'Collab Notes Link', 'Uses Collab Notes', 'Collab PDF Link', 'Is Variation', 'Variation Variable', 'Variation Values', 'Sent QA Email ID', 'QA Email ID'];
             const shortValues = minimalKeys.map((key: string) => {
                 return { initialValues: [{ value: (new Values(parsedData.email?.values.initialValues)?.resolveValue(key, true) ?? ''), source: 'email' }], name: key, key: normalizeName(key) };
             });
@@ -104,7 +104,7 @@ export async function saveStateToAirtable(stateStr: string) {
         id: state.email?.airtableId,
         fields: {
             "Email ID": state.email?.name ?? '',
-            "Data": compressText(JSON.stringify(state))
+            "Data": compressText(JSON.stringify(state)),
         }
     }
 
@@ -195,16 +195,15 @@ async function checkIfEmailExists(emailName?: string): Promise<string | undefine
  * @returns A promise resolving to true if the email has been reviewed, false otherwise.
  */
 export async function isEmailReviewed(emailId: string): Promise<boolean> {
-    const response = await airtableFetch(AT_EMAIL_BASE, AT_EMAIL_TABLE, 'GET', `?filterByFormula={Email ID}="${emailId}"`, undefined, false);
+    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', `?filterByFormula={Email ID}="${emailId}"`, undefined, false);
 
     if (!response.ok || response.status !== 200)
         return false;
 
     try {
         const data = await response.json();
-        console.log('Response:', data.records[0].fields['Reviewed'] as string === 'true');
 
-        if ((data.records[0].fields['Reviewed'] as string) === 'true')
+        if (data.records.length !== 0)
             return true;
     }
     catch (error) {
@@ -216,8 +215,8 @@ export async function isEmailReviewed(emailId: string): Promise<boolean> {
 
 export async function listReviewedEmails(): Promise<string[]> {
     // Limit to the most recent 100 reviewed emails
-    const formula = '?filterByFormula={Reviewed}="true"&fields[]=Email ID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
-    const response = await airtableFetch(AT_EMAIL_BASE, AT_EMAIL_TABLE, 'GET', formula, undefined, false);
+    const formula = '?fields[]=Email ID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
+    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', formula, undefined, false);
 
 
     if (!response.ok || response.status !== 200) {

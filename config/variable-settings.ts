@@ -16,6 +16,7 @@ export const VARIABLE_TYPES: Settings<string[]> = {
     }
 };
 
+export const REQUIRED_VARIABLES = ['subject', 'senddate'];
 
 export const VARIABLE_OVERRIDES: { [key: string]: string } = {
     'Time': 'Date', // Since date objects contain time, 'Time' variables to point to their date equivalents. 'Session Time' -> 'Session Date'

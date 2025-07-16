@@ -15,7 +15,7 @@ import { ValuePart } from "../domain/values/valueCollection";
 // However, if a value has a 'part' attribute, it will be added together with each part number; only overriding the part number specified.
 
 // The program will NOT make a user review these values. This is for values that stay the same over time.
-export const PRE_APPROVED_VALUES = ['Is Last Session Of Week', 'Is First Session Of Week', 'Is First Session Of Program', 'Is Last Session Of Program', 'Is Combined Options Session', 'Program', 'Email Type', 'Is After Break', 'Is Before Break'];
+export const PRE_APPROVED_VALUES = ['Is Last Session Of Week', 'Is First Session Of Week', 'Is First Session Of Program', 'Is Last Session Of Program', 'Is Combined Options Session', 'Program', 'Email Type', 'Is After Break', 'Is Before Break', 'Audience'];
 const hide = true; // You can also hide values from the user by adding this flag to the setting.
 
 // The program will require these be set, before publishing to Active Campaign.
@@ -41,7 +41,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email Name Shorthand': { value: '{Email Name (Shorthand)}', hide },
         'QA Email Name': { value: '{Email Name}', hide },
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
-        'QA Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)} {QA Email Name (Shorthand)}', hide },
+        'QA Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)(ASAP)} {QA Email Name (Shorthand)}', hide },
         'Email Tag': { value: '{Send Date (YYYY-MM-DD)(Tag)}-{Email Name(Tag)}', hide },
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -638,10 +638,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Subject': { value: 'Win Program {Topic}. {Title}' },
                 'Share Reviews By': { value: 'Cohort' },
                 'Last Session Phrase': { value: 'This past week in our', hide },
+                'Last Lab Phrase': { value: 'this week\'s lab' },
 
                 'Variation Variable': { value: 'Cohort', hide },
                 'Variation Values': { value: '{All Cohorts}', hide },
-                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab}', hide },
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab}', part: 0, hide },
             },
             'Topic:Pillar 1': {
                 settings: {
@@ -670,10 +671,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Session Type:Wrap Up': {
                 settings: {
                     'Email Name': { value: 'Wrap Up', part: 2 },
+                    'QA Email Name': { value: '{Email Name}', hide },
+
                     'Template': { value: '/wrap-up.html', part: 2 },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1WRBaWwntGWSlp2Nla-OB6YLqh-L3hMPcGyLLFnvczxM/edit?tab=t.0#heading=h.izz3rfn15qfa' },
                     'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9496698', hide },
-
                 }
             },
             'Is First Session Of Program': {
@@ -687,6 +689,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Is Transition': {
             settings: {
                 'Email Name': { value: ' Transition', part: 3 },
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition', part: 0, hide },
+
                 'Session Note': { value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`, hide },
                 'Source Reference Doc': { value: 'https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing' },
             }
@@ -694,7 +698,16 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Is After Break': {
             settings: {
                 'Email Name': { value: ' After Break', part: 3 },
-                'Last Session Phrase': { value: 'Last time we met for' },
+                'Last Session Phrase': { value: 'When we last met for our' },
+                'Last Lab Phrase': { value: 'our last lab' },
+
+                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1iYTowt5OKZ8td4rK0dbfkEcyWepmPNbAwJrO8qE4xjk/edit?tab=t.0#heading=h.jv1g4dbv6278' },
+
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} After Break', part: 0, hide },
+
+                '{Last Week} Session #1 Recording Link': {
+                    value: '{{Week (-{Break Length(+1)})} Session #1 Recording Link}', hide
+                },
             }
         },
         'Email Type:Before Break': {
@@ -708,16 +721,18 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                 'Variation Variable': { value: 'Cohort', hide },
                 'Variation Values': { value: '{All Cohorts}', hide },
-                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab}', hide },
+                'QA Email Name': { value: '{Program} {All Cohorts (3 Letters)(/)} Before Break', hide },
             },
             'Topic:Pillar 1': {
                 settings: {
                     'Share Reviews By': { value: '' },
+                    'QA Email Name': { value: '{Email Name}', hide },
                 }
             },
             'Topic:Pillar 2': {
                 settings: {
                     'Share Reviews By': { value: '' },
+                    'QA Email Name': { value: '{Email Name}', hide },
                 }
             },
             'Is Transition': {
@@ -727,6 +742,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                     },
                     'Break Note': { value: '<br/><em>Note: When we return from break, you will join the larger program group.</em>', hide },
                     'Source Reference Doc': { value: 'https://docs.google.com/document/d/1_Bnz3wAmMYH-JZ7MS6J3kuLsO1WbJh3fY-spccKqOec/edit?tab=t.0' },
+                    'QA Email Name': { value: '{Email Name}', hide },
+
                 }
             }
         },
@@ -1036,6 +1053,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
                 // 'Send Type': { value: 'AUTOMATION', hide },
 
+                'Is Excluded From QA Review': { value: 'Is Excluded From QA Review', hide },
+                'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
+
+                'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
+
 
                 'Session Entries': {
                     value: `<table cellpadding="0" cellspacing="0" width="100%" bgcolor="#0C6D77" style="background-color: #0c6d77; border-radius: 10px; border-collapse: separate">
@@ -1085,7 +1107,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
     },
     'Program:AI': {
         settings: {
+            'Program Name': { value: 'UX & Design in an AI World', hide },
             'Course Link': { value: 'https://www.maven.com/courses/how-to-win-stakeholders-and-influence-decisions' },
+            'Link Color': { value: '#bd1f23', hide },
+            'Accent Color': { value: 'bd1f23', hide },
+
         },
         'Email Type:Lightning Talk': {
             settings: {
@@ -1122,7 +1148,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
     },
 
 
-    'Email Type: Vessel': {
+    'Email Type:Vessel': {
         settings: {
             'Send Type': { value: 'CAMPAIGN', hide },
             'Email Name': { value: 'Vessel {Send To}', part: 1 },
@@ -1144,7 +1170,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             }
         }
     },
-    'Email Type: Content': {
+    'Email Type:Content': {
         settings: {
             'Send Type': { value: 'CAMPAIGN', hide },
             'Email Name': { value: 'Content {Send To}', part: 1 },
@@ -1218,6 +1244,10 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Link Decoration': { value: 'underline' },
 
+            'Is Excluded From QA Review': { value: 'Is Excluded From QA Review', hide },
+            'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
+
+            'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
 
             'Company Insert': {
                 value: `<p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> <br><strong>%COMPANY_NAME%</strong><br>VAT ID <em>(Optional)</em>: %TAX_ID%<br>%STREET_ADDRESS% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %CITY%, %STATE% %ZIP_CODE% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %COUNTRY% </p>`, hide
@@ -1285,6 +1315,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Link Decoration': { value: '' },
 
             'Space Name': { value: 'Online Course', hide },
+
+            'Is Excluded From QA Review': { value: 'Is Excluded From QA Review', hide },
+            'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
+
+            'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
 
         },
         'Program:Visions': { settings: { 'Confirmation Message': { value: `Together, let's bring to focus a clear vision of highly desirable experiences.` } } },

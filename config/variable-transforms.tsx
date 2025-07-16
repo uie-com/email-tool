@@ -89,6 +89,13 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = dateWithNewTime.toDate();
         remainingTransforms = remainingTransforms.filter(transform => transform !== timeTransform);
 
+        // If ASAP and date is in the past, set to now ex. (ASAP)
+        const asapTransform = remainingTransforms.find(transform =>
+            transform === 'ASAP'
+        );
+        if (asapTransform && moment(value).isBefore(moment())) {
+            value = moment().toDate();
+        }
 
         // THIS CODE NEEDS TO BE LAST, WE CAN'T INTERPRET VALUE AS A DATE AFTER
         // Format date into string ex. (YYYY-MM-DD)
@@ -140,6 +147,31 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         }
         remainingTransforms = remainingTransforms.filter(transform => transform !== addToNumberTransform);
 
+        // Subtract from number ex. (-1)
+        const subtractFromNumberTransform = remainingTransforms.find(transform =>
+            transform.includes('-')
+            && !Number.isNaN(parseInt(transform.substring(1, transform.length)))
+        );
+        if (subtractFromNumberTransform) {
+            const numberToSubtract = parseInt(subtractFromNumberTransform.substring(1, subtractFromNumberTransform.length));
+            const number = parseInt(value.split(' ')[value.split(' ').length - 1]);
+            if (!isNaN(number)) {
+                value = value.replaceAll(number.toString(), (number - numberToSubtract).toString());
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== subtractFromNumberTransform);
+
+        // If ASAP and todays time exists in h:mmA format, replace with 'ASAP' (ASAP)
+        const asapTransform = remainingTransforms.find(transform =>
+            transform === 'ASAP'
+        );
+        if (asapTransform) {
+            const time = moment().format('h:mmA');
+            if (value.includes(time)) {
+                value = value.replaceAll(time, 'ASAP');
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== asapTransform);
 
         // Remove :00 ex. (-:00)
         const remove00Transform = remainingTransforms.find(transform =>

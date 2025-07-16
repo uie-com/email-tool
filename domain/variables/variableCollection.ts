@@ -163,6 +163,7 @@ export class Variable {
         this.parentKeys = parentKeys;
         this.writtenAs = writtenAs;
         this.index = at;
+
         this.replaceOverrides();
     }
 
@@ -210,11 +211,11 @@ export class Variable {
             else nameArea = this.writtenNoBraces.substring(0, firstTransformIndex + lastInternalEndIndex + 1);
         }
 
-        return nameArea.trim();
+        return nameArea.trim().replaceAll('*', '');
     }
 
     get key() {
-        return normalizeName(this.name);
+        return normalizeName(this.name).replaceAll('*', '');
     }
 
     get type() {

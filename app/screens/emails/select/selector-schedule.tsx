@@ -444,16 +444,31 @@ function EmailEntry({ email }: { email: Email, }) {
             return state && normalizeName(state.email?.name) === normalizeName(saveName)
         });
         return saveState;
-    }, [email, JSON.stringify(savedStates)]);
+    }, [email, savedStates]);
 
 
     const handleSubmit = async () => {
+        console.log('[EMAIL-SELECTOR] Submitting email. Existing save: ', emailSave, ' Schedule instance: ', email, ' All saves: ', savedStates);
         if (!emailSave) {
             console.log('Starting an email as ', email);
             email.values?.setValue('Last Populated', { value: new Date(), source: 'remote' });
             setEditorStateDelayed({ step: 1, email: email });
         } else {
-            setEditorStateDelayed(emailSave)
+            if (emailSave.email?.isPreliminary) {
+                console.log('Starting with a preliminary email: ', emailSave.email);
+
+                email.values?.addValue('Collab Notes Link', { value: emailSave.email?.values?.getCurrentValue('Collab Notes Link'), source: 'user' });
+                email.values?.addValue('Collab PDF Link', { value: emailSave.email?.values?.getCurrentValue('Collab PDF Link'), source: 'user' });
+
+                console.log('Transferred Collab Notes Link and PDF Link from preliminary email', emailSave.email?.values?.getCurrentValue('Collab Notes Link') + ' -> ' + email.values?.getCurrentValue('Collab Notes Link') + '\n' +
+                    emailSave.email?.values?.getCurrentValue('Collab PDF Link') + ' -> ' + email.values?.getCurrentValue('Collab PDF Link'));
+
+                console.log('Setting editor state to', { step: 1, email: { ...emailSave.email, isPreliminary: false, values: email.values } });
+
+                setEditorStateDelayed({ step: 1, email: { ...emailSave.email, isPreliminary: false, values: email.values } });
+            }
+            else
+                setEditorStateDelayed(emailSave);
         }
     };
 
@@ -476,7 +491,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (cardPending) return;
 
         setCardPending(true);
-        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: email };
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true } };
 
         if (!state || !state.email) {
             console.error('No state to create Notion card for email', email);
@@ -488,6 +503,7 @@ function EmailEntry({ email }: { email: Email, }) {
 
         let newEmail = await createReferenceDoc(state?.email ?? email, globalSettings.googleAccessToken ?? '');
         console.log('[INLINE-NOTION] Created reference doc for email', newEmail);
+
 
         newEmail = await createNotionCardForEmail(newEmail, isPreApproved);
         if (!newEmail) {
@@ -529,7 +545,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (notesPending) return;
 
         setNotesPending(true);
-        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: email };
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true } };
 
 
         const values = new Values(state?.email?.values?.initialValues);
@@ -569,7 +585,7 @@ function EmailEntry({ email }: { email: Email, }) {
         const url = createGoogleDocLink(newFileId);
 
         console.log("[INLINE-NOTES] Created new collaborative notes doc: ", url);
-        values.setValue('Collab Notes Link', { value: url, source: 'remote' });
+        values.setValue('Collab Notes Link', { value: url, source: 'user' });
 
         if (!state) {
             console.error('No state to edit email with new collab notes', email);
@@ -600,14 +616,14 @@ function EmailEntry({ email }: { email: Email, }) {
         }
         pdfUrl = pdfRes.pdfUrl;
 
-        values.setValue('Collab PDF Link', { value: pdfUrl, source: 'remote' });
+        values.setValue('Collab PDF Link', { value: pdfUrl, source: 'user' });
 
         const newState = {
             ...state,
             email: { ...state.email, values: new Values(values.initialValues) }
         };
 
-        // await editEmail(newState);
+        await editEmail(newState);
         setMadeNotes(true);
         console.log("[INLINE-NOTES] Edited email with new collab notes", newState);
 
@@ -641,7 +657,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (emailStatus === 'Sent')
             return <Button {...sharedProps} pl={10} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
         return <Button h={24} onMouseUp={handleSubmit}>Open</Button>;
-    }, [emailStatus]);
+    }, [emailStatus, emailSave]);
 
 
 

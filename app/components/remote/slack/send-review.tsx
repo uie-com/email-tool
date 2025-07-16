@@ -2,16 +2,19 @@ import { MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_I
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { EditorContext } from "@/domain/context";
 import { SavedEmailsContext, isPreApprovedTemplate, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
+import { updateNotionCard } from "@/domain/integrations/notion/notionActions";
 import { calculatePriority, getLastReviewer, getNextReviewer, logReviewer } from "@/domain/integrations/slack/reviews";
 import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack } from "@/domain/integrations/slack/slackActions";
 import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Image, Loader, Select, Text, ThemeIcon } from "@mantine/core";
 import { IconArrowBackUp, IconCheck, IconExternalLink, IconMessageCheck, IconMessageSearch, IconMessageX } from "@tabler/icons-react";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RemoteStep, StateContent } from "../step-template";
 
 
 export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+
+    const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
     const [editorState, setEditorState] = useContext(EditorContext);
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
@@ -50,6 +53,11 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         console.log("Created ticket in slack", res);
         editorState.email?.values?.setValue('Sent QA Email ID', slackEmailId);
         logReviewer(reviewer);
+
+        const notionId = editorState.email?.values?.resolveValue('Notion ID', true);
+        const referenceDocURL = editorState.email?.referenceDocURL ?? '';
+        const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false, isPreApproved, true);
+        console.log("Updated Notion status to started", updateRes);
 
         setHasPosted(true);
         setEditorState((prev) => ({
@@ -115,8 +123,14 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             }
         }));
 
+        if (pollInterval.current)
+            clearInterval(pollInterval.current);
+
         return await new Promise((resolve) => {
-            setInterval(async () => {
+            if (pollInterval.current)
+                clearInterval(pollInterval.current);
+
+            pollInterval.current = setInterval(async () => {
                 const saveMatch = await checkIfApproved();
 
                 if (saveMatch)
@@ -137,10 +151,6 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     useEffect(() => { }, [editorState.email?.hasSentReview, editorState.email?.isReviewed]);
-
-    if (editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation') {
-        return null; // Skip if this is a variation email
-    }
 
     const stateContent: StateContent = {
         waiting: {
@@ -307,6 +317,8 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
         await handleDeleteTicket();
 
+        pollInterval.current && clearInterval(pollInterval.current);
+
         setEditorState((prev) => ({
             ...prev,
             email: {
@@ -317,6 +329,10 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         }));
 
         return true;
+    }
+
+    if (editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation' || editorState.email?.values?.getCurrentValue('Is Excluded From QA Review') === 'Is Excluded From QA Review') {
+        return null; // Skip if this is a variation email or excluded from QA review
     }
 
     return (

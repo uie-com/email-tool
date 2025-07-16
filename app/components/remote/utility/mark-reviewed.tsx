@@ -9,6 +9,8 @@ import { RemoteStep, StateContent } from "../step-template";
 export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
 
+
+
     const stateContent: StateContent = {
         waiting: {
             icon: <ThemeIcon w={50} h={50} color="gray.2"><IconListCheck size={30} strokeWidth={2.5} /></ThemeIcon>,
@@ -95,6 +97,7 @@ export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) 
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        console.log('[MARK REVIEWED] Attempting to mark email reviewed', editorState.email?.name);
 
         setEditorState((prev) => ({
             ...prev,
@@ -105,6 +108,12 @@ export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) 
         }));
 
         return true;
+    }
+
+    if (editorState.email?.values?.getCurrentValue('Is Excluded From QA Checklist') === 'Is Excluded From QA Checklist' || editorState.email?.values?.getCurrentValue('Is Variation') === 'Is Variation') {
+        if (isReady() && !isDone())
+            tryAction(() => { });
+        return null; // Skip if this is a variation email or excluded from QA checklist
     }
 
     return (

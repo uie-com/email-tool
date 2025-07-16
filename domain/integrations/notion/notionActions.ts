@@ -7,7 +7,7 @@ import { BlockObjectRequest, BlockObjectResponse } from '@notionhq/client/build/
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.NOTION_EMAIL_DB_ID as string;
 
-export async function updateNotionCard(cardId: string, referenceDoc: string | undefined, isDone: boolean, isPreApproved?: boolean): Promise<{ success: boolean; error?: string | null }> {
+export async function updateNotionCard(cardId: string, referenceDoc: string | undefined, isDone: boolean, isPreApproved?: boolean, isStarted?: boolean): Promise<{ success: boolean; error?: string | null }> {
     let blocks: (BlockObjectRequest)[] = [];
     // if (isPreApproved !== undefined) {
     //     const pageId = !isPreApproved ? NOTION_NEW_TEMPLATE : NOTION_PRE_APPROVED_TEMPLATE;
@@ -19,7 +19,7 @@ export async function updateNotionCard(cardId: string, referenceDoc: string | un
             properties: {
                 'Google Docs': {
                     id: 'Google Docs',
-                    url: referenceDoc ?? 'https://www.google.com',
+                    url: referenceDoc ?? '',
                 },
                 'Checkbox': {
                     id: 'Checkbox',
@@ -28,9 +28,9 @@ export async function updateNotionCard(cardId: string, referenceDoc: string | un
                 'Email Task/Status:': {
                     id: 'Email Task/Status:',
                     status: {
-                        id: isDone ? '4438c2fc-a667-469e-b9f1-69227231716c' : 'fe8e79fc-138f-46fd-a5ea-04e986b1725b',
-                        name: isDone ? 'Sent/Scheduled' : 'Not started',
-                        color: isDone ? 'green' : 'default',
+                        id: isDone ? '4438c2fc-a667-469e-b9f1-69227231716c' : (isStarted ? '86fe6862-2dfe-45ea-9287-ff07224925dd' : 'fe8e79fc-138f-46fd-a5ea-04e986b1725b'),
+                        name: isDone ? 'Sent/Scheduled' : (isStarted ? 'Review Email FSOEs' : 'Not started'),
+                        color: isDone ? 'green' : (isStarted ? 'pink' : 'default'),
                     },
                 },
             },

@@ -8,6 +8,6 @@ export function normalizeName(variable?: string) {
     } else {
         name = variable;
     }
-    return name.toLowerCase().replace(/\s/g, '');
+    return name.toLowerCase().replace(/\s/g, '').replaceAll('*', '');
 }
 

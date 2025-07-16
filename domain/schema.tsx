@@ -29,6 +29,7 @@ export type Saves = EditorState[];
 
 export class Email {
     isShortened?: boolean; // Whether the email is shortened
+    isPreliminary?: boolean; // Whether the email is a preliminary save
 
     airtableId?: string; // Airtable ID once uploaded
     name?: string; // unique name of the email
@@ -77,6 +78,7 @@ export class Email {
 export type EmailStatus = 'Editing' | 'Uploaded' | 'Review' | 'Ready' | 'Scheduled' | 'Sent';
 export function getStatusFromEmail(email?: Email): EmailStatus | undefined {
     if (!email) return undefined;
+    if (email.isPreliminary) return undefined;
     if (email.isSentOrScheduled)
         return moment(email.values?.resolveValue('Send Date', true)).isBefore(moment()) ? 'Sent' : 'Scheduled';
 

@@ -167,6 +167,12 @@ export function CreateWaitAction({ shouldAutoStart }: { shouldAutoStart: boolean
         return true;
     }
 
+    if (editorState.email?.values?.getCurrentValue('Is Ongoing Automation') === 'Is Ongoing Automation') {
+        if (isReady() && !isDone())
+            tryAction(() => { });
+        return null; // Skip if this is a variation email or excluded from QA checklist
+    }
+
     return (
         <RemoteStep
             shouldAutoStart={shouldAutoStart}

@@ -1,4 +1,5 @@
 import { PRE_APPROVED_VALUES } from "@/config/email-settings";
+import { REQUIRED_VARIABLES } from "@/config/variable-settings";
 import { fuzzyParseDateToIsoString } from "@/domain/date/dates";
 import { isValidHttpUrl } from "@/domain/values/validation";
 import { Values } from "@/domain/values/valueCollection";
@@ -14,7 +15,7 @@ const DEBUG = false;
 const prependVariables = [new Variable('{Send Date}', 0), new Variable('{Subject}', 0), new Variable('{Preview}', 0)];
 const appendVariables = [new Variable('{Global Styles}', 0)];
 
-export function VariableForm({ variables, values, setValue, showHidden }: { variables: Variables, values?: Values, setValue: (values: Values) => void, showHidden?: boolean }) {
+export function VariableForm({ variables, values, setValue, showHidden, highlightMissing }: { variables: Variables, values?: Values, setValue: (values: Values) => void, showHidden?: boolean, highlightMissing: boolean }) {
     const formVariables = useMemo(() => {
         return variables.getDisplayVariables(values, prependVariables, showHidden ? appendVariables : [])
     }, [variables, values]);
@@ -40,6 +41,7 @@ export function VariableForm({ variables, values, setValue, showHidden }: { vari
                             );
                             setValue(new Values(values.initialValues));
                         }}
+                        highlightMissing={highlightMissing}
                     />)
             }
             )}
@@ -47,17 +49,21 @@ export function VariableForm({ variables, values, setValue, showHidden }: { vari
     );
 }
 
-export function VariableInput({ variable, value, setValue, index, variant, variableName, className, size, disabled }: { variable?: Variable, value: any, setValue: (value: any) => void, index: number, variant?: string, variableName?: string, className?: string, size?: MantineSize, disabled?: boolean }) {
+export function VariableInput({ variable, value, setValue, index, variant, variableName, className, size, disabled, highlightMissing }: { variable?: Variable, value: any, setValue: (value: any) => void, index: number, variant?: string, variableName?: string, className?: string, size?: MantineSize, disabled?: boolean, highlightMissing?: boolean }) {
     const linkState = useMemo(() => {
-        if (value === '' || typeof value !== 'string') {
+        if (!value || value === '' || typeof value !== 'string') {
             return ('empty');
-        } else if (isValidHttpUrl(value.trim()) || value.indexOf('./') === 0) {
+        } else if (typeof value === 'string' && (isValidHttpUrl(value?.trim()) || value.indexOf('./') === 0)) {
             return ('link');
         } else {
             return ('broken');
         }
     }, [value]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const isRequired = useMemo(() => {
+        return variable?.writtenAs.includes('*') || REQUIRED_VARIABLES.includes(variable?.key || '');
+    }, [variable?.writtenAs]);
 
     if (!variable)
         variable = new Variable('{' + variableName + '}', 0);
@@ -72,8 +78,10 @@ export function VariableInput({ variable, value, setValue, index, variant, varia
             input: size === 'xl' ? '!text-3xl' : undefined
         },
         name: 'noAutofillSearch',
-        label: variant === "unstyled" ? undefined : variable.name,
+        label: variant === "unstyled" ? undefined : variable.name.replaceAll('*', ''),
         placeholder: 'No ' + variable.name,
+        withAsterisk: isRequired,
+        error: isRequired && highlightMissing && (!value || (typeof value === 'string' && value.trim().length === 0)) ? variable.name + ' is required.' : undefined,
     };
 
     if (isRefreshing) {

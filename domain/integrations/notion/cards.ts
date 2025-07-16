@@ -7,7 +7,7 @@ export async function createNotionCardForEmail(email: any, isPreApproved: boolea
 
     if (!email || !values) return;
 
-    const emailName = values.resolveValue("Email Name", true) ?? '';
+    const emailName = values.resolveValue("QA Email Name", true) ?? '';
     const sendDate = moment(values.resolveValue("Send Date", true) ?? '').format('YYYY-MM-DD');
     const shareReviewBy = values.resolveValue((values.resolveValue("Share Reviews By", true) ?? ''), true);
     const referenceDocURL = email?.referenceDocURL ?? '';

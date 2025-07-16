@@ -78,9 +78,18 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
         let sorted = emailStates.sort((a, b) => {
             const aDate = moment(a.email?.values?.resolveValue('Send Date', true));
             const bDate = moment(b.email?.values?.resolveValue('Send Date', true));
-            if (showFinished)
-                return aDate.isAfter(bDate) ? -1 : 1;
-            return aDate.isAfter(bDate) ? 1 : -1;
+
+            let score = showFinished ?
+                (aDate.isAfter(bDate) ? -1 : 1)
+                : (aDate.isAfter(bDate) ? 1 : -1);
+
+            if (aDate.isSame(bDate)) {
+                score = a.email?.name?.localeCompare(b.email?.name ?? '') ?? 0;
+                if (a.email?.values?.getCurrentValue('Is Variation') === 'Is Variation')
+                    score = 1; // Variations should always be on bottom
+            }
+
+            return score;
         });
         const result = showFinished ? sorted : sorted.filter((state) => {
             const sendDate = state.email?.values?.resolveValue('Send Date', true);
@@ -123,6 +132,9 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: { isSidebarOpen: boolean, 
                         const selected = selectedEmail === state.email?.name;
 
                         if (!selected && !showFinished && (getStatusFromEmail(state.email) === 'Sent' || getStatusFromEmail(state.email) === 'Scheduled'))
+                            return null;
+
+                        if (state.email?.isPreliminary)
                             return null;
 
                         return (
@@ -344,8 +356,6 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
             oldVariationValue = oldVariationValue.substring(0, 3);
 
         const newId = editorState?.email?.name?.replace(oldVariationValue, variationValue);
-
-        console.log('ID: ' + newId + ' existing: ' + emailStates.map((state) => state.email?.name));
 
         return newId
     }

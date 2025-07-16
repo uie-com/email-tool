@@ -16,7 +16,7 @@ import { Email } from "@/domain/schema";
 import { Values } from "@/domain/values/valueCollection";
 import { Variables } from "@/domain/variables/variableCollection";
 import { Box, Button, Flex, Image, Loader, ScrollArea, Table, TableData, Text } from "@mantine/core";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { AuthStatus } from "../publish/publish";
 
 
@@ -29,7 +29,6 @@ export function ValueReview() {
 
     const [emailStates, deleteEmail] = useContext(SavedEmailsContext);
 
-    const [refresh, setRefresh] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [showHidden, setShowHidden] = useState(false);
 
@@ -48,13 +47,18 @@ export function ValueReview() {
         return variables;
     }, [editorState.email?.templateHTML]);
 
-    if (!values) {
+    if (!values)
         return <></>;
+
+    if (!hasResolvedRemote) {
+        values.populateRemote();
+        setHasResolvedRemote(true);
     }
+
     const tableData: TableData = {
         head: ['Variable', 'Value'],
         body: variables.getDisplayVariables(values).map((variable, i) => {
-            const name = variable.name;
+            const name = variable.name.replaceAll('*', '');
             let displayValue, value = values.resolveValue(name, true, true);
             if (name === 'id') return [];
             if (!showHidden && (values.isHidden(name) || PRE_APPROVED_VALUES.includes(name) || EMAIL_EDIT_VALUES.includes(name)))
@@ -69,7 +73,7 @@ export function ValueReview() {
             if (values.isFetching(name))
                 displayValue = (<Loader color="black" type="dots" opacity={0.1} />);
             else
-                displayValue = (<VariableInput variableName={name} value={value} index={i} setValue={setValue} variant="unstyled" />)
+                displayValue = (<VariableInput variableName={name} value={value} index={i} setValue={setValue} variant="unstyled" highlightMissing={false} />)
 
             return [
                 name,
@@ -77,28 +81,6 @@ export function ValueReview() {
             ]
         }),
     }
-
-    useEffect(() => {
-        const resolvePromises = async () => {
-            await values.populateRemote();
-
-            const templateObject = values.getValueObj('template');
-
-            setEditorState((prev) => ({ ...prev, email: { ...prev.email, values: values, templateHTML: templateObject?.source('remote').currentValue, template: templateObject?.source('user', 'settings').currentValue } }));
-            console.log('Resolved values: ', values, ' from state: ', ({ ...editorState, email: { ...editorState.email, values: values, templateHTML: templateObject?.source('remote').currentValue, template: templateObject?.source('user', 'settings').currentValue } }));
-            setHasResolvedRemote(true);
-        }
-        if (refresh)
-            resolvePromises();
-
-        setRefresh(false);
-    }, [refresh]);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setRefresh(true);
-        }, 400);
-    }, []);
 
     const templateId = useMemo(() => editorState.email?.templateId, [editorState.email]);
     const campaignId = useMemo(() => editorState.email?.campaignId, [editorState.email]);
@@ -139,11 +121,13 @@ export function ValueReview() {
             console.log('Refreshing email: ', newEmail, ' from state: ', editorState);
             setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail, referenceDocURL: editorState.email?.referenceDocURL, notionURL: editorState.email?.notionURL, notionId: editorState.email?.notionId } });
             setIsLoading(false);
-            setRefresh(true);
+            setHasResolvedRemote(false);
+
         } else {
             console.log('Error refreshing email: ', newEmail, ' from state: ', editorState);
             setIsLoading(false);
-            setRefresh(true);
+            setHasResolvedRemote(false);
+
         }
     }
 
@@ -175,11 +159,11 @@ export function ValueReview() {
             console.log('Refreshing email: ', newEmail.values.getValueObj('title'), ' from state: ', editorState);
             setEditorState({ ...editorState, email: { ...editorState.email, ...newEmail, referenceDocURL: editorState.email?.referenceDocURL, notionURL: editorState.email?.notionURL, notionId: editorState.email?.notionId } });
             setIsLoading(false);
-            setRefresh(true);
+            setHasResolvedRemote(false);
         } else {
             console.log('Error refreshing email: ', newEmail, ' from state: ', editorState);
             setIsLoading(false);
-            setRefresh(true);
+            setHasResolvedRemote(false);
         }
     }
 

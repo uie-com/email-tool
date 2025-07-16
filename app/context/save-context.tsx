@@ -67,7 +67,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
                 const newSaves = await markReviewedEmails(saves);
                 newSaves.forEach(async (id) => {
                     const save = saves.find((s) => s.email?.name === id);
-                    let fullSave = await loadState(id);
+                    let fullSave = await loadState(id ?? '');
                     if (!fullSave) return;
 
                     fullSave = {
@@ -85,14 +85,14 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
         }
 
 
-        window.addEventListener('focus', () => refreshReviews());
-        window.addEventListener('load', () => refreshReviews(0));
+        window.addEventListener('focus', () => refreshReviews);
+        window.addEventListener('load', () => refreshReviews);
 
         return () => {
             if (refreshReviewsInterval.current)
                 clearInterval(refreshReviewsInterval.current);
-            window.removeEventListener('focus', () => refreshReviews());
-            window.removeEventListener('load', () => refreshReviews(0));
+            window.removeEventListener('focus', () => refreshReviews);
+            window.removeEventListener('load', () => refreshReviews);
         }
     }, [saves]);
 
