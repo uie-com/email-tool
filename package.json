@@ -12,6 +12,7 @@
     "@ant-design/nextjs-registry": "^1.0.2",
     "@mantine/core": "^7.17.2",
     "@mantine/dates": "^7.17.2",
+    "@mantine/dropzone": "^7.17.2",
     "@mantine/form": "^7.17.2",
     "@mantine/hooks": "^7.17.2",
     "@monaco-editor/react": "^4.7.0",
@@ -44,6 +45,7 @@
     "react-quilljs": "^2.0.5",
     "seed-color": "^2.0.1",
     "seedrandom": "^3.0.5",
+    "ssh2-sftp-client": "^12.0.1",
     "tabler": "^1.0.0",
     "tailwind-merge": "^3.2.0",
     "validatorjs": "^3.22.1"
@@ -56,6 +58,7 @@
     "@types/quill": "^2.0.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/ssh2-sftp-client": "^9.0.5",
     "@types/validatorjs": "^3.15.5",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",

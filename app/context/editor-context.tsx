@@ -4,6 +4,7 @@ import { EditorContext } from "@/domain/context";
 import { loadState } from "@/domain/email/save/saveData";
 import { EditorState } from "@/domain/schema";
 import { SetStateAction, useState } from "react";
+import { ImageUploader } from "../components/images/image-upload";
 import { EditorHelpIcon } from "../components/variables/debug";
 
 export function EditorStateProvider({ children }: { children: React.ReactNode }) {
@@ -40,6 +41,7 @@ export function EditorStateProvider({ children }: { children: React.ReactNode })
     return (
         <EditorContext.Provider value={[editorState, handleEditorStateChange, isLoading, setEditorStateDelayed]}>
             <EditorHelpIcon />
+            <ImageUploader />
             {
                 children
             }
