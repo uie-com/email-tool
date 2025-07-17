@@ -371,6 +371,11 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                         ...defaultStyles,
                         'marginTop': '-0.66rem',
                     },
+                    ol: {
+                        ...defaultStyles,
+                        'marginTop': '-0.66rem',
+
+                    },
                     h1: {
                         ...defaultStyles,
                         'fontSize': '28px',
@@ -429,6 +434,7 @@ function fixLineBreak(str: string): string {
         .replaceAll('\n', '<br />')
         .replaceAll('<br />* ', '\n* ')
         .replaceAll('<br />- ', '\n- ')
+        .replace(/<br\s*\/>\s*(\d+\.\s)/g, '\n$1')
         .replaceAll('<newline />', '\n\n');
 }
 

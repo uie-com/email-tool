@@ -79,18 +79,17 @@ export function TestCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) 
         const messageId = parseInt(email.messageId ?? '');
         const campaignId = parseInt(email.campaignId ?? '');
         const testEmail = values.resolveValue("Test Email", true) ?? '';
-        const subject = values.resolveValue("Subject", true) ?? '';
-        const sendDateMessage = values.resolveValue("Send Date", true).format('[[]M-D h:mmA[]]').replace(':00', '') ?? '';
+        const testSubject = values.resolveValue("Test Subject", true) ?? '';
 
         const notFound = (...vs: (string | number | undefined | null)[]) => vs.map((v) => v === undefined || v === null || (typeof v === 'string' && v.trim().length === 0)).find((v) => v);
-        if (notFound(messageId, campaignId, testEmail, subject))
+        if (notFound(messageId, campaignId, testEmail, testSubject))
             return setMessage('A value that is required for publishing wasn\'t found.');
 
         const response = await sendCampaignTestEmail({
             messageId: messageId ?? '',
             campaignId: campaignId ?? '',
             toEmail: testEmail ?? '',
-            subject: sendDateMessage + ' ' + subject,
+            subject: testSubject,
         });
         console.log("Send Test Email", response);
 

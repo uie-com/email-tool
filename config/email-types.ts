@@ -70,7 +70,9 @@ export const EMAIL_TYPES: Settings<string[]> = <const>{
     },
     'Other': {
         options: {
-            'Email Type': ['Content', 'Vessel'],
+            'Email Type': ['Content', 'Vessel', 'Message'],
+            'Footer Reason': [],
+            'Footer Tag': [],
         },
     },
     'Metrics': {

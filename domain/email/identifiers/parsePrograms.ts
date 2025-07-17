@@ -88,6 +88,9 @@ export function shortenIdentifier(id: string) {
         .replaceAll('Week ', 'W')
         .replaceAll('Transition', 'T')
 
+        // .replaceAll('Before Break', 'BB')
+        // .replaceAll('After Break', 'AB')
+
         .replaceAll('January', 'Jan')
         .replaceAll('February', 'Feb')
         .replaceAll('March', 'Mar')

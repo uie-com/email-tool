@@ -43,6 +43,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Email ID': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'QA Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)(ASAP)} {QA Email Name (Shorthand)}', hide },
         'Email Tag': { value: '{Send Date (YYYY-MM-DD)(Tag)}-{Email Name(Tag)}', hide },
+        'Test Subject': { value: '[{Send Date (M-D h:mmA)(-:00)(ASAP)}] {Subject}', hide },
 
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Campaign Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
@@ -129,6 +130,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'Workshop Materials Link': { value: '{Airtable Settings Query}&fields[]=Workshop Materials Link', fetch: 'airtable' },
         'Community Join Link': { value: '{Airtable Settings Query}&fields[]=Community Join Link', fetch: 'airtable' },
         'Calendar Instructions Link': { value: '{Airtable Settings Query}&fields[]=Calendar Instructions Link', fetch: 'airtable', hide },
+    },
+    'Cohort:': {
+        settings: {
+            'Footer Email Reason': { value: `You're receiving this email because you're a member of the {Program Name} Online Course.`, hide },
+        }
     },
 
 
@@ -1189,6 +1195,14 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Link Color': { value: '#646E1A' },
             }
         }
+    },
+    'Email Type:Message': {
+        settings: {
+            'Send Type': { value: 'AUTOMATION', hide },
+            'Template': { value: '/workshop/content.html', part: 1 },
+            'Banner': { value: '' },
+            'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
+        },
     },
 
 

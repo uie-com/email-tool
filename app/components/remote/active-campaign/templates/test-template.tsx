@@ -88,7 +88,7 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
         const fromName = values.resolveValue("From Name", true) ?? '';
         const fromEmail = values.resolveValue("From Email", true) ?? '';
         const replyToEmail = values.resolveValue("Reply To", true) ?? '';
-        const sendDateMessage = values.resolveValue("Send Date", true).format('[[]M-D h:mmA[]]').replace(':00', '') ?? '';
+        const testSubject = values.resolveValue("Test Subject", true) ?? '';
 
         const notFound = (...vs: (string | undefined | null)[]) => vs.map((v) => v === undefined || v === null || (typeof v === 'string' && v.trim().length === 0)).find((v) => v);
         if (notFound(emailName, templateId, subject, fromName, fromEmail, replyToEmail))
@@ -135,7 +135,7 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             messageId: messageId ?? '',
             campaignId: campaignId ?? '',
             toEmail: testEmail ?? '',
-            subject: sendDateMessage + ' ' + subject,
+            subject: testSubject,
         });
         console.log("Sent Test Email", response);
 

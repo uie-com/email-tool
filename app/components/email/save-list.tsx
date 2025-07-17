@@ -3,6 +3,7 @@
 import { PROGRAM_COLORS } from "@/config/app-settings";
 import { EditorContext, GlobalSettingsContext, MessageContext } from "@/domain/context";
 import { markEmailDone, markEmailIncomplete } from "@/domain/email/email-actions";
+import { shortenIdentifier } from "@/domain/email/identifiers/parsePrograms";
 import { SavedEmailsContext, saveScheduleOpen } from "@/domain/email/save/saveData";
 import { getEmailFromSchedule } from "@/domain/email/schedule/scheduleActions";
 import { deleteCampaign, deleteTemplate } from "@/domain/integrations/active-campaign/api";
@@ -196,7 +197,7 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
     const program = useMemo(() => values?.resolveValue('Program', true), [values.initialValues]);
     const programColor = useMemo(() => PROGRAM_COLORS[program as keyof typeof PROGRAM_COLORS] + 'ff', [values.initialValues]);
 
-    const emailName = useMemo(() => emailId.split(' ').slice(1).join(' '), [emailId]);
+    const emailName = useMemo(() => shortenIdentifier(values.resolveValue('Email Name', true)), [emailId]);
     const emailNameMinusProgram = useMemo(() => Object.keys(PROGRAM_COLORS).reduce((acc, program) => acc.replace(program, ''), emailName), [emailId]);
 
     const status = useMemo(() => getStatusFromEmail(email), [email, values.initialValues]);
