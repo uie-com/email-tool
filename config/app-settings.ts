@@ -7,6 +7,7 @@ export const PROGRAM_COLORS = {
     'Visions': '#00a5b7',
     'TUXS': '#00a3b4',
     'AI': '#bd1f23',
+    'Other': '#222222',
 }
 
 export const DAY_OF_WEEK_COLOR = {

@@ -8,7 +8,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.NOTION_EMAIL_DB_ID as string;
 
 export async function updateNotionCard(cardId: string, referenceDoc: string | undefined, isDone: boolean, isPreApproved?: boolean, isStarted?: boolean): Promise<{ success: boolean; error?: string | null }> {
-    let blocks: (BlockObjectRequest)[] = [];
+    // let blocks: (BlockObjectRequest)[] = [];
     // if (isPreApproved !== undefined) {
     //     const pageId = !isPreApproved ? NOTION_NEW_TEMPLATE : NOTION_PRE_APPROVED_TEMPLATE;
     //     blocks = await getBlocksRecursively(pageId);

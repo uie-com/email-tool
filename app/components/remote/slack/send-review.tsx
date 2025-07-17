@@ -97,7 +97,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const checkIfApproved = async (): Promise<boolean> => {
         console.log('Refreshing reviews...', emailStates);
         const newSaves = await markReviewedEmails(emailStates);
-        const saveMatch = newSaves.find((s) => s === editorState.email?.name);
+        const saveMatch = newSaves?.find((s) => s === editorState.email?.name);
 
         let fullSave = await loadState(saveMatch ?? '');
         if (fullSave) {
