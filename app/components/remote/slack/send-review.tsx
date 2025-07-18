@@ -54,7 +54,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         editorState.email?.values?.setValue('Sent QA Email ID', slackEmailId);
         logReviewer(reviewer);
 
-        const notionId = editorState.email?.values?.resolveValue('Notion ID', true);
+        const notionId = editorState.email?.notionId;
         const referenceDocURL = editorState.email?.referenceDocURL ?? '';
         const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false, isPreApproved, true);
         console.log("Updated Notion status to started", updateRes);

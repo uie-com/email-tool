@@ -69,6 +69,7 @@ export async function loadState(id: string): Promise<EditorState | undefined> {
 export async function saveState(state: EditorState | undefined, saves: Saves, isCurrent: boolean = true) {
     if (DEBUG) console.log('[SAVE] Saving email state locally', state);
     if (!state?.email?.name) return DEBUG ? console.log('[SAVE] No email name found, not saving', state) : undefined;
+    if (state.step > 1 && state.email?.isPreliminary) state.email.isPreliminary = false;
 
     const airtableId = await saveStateToAirtable(JSON.stringify(state));
 

@@ -216,7 +216,7 @@ export async function isEmailReviewed(emailId: string): Promise<boolean> {
 export async function listReviewedEmails(): Promise<string[]> {
     // Limit to the most recent 100 reviewed emails
     const formula = '?fields[]=Email ID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
-    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', formula, undefined, false);
+    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', formula, undefined, true, 60, 'reviewed-emails');
 
 
     if (!response.ok || response.status !== 200) {

@@ -19,7 +19,7 @@ export default function ProgramSchema() {
     }, []);
 
     const handleTry = async () => {
-        const res = await findNotionCard('2025-07-07', 'TUXS Today', '');
+        const res = await findNotionCard('2025-07-21', 'TUXS Onboarding Topics', '');
         setResult(res);
     };
 

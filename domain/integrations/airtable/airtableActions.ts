@@ -38,9 +38,9 @@ export async function fetchRecords(base: string = SESSION_BASE, table: string = 
     return records;
 }
 
-export async function airtableFetch(base: string, table: string, method: string, params?: string, body?: string, cache: boolean = true) {
+export async function airtableFetch(base: string, table: string, method: string, params?: string, body?: string, cache: boolean = true, revalidate: number = 60 * 60 * 60, cacheTag: string = 'airtable'): Promise<Response> {
     if (!cache)
-        revalidateTag('airtable');
+        revalidateTag(cacheTag);
 
     return await fetch(`https://api.airtable.com/v0/${base}/${table}${params}`, {
         method,
@@ -49,7 +49,7 @@ export async function airtableFetch(base: string, table: string, method: string,
             'Content-Type': 'application/json'
         },
         cache: 'force-cache',
-        next: { revalidate: 60 * 60 * 60, tags: ['airtable'] },
+        next: { revalidate, tags: [cacheTag] },
         body
     });
 }

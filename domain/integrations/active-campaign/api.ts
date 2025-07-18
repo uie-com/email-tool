@@ -16,6 +16,8 @@ export async function ac_fetch(url: string, settings: {
         "Authorization": url.includes('centercentre') ? '' : 'Bearer ' + settings.token,
     };
 
+    console.log("Calling ActiveCampaign API", url, settings.method, settings.params, settings.payload);
+
     const res = await fetch(url + (settings.params ?? ''), {
         method: settings.method,
         headers: headers,

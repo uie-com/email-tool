@@ -135,7 +135,7 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             messageId: messageId ?? '',
             campaignId: campaignId ?? '',
             toEmail: testEmail ?? '',
-            subject: testSubject,
+            subject: testSubject.length > 0 ? testSubject : subject,
         });
         console.log("Sent Test Email", response);
 
