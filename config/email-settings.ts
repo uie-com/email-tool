@@ -114,7 +114,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         },
 
         'Footer Color': { value: '#999999', hide },
-        'Link Color': { value: '', hide },
+        'Link Color': { value: '' },
         'Link Text Decoration': { value: '', hide },
 
         'Font': { value: '\'Open Sans\'', part: 0, hide },
@@ -201,7 +201,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         settings: {
             'Email Name': { value: 'Certificate', part: 2 },
             'Subject': { value: 'Your Certificate for the {Program Name} Online Course' },
-            'Template': { value: '/workshop/certificate.html', part: 1 },
+            'Template': { value: '/certificate.html', part: 2 },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9552708', hide },
         },
         'Program:Metrics': { settings: { 'Source Reference Doc': { value: `https://docs.google.com/document/d/1QqwlIK0xIWQD4Ms9Tp2UQLW-4Zc7-r2tKUkwofrPGrc/edit` } } },

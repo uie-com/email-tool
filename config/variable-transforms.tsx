@@ -379,8 +379,9 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
                     h1: {
                         ...defaultStyles,
                         'fontSize': '28px',
-                        'paddingTop': '2rem',
+                        'paddingTop': '0rem',
                         'paddingBottom': '0.25rem',
+                        'lineHeight': '36px',
                     },
                     h2: {
                         ...defaultStyles,

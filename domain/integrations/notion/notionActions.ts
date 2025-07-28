@@ -96,6 +96,7 @@ export async function deleteNotionCard(cardId: string) {
 
 
 export async function findNotionCard(date: string, emailName: string, shareReviewBy: string | undefined): Promise<{ success: boolean; url?: string; id?: string; error?: string | null, card?: NotionCard | null }> {
+    date = date.split('T')[0]; // Ensure we only use the date part
     console.log('Finding Notion card with date:', date, 'and emailName:', emailName);
     const potentialCards = await getNotionCardByDate(date);
     if (!potentialCards.success) {
