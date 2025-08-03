@@ -1,4 +1,4 @@
-import { PRE_APPROVED_VALUES } from "../../config/email-settings";
+import { PRE_APPROVED_VALUES } from "../../config/email-settings/email-settings";
 import { VARIABLE_OVERRIDES, VARIABLE_TYPES, VariableType } from "../../config/variable-settings";
 import { resolveTransforms } from "../../config/variable-transforms";
 import { Values } from "../values/valueCollection";

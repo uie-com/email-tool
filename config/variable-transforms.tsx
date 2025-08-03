@@ -333,6 +333,20 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         }
         remainingTransforms = remainingTransforms.filter(transform => transform !== tuxsTransform);
 
+        // Add prefix if value isn't empty ex. (pre:___}
+        const prefixTransform = remainingTransforms.find(transform =>
+            transform.startsWith('pre:')
+        );
+        if (prefixTransform && value) {
+            const prefix = prefixTransform.substring(4, prefixTransform.length - 1);
+            if (value.trim() !== '') {
+                value = prefix + value;
+            } else {
+                value = '';
+            }
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== prefixTransform);
+
         // Grab only last paragraph ex. (Last Paragraph)
         const lastParagraphTransform = remainingTransforms.find(transform =>
             transform.includes('Last Paragraph')

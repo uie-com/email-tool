@@ -1,9 +1,10 @@
 
-import { Settings } from "../domain/schema";
-import { ValuePart } from "../domain/values/valueCollection";
 
 // Has values for each tag/attribute of an email.
 // These will be used to fill in variables in the email templates.
+
+import { Settings } from "@/domain/schema";
+import { ValuePart } from "@/domain/values/valueCollection";
 
 // Use the tags from above as keys for objects.
 // Inside each object, create a settings dictionary with the name of each setting as the key,
@@ -1262,6 +1263,9 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
 
             'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
+
+            'Variation Variable': { value: 'Price Type', hide },
+            'Variation Values': { value: 'Individual, Team, Unemployed', hide },
 
             'Company Insert': {
                 value: `<p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> <br><strong>%COMPANY_NAME%</strong><br>VAT ID <em>(Optional)</em>: %TAX_ID%<br>%STREET_ADDRESS% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %CITY%, %STATE% %ZIP_CODE% </p> <p class="p_date v" style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:24px;letter-spacing:0;color:#333333;font-size:16px"> %COUNTRY% </p>`, hide

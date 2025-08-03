@@ -78,6 +78,8 @@ export class Email {
 export type EmailStatus = 'Editing' | 'Uploaded' | 'Review' | 'Ready' | 'Scheduled' | 'Sent';
 export function getStatusFromEmail(email?: Email): EmailStatus | undefined {
     if (!email) return undefined;
+    if (email.isSentOrScheduled === 'skipped')
+        return moment(email.values?.resolveValue('Send Date', true)).isBefore(moment()) ? 'Sent' : 'Scheduled';
     if (email.isPreliminary) return undefined;
     if (email.isSentOrScheduled)
         return moment(email.values?.resolveValue('Send Date', true)).isBefore(moment()) ? 'Sent' : 'Scheduled';

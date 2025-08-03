@@ -6,7 +6,7 @@ import { CreateReferenceDoc } from "@/app/components/remote/drive/reference-doc"
 import { GetNotionPage } from "@/app/components/remote/notion/create-card";
 import { HadIssue, RemoteSource } from "@/app/components/remote/step-template";
 import { VariableInput } from "@/app/components/variables/variable-form";
-import { PRE_APPROVED_VALUES } from "@/config/email-settings";
+import { PRE_APPROVED_VALUES } from "@/config/email-settings/email-settings";
 import { EditorContext, MessageContext } from "@/domain/context";
 import { SavedEmailsContext } from "@/domain/email/save/saveData";
 import { getEmailFromSchedule } from "@/domain/email/schedule/scheduleActions";

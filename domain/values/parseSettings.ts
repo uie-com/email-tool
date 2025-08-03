@@ -5,7 +5,7 @@
 // Settings: a simple collection of settings that are applied to an email, ie. "font-size": "12px", "font-family": "Arial"
 // Bundle: a one-level object that contains all the settings, before multi-part settings have been merged
 
-import { SETTINGS } from "../../config/email-settings";
+import { SETTINGS } from "../../config/email-settings/email-settings";
 import { SettingDict, Settings } from "../schema";
 import { ValuePart, Values } from "./valueCollection";
 

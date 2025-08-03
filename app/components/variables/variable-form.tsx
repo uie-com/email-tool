@@ -1,4 +1,4 @@
-import { PRE_APPROVED_VALUES } from "@/config/email-settings";
+import { PRE_APPROVED_VALUES } from "@/config/email-settings/email-settings";
 import { REQUIRED_VARIABLES } from "@/config/variable-settings";
 import { fuzzyParseDateToIsoString } from "@/domain/date/dates";
 import { isValidHttpUrl } from "@/domain/values/validation";
