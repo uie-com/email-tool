@@ -143,6 +143,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Footer': { value: '{Transactional Footer}', hide },
         }
     },
+    'Send Type:POSTMARK': {
+        settings: {
+            'Footer': { value: '{Transactional Footer}', hide },
+        }
+    },
     'Send Type:CAMPAIGN': {
         settings: {
             'Banner': { value: '{Promo Banner}', hide },

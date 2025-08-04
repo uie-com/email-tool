@@ -10,28 +10,27 @@ import { SettingDict, Settings } from "../schema";
 import { ValuePart, Values } from "./valueCollection";
 
 const DEBUG = false;
+
 // Returns a one-level bundle of the final settings for a given set of tags
 export const initializeSettings = (values?: Values): Values => {
     values = new Values(values?.initialValues);
-    if (DEBUG) console.log('Initializing settings with values: ', new Values(values.initialValues));
+    if (DEBUG) console.log('\n\n\n\n[SETTINGS] Starting settings for email: ' + values.getCurrentValue('Program') + values.getCurrentValue('Email Type'));
 
     if (!values) values = new Values();
     if (SETTINGS.settings as SettingDict<ValuePart<any>>)
         values = saveSettings(SETTINGS.settings as SettingDict<ValuePart<any>>, values);
     values = findSettings(SETTINGS, values);
-    if (DEBUG) console.log('Final settings: ', values);
+    if (DEBUG) console.log('\n[SETTINGS] Final settings: ', values.getCurrentValue('Link Color'));
     return values;
 }
 
 function saveSettings(settings: SettingDict<ValuePart<any>>, values: Values) {
-    if (DEBUG) console.log('Adding settings: ', settings);
+    if (DEBUG) console.log('[SETTINGS] Adding settings: ', settings);
     Object.keys(settings).forEach((key) => values.addValue(key, { ...settings[key], source: 'settings' }));
-    if (DEBUG) console.log('To : ', values);
     return values;
 }
 
 function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
-    if (DEBUG) console.log('Searching for relevant dictionaries at', settings);
     Object.keys(settings).forEach((key) => {
         let [keyName, keyValue] = key.split(':');
         if (keyName.startsWith('Is'))
@@ -39,8 +38,11 @@ function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
         else if (!keyName || !keyValue && key !== 'settings')
             console.warn('Invalid settings filter key: "' + key + '". This should be in the form of "key:value"');
 
-        if (!values.source('email').hasValueForOf(keyName, keyValue) && !values.source('schedule').hasValueForOf(keyName, keyValue) && !values.source('settings').hasValueForOf(keyName, keyValue)) return;
-        if (DEBUG) console.log('Found settings for', key);
+        if (!values.source('email').hasValueForOf(keyName, keyValue) && !values.source('schedule').hasValueForOf(keyName, keyValue) && !values.source('settings').hasValueForOf(keyName, keyValue)) {
+            if (DEBUG) console.log('\n[SETTINGS] Not a match for', key);
+            return;
+        }
+        if (DEBUG) console.log('\n[SETTINGS] Found match for', key);
         if ((settings[key].settings as SettingDict<ValuePart<any>>))
             values = saveSettings(settings[key].settings as SettingDict<ValuePart<any>>, values);
         if ((settings[key] as Settings<ValuePart<any>>))

@@ -15,6 +15,9 @@ export const STAND_OUT: Settings<ValuePart<any>> = {
             // AIRTABLE
             'Calendar Table ID': { value: 'tbly8jzaHpb0hGfbj', hide },
 
+            'Airtable Session Query': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"', hide },
+            'Airtable Settings Query': { value: '{Airtable URL}/{Settings Table ID}?filterByFormula=SEARCH("{Program}", %7BProgram%7D)', hide },
+
             // TEMPLATE
             'Template': { value: '/standout', part: 1 },
 

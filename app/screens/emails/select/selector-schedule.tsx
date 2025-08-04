@@ -19,7 +19,6 @@ import { normalizeName } from "@/domain/variables/normalize";
 import { Variables } from "@/domain/variables/variableCollection";
 import { ActionIcon, Badge, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
 import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconFilePlus, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
-import { randomUUID } from "crypto";
 import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AuthStatus } from "../publish/publish";
@@ -453,7 +452,10 @@ function EmailEntry({ email }: { email: Email, }) {
         if (!emailSave) {
             console.log('Starting an email as ', email);
             email.values?.setValue('Last Populated', { value: new Date(), source: 'remote' });
-            email.uuid = randomUUID();
+
+            email.uuid = crypto.randomUUID();
+            console.log('Creating email with ID:', email.uuid);
+
             setEditorStateDelayed({ step: 1, email: email });
         } else {
             if (emailSave.email?.isPreliminary) {
@@ -466,7 +468,7 @@ function EmailEntry({ email }: { email: Email, }) {
                     emailSave.email?.values?.getCurrentValue('Collab PDF Link') + ' -> ' + email.values?.getCurrentValue('Collab PDF Link'));
 
                 console.log('Setting editor state to', { step: 1, email: { ...emailSave.email, isPreliminary: false, values: email.values } });
-                emailSave.email.uuid = randomUUID();
+                console.log('Creating email with ID:', emailSave.email.uuid);
 
                 setEditorStateDelayed({ step: 1, email: { ...emailSave.email, isPreliminary: false, values: email.values } });
             }
@@ -494,7 +496,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (cardPending) return;
 
         setCardPending(true);
-        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true } };
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true, uuid: crypto.randomUUID() } };
 
         if (!state || !state.email) {
             console.error('No state to create Notion card for email', email);
@@ -548,7 +550,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (notesPending) return;
 
         setNotesPending(true);
-        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true } };
+        let state: EditorState = await loadEmail(email?.values?.resolveValue('Email ID', true) ?? '') ?? { step: 1, email: { ...email, isPreliminary: true, uuid: crypto.randomUUID() } };
 
 
         const values = new Values(state?.email?.values?.initialValues);

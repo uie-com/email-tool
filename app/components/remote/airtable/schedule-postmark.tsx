@@ -3,7 +3,7 @@ import { EditorContext } from "@/domain/context";
 import { addEmailToPostmarkSchedule, removeEmailFromPostmarkSchedule, testPostmarkScheduleEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { openPopup } from "@/domain/interface/popup";
 import { Button, Loader, ThemeIcon } from "@mantine/core";
-import { IconAlertCircle, IconChecklist, IconExternalLink, IconUpload } from "@tabler/icons-react";
+import { IconExternalLink, IconMailbox, IconMailCog, IconMailStar, IconMailX } from "@tabler/icons-react";
 import { useContext } from "react";
 import { RemoteStep, StateContent } from "../step-template";
 
@@ -12,31 +12,31 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
 
     const stateContent: StateContent = {
         waiting: {
-            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconUpload size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="gray.2"><IconMailStar size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Send to Postmark Tool',
-            subtitle: 'Add email to queue for testing.',
+            subtitle: 'Send test and mark as ready for review.', //‘Queue email for testing and review.’
             rightContent: '',
         },
         ready: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconUpload size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMailStar size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Send to Postmark Tool',
-            subtitle: 'Add email to queue for testing.',
+            subtitle: 'Send test and mark as ready for review.',
             rightContent: '',
         },
         manual: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconUpload size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMailStar size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Send to Postmark Tool',
-            subtitle: 'Add email to queue for testing.',
-            rightContent: <Button variant="outline" color="blue.5" h={40} >Export Template</Button>
+            subtitle: 'Send test and mark as ready for review.',
+            rightContent: <Button variant="outline" color="blue.5" h={40} >Send</Button>
         },
         pending: {
-            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconUpload size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="blue.5"><IconMailCog size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Sending to Postmark Tool',
-            subtitle: 'Adding to transactional email schedule...',
+            subtitle: 'Queueing email for testing and review...',
             rightContent: <Loader variant="bars" color="blue.5" size={30} />
         },
         failed: {
-            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconAlertCircle size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="orange.6"><IconMailX size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Couldn\'t Send to Postmark Tool',
             subtitle: 'You may need to add it manually.',
             rightContent:
@@ -47,9 +47,9 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
             // </Anchor>
         },
         succeeded: {
-            icon: <ThemeIcon w={50} h={50} color="green.6"><IconChecklist size={30} strokeWidth={2.5} /></ThemeIcon>,
+            icon: <ThemeIcon w={50} h={50} color="green.6"><IconMailbox size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Added to Postmark Tool',
-            subtitle: 'Email has been added to test queue.',
+            subtitle: 'Queued email for testing and review.',
             rightContent: null
         }
     };
@@ -60,7 +60,10 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
     }
 
     const isDone = () => {
-        return editorState.email?.templateId !== undefined && editorState.email?.templateId.length > 0;
+        return editorState.email?.sentTest !== undefined && editorState.email?.sentTest === editorState.email?.templateId &&
+            editorState.email?.hasPostmarkAction !== undefined && editorState.email?.hasPostmarkAction === editorState.email?.templateId &&
+            editorState.email?.hasWaitAction !== undefined && editorState.email?.hasWaitAction === true &&
+            editorState.email?.usesPostmarkTool !== undefined && editorState.email?.usesPostmarkTool === true;
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
@@ -69,20 +72,21 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
 
         if (!email || !values) return setMessage('No email found.');
 
-        const uuid = values.resolveValue('UUID');
-        const emailId = values.resolveValue('Email ID');
-        const subject = values.resolveValue('Subject');
-        const automationId = values.resolveValue('Automation ID');
-        const sendDate = new Date(values.resolveValue('Send Date')).toISOString();
+        const uuid = email.uuid;
+        const emailId = values.resolveValue('Email ID', true);
+        const subject = values.resolveValue('Subject', true);
+        const automationId = values.resolveValue('Automation ID', true);
+        const sendDate = new Date(values.resolveValue('Send Date', true)).toISOString();
         const templateId = email.templateId;
+        const tag = values.resolveValue('Email Tag', true) || 'default';
 
         if (!emailId || !subject || !automationId || !sendDate || !templateId || !uuid) {
-            console.error('Missing required values to add email to schedule');
-            return false;
+            console.log('Missing required values to add email to schedule');
+            return setMessage('Missing required values to add email to schedule.');
         }
 
-        if (email.hasPostmarkAction === undefined && !email.hasWaitAction && !email.usesPostmarkTool) {
-            const success = await addEmailToPostmarkSchedule(email);
+        if (!email.hasPostmarkAction && !email.hasWaitAction && !email.usesPostmarkTool) {
+            const success = await addEmailToPostmarkSchedule(uuid, emailId, subject, automationId, new Date(sendDate), templateId, tag);
             console.log("Published email to Postmark Tool: " + success);
 
             if (!success) return setMessage('Failed to add email to schedule. Please try again.');
@@ -99,7 +103,7 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
             }));
 
         } else {
-            const testSuccess = await testPostmarkScheduleEmail(email);
+            const testSuccess = await testPostmarkScheduleEmail(uuid);
 
             console.log("Tested email in Postmark Tool: " + testSuccess);
             if (!testSuccess) return setMessage('Failed to retest email in Postmark Tool. Please try again.');
@@ -109,10 +113,10 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
     }
 
     const handleUndo = async () => {
-        const uuid = editorState.email?.values?.resolveValue('UUID');
+        const uuid = editorState.email?.uuid;
         if (!uuid || !editorState.email) return;
 
-        const deleteSuccess = await removeEmailFromPostmarkSchedule(editorState.email);
+        const deleteSuccess = await removeEmailFromPostmarkSchedule(uuid);
         console.log("Removed email from Postmark Tool: " + deleteSuccess);
 
         if (!deleteSuccess) return;
@@ -141,6 +145,7 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
             tryUndo={handleUndo}
             allowsRedo
             allowsUndo
+            noUndoOnRedo
         />
     )
 }

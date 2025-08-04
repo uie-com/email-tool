@@ -1,21 +1,10 @@
 "use server";
 
 import { AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE } from "@/config/save-settings";
-import { Email } from "@/domain/schema";
-import { Values } from "@/domain/values/valueCollection";
 import { airtableFetch } from "./airtableActions";
 
 
-export async function addEmailToPostmarkSchedule(email: Email): Promise<boolean> {
-
-    const values = new Values(email.values?.initialValues);
-
-    const uuid = values.resolveValue('UUID');
-    const emailId = values.resolveValue('Email ID');
-    const subject = values.resolveValue('Subject');
-    const automationId = values.resolveValue('Automation ID');
-    const sendDate = new Date(values.resolveValue('Send Date')).toISOString();
-    const templateId = email.templateId;
+export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, subject: string, automationId: string, sendDate: Date, templateId: string, tag: string): Promise<boolean> {
 
     if (!emailId || !subject || !automationId || !sendDate || !templateId || !uuid) {
         console.error('Missing required values to add email to schedule');
@@ -32,7 +21,8 @@ export async function addEmailToPostmarkSchedule(email: Email): Promise<boolean>
                         "Subject": subject,
                         "Template ID": templateId,
                         "Automation ID": automationId,
-                        "Schedule Date": sendDate,
+                        "Schedule Date": sendDate.toISOString(),
+                        "Email Tag": tag,
                     }
                 }
             ],
@@ -41,7 +31,7 @@ export async function addEmailToPostmarkSchedule(email: Email): Promise<boolean>
     ));
 
     if (!response.ok) {
-        console.error('Failed to add email to schedule');
+        console.error('Failed to add email to schedule', await response.text());
         return false;
     }
 
@@ -49,31 +39,30 @@ export async function addEmailToPostmarkSchedule(email: Email): Promise<boolean>
     return data.records && data.records.length > 0 && data.records[0].id ? true : false;
 }
 
-export async function testPostmarkScheduleEmail(email: Email): Promise<boolean> {
-    return await setPostmarkScheduleEmailStatus(email, 'Needs Testing');
+export async function testPostmarkScheduleEmail(uuid?: string): Promise<boolean> {
+    return await setPostmarkScheduleEmailStatus('Needs Testing', uuid);
 }
 
-export async function markPostmarkScheduleEmailReady(email: Email): Promise<boolean> {
-    return await setPostmarkScheduleEmailStatus(email, 'Ready to Send');
+export async function markPostmarkScheduleEmailReady(uuid?: string): Promise<boolean> {
+    return await setPostmarkScheduleEmailStatus('Ready to Send', uuid);
 }
 
-export async function markPostmarkScheduleEmailReviewing(email: Email): Promise<boolean> {
-    return await setPostmarkScheduleEmailStatus(email, 'Under QA Review');
+export async function markPostmarkScheduleEmailReviewing(uuid?: string): Promise<boolean> {
+    return await setPostmarkScheduleEmailStatus('Under QA Review', uuid);
 }
 
 
-export async function setPostmarkScheduleEmailStatus(email: Email, status: string): Promise<boolean> {
-    const values = new Values(email.values?.initialValues);
-    const uuid = values.resolveValue('UUID');
+export async function setPostmarkScheduleEmailStatus(status: string, uuid?: string): Promise<boolean> {
 
     if (!uuid) {
         console.error('Missing UUID to set email status in schedule');
         return false;
     }
 
-    const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'GET', `filterByFormula=({UUID}="${uuid}")`);
+    const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'GET', `?filterByFormula=({UUID}='${uuid}')`);
+
     if (!response.ok) {
-        console.error('Failed to fetch email from schedule');
+        console.error('Failed to fetch email from schedule', await response.text());
         return false;
     }
 
@@ -109,8 +98,7 @@ export async function setPostmarkScheduleEmailStatus(email: Email, status: strin
 }
 
 
-export async function removeEmailFromPostmarkSchedule(email: Email): Promise<boolean> {
-    const uuid = email.values?.resolveValue('UUID');
+export async function removeEmailFromPostmarkSchedule(uuid?: string): Promise<boolean> {
 
     if (!uuid) {
         console.error('Missing UUID to remove email from schedule');

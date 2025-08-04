@@ -42,7 +42,7 @@ export async function airtableFetch(base: string, table: string, method: string,
     if (!cache)
         revalidateTag(cacheTag);
 
-    return await fetch(`https://api.airtable.com/v0/${base}/${table}${params}`, {
+    return await fetch(`https://api.airtable.com/v0/${base}/${table}${params ?? ''}`, {
         method,
         headers: {
             'Authorization': `Bearer ${process.env.AIRTABLE_READ_API_KEY}`,

@@ -7,7 +7,6 @@ import { Email } from "@/domain/schema";
 import { Values } from "@/domain/values/valueCollection";
 import { normalizeName } from "@/domain/variables/normalize";
 import { Button, Combobox, Flex, MultiSelect, TextInput, useCombobox } from "@mantine/core";
-import { randomUUID } from "crypto";
 import { useContext, useEffect, useMemo, useState } from "react";
 
 export function EmailCreator() {
@@ -43,7 +42,8 @@ export function EmailCreator() {
         emailValues.addDict(values, 'email');
         emailValues.setValue('Creation Type', { value: 'manual', source: 'email' });
         const email = new Email(emailValues);
-        email.uuid = randomUUID();
+        email.uuid = crypto.randomUUID();
+        console.log('Creating email with ID:', email.uuid);
 
         console.log('Starting an email as ', email);
         setEditorState({ step: 1, email: email });

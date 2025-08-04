@@ -26,6 +26,9 @@ export const TUXS: Settings<ValuePart<any>> = {
       'Description': { value: '{Airtable Session Query}&fields[]=Description', fetch: 'airtable' },
       'Session Type': { value: '{Airtable Session Query}&fields[]=Topic Type', fetch: 'airtable' },
 
+      'Airtable Session Query': { value: '{Airtable URL}/{Calendar Table ID}?filterByFormula=DATESTR(%7BDate%7D)="{Session Date (YYYY-MM-DD)}"', hide },
+      'Airtable Settings Query': { value: '{Airtable URL}/{Settings Table ID}?filterByFormula=SEARCH("{Program}", %7BProgram%7D)', hide },
+
       // STYLES
       'Global Styles': { value: ' ul [ margin-bottom: 1.5rem !important; ] ', part: 1 },
 

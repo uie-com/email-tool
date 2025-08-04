@@ -78,7 +78,7 @@ export function RemoteSource({ name, icon, refresh, edit, date, className, refre
 }
 
 export function RemoteStep(
-    { shouldAutoStart, stateContent, isReady, tryAction, tryUndo, isDone, allowsRedo, allowsUndo }:
+    { shouldAutoStart, stateContent, isReady, tryAction, tryUndo, isDone, allowsRedo, allowsUndo, noUndoOnRedo }:
         {
             shouldAutoStart: boolean,
             stateContent: StateContent,
@@ -87,7 +87,8 @@ export function RemoteStep(
             tryAction: (setMessage: (m: React.ReactNode) => void) => Promise<boolean | void>,
             tryUndo?: (setMessage: (m: React.ReactNode) => void) => Promise<boolean | void>,
             allowsRedo?: boolean,
-            allowsUndo?: boolean
+            allowsUndo?: boolean,
+            noUndoOnRedo?: boolean
         }) {
     const [editorState, setEditorState] = useContext(EditorContext);
     const [hadIssue, setHadIssue] = useContext(HadIssue);
@@ -157,7 +158,11 @@ export function RemoteStep(
     }
 
     const handleRedo = async () => {
-        await handleUndo();
+        if (!noUndoOnRedo)
+            await handleUndo();
+        else
+            setStepState('ready');
+
         await handleStart();
     }
 
