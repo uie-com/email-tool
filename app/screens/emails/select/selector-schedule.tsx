@@ -458,6 +458,9 @@ function EmailEntry({ email }: { email: Email, }) {
 
             setEditorStateDelayed({ step: 1, email: email });
         } else {
+            if (emailSave.email && !emailSave.email?.uuid)
+                emailSave.email.uuid = crypto.randomUUID();
+
             if (emailSave.email?.isPreliminary) {
                 console.log('Starting with a preliminary email: ', emailSave.email);
 

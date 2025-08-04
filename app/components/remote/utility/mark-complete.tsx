@@ -71,7 +71,7 @@ export function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) 
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
 
         if (editorState.email?.usesPostmarkTool) {
-            const success = await markPostmarkScheduleEmailReviewing(editorState.email);
+            const success = await markPostmarkScheduleEmailReviewing(editorState.email.uuid);
             if (!success) {
                 setMessage('Failed to mark email as not ready in Postmark Tool. Please try again.');
             }
@@ -105,7 +105,7 @@ export function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
 
         if (editorState.email?.usesPostmarkTool) {
-            const success = await markPostmarkScheduleEmailReady(editorState.email);
+            const success = await markPostmarkScheduleEmailReady(editorState.email.uuid);
             if (!success) {
                 setMessage('Failed to mark email as ready in Postmark Tool. Please try again.');
             }
