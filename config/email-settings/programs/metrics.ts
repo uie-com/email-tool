@@ -29,7 +29,7 @@ export const METRICS: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop', part: 1 },
 
             // SENDING  
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
 
             // STYLES
             'Link Color': { value: '#006f74', hide },

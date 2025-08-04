@@ -23,12 +23,10 @@ export async function markReviewedEmails(saves: Saves) {
     const reviewedEmails = [];
     for (const state of emails) {
         if (state.email?.isReviewed) return;
-        let emailID = state.email?.values?.resolveValue('Sent QA Email ID', true);
-        if (emailID === undefined || emailID === null || emailID === '')
-            emailID = state.email?.values?.resolveValue('QA Email ID', true);
+        let uuid = state.email?.uuid;
 
-        console.log("Checking email: " + emailID, state.email, 'Against reviewed IDs', reviewedIDs);
-        if (state.email && emailID && !state.email?.isReviewed && reviewedIDs.includes(emailID)) {
+        console.log("Checking email: " + uuid, state.email, 'Against reviewed IDs', reviewedIDs);
+        if (state.email && uuid && !state.email?.isReviewed && reviewedIDs.includes(uuid)) {
             state.email.isReviewed = true;
             reviewedEmails.push(state.email.name);
         }

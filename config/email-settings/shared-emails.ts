@@ -15,7 +15,7 @@ export const TODAYS_SESSION: Settings<ValuePart<any>> = {
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551152', hide },
 
             // SENDING
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
             'Subject': { value: '{Program Name}: {Week}: {Topic}: ​​{Title}' },
 
             // DRIVE
@@ -35,7 +35,7 @@ export const BEFORE_WEEK: Settings<ValuePart<any>> = {
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9551147', hide },
 
             // SENDING
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
             'Subject': { value: '{Program Name}: {Next Week}: Topics {{Next Week} Session #1 Topic (#)} + {{Next Week} Session #2 Topic (#)}' },
 
             // CONTENT
@@ -90,7 +90,7 @@ export const CERTIFICATE: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Certificate', part: 2 },
 
             // SENDING
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
             'Subject': { value: 'Your Certificate for the {Program Name} Online Course' },
 
             // TEMPLATE
@@ -137,7 +137,7 @@ export const CONTENT: Settings<ValuePart<any>> = {
 export const MESSAGE: Settings<ValuePart<any>> = {
     'Email Type:Message': {
         settings: {
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
             'Template': { value: '/workshop/content.html', part: 1 },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
         },
@@ -159,6 +159,7 @@ export const RECEIPT: Settings<ValuePart<any>> = {
             'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
 
             'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
+            'Send Type': { value: 'AUTOMATION', hide },
 
             'Variation Variable': { value: 'Price Type', hide },
             'Variation Values': { value: 'Individual, Team, Unemployed', hide },
@@ -209,6 +210,8 @@ export const CONFIRMATION: Settings<ValuePart<any>> = {
             'Is Excluded From QA Checklist': { value: 'Is Excluded From QA Checklist', hide },
 
             'Is Ongoing Automation': { value: 'Is Ongoing Automation', hide },
+            'Send Type': { value: 'AUTOMATION', hide },
+
 
         },
         'Program:Visions': { settings: { 'Confirmation Message': { value: `Together, let's bring to focus a clear vision of highly desirable experiences.` } } },

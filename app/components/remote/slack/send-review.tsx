@@ -40,6 +40,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
         const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
+        const uuid = editorState.email?.uuid ?? '';
 
         const res = await createTicketInSlack(
             notionUrl,
@@ -47,7 +48,8 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             editorState.email?.values?.resolveValue('Subject', true),
             slackEmailId,
             userId,
-            priorityFlag
+            priorityFlag,
+            uuid
         );
 
         console.log("Created ticket in slack", res);
@@ -74,7 +76,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const handleDeleteTicket = async (forceRefresh: boolean = false) => {
         if (isPostPending) return;
         setIsPostPending(true);
-        const res = await deleteEmailInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+        const res = await deleteEmailInSlack(editorState.email?.uuid ?? '');
         console.log("Deleted email in slack", res);
 
         setHasPosted(false);

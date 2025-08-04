@@ -13,7 +13,7 @@ export const RESEARCH: Settings<ValuePart<any>> = {
             'Program Website': { value: 'https://ux-research.centercentre.com', hide },
 
             // SENDING
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
 
             // AIRTABLE
             'Calendar Table ID': { value: 'tblZQZRiPOJz4MTkv', hide },

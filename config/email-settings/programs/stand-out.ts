@@ -36,7 +36,7 @@ export const STAND_OUT: Settings<ValuePart<any>> = {
         'Email Type:Today\'s Session': {
             settings: {
                 'Email Name': { value: '{Session Type}', part: 2 },
-                'Send Type': { value: 'AUTOMATION', hide },
+                'Send Type': { value: 'POSTMARK', hide },
                 'Uses Collab Notes': { value: 'Uses Collab Notes', hide },
             },
             'Session Type:Live Discussion': {

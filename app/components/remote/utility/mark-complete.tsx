@@ -1,4 +1,5 @@
 import { EditorContext } from "@/domain/context";
+import { markPostmarkScheduleEmailReady, markPostmarkScheduleEmailReviewing } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { updateNotionCard } from "@/domain/integrations/notion/notionActions";
 import { markEmailSentInSlack, markEmailUnsentInSlack } from "@/domain/integrations/slack/slackActions";
 import { Button, Loader, ThemeIcon } from "@mantine/core";
@@ -54,7 +55,7 @@ export function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             rightContent: null
         }
     };
-    //
+
     const isReady = () => {
         return editorState.email?.isReviewed !== undefined && editorState.email?.isReviewed === true;
     }
@@ -69,21 +70,26 @@ export function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) 
 
     const tryUndo = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
 
-        const slackRes = await markEmailUnsentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+        if (editorState.email?.usesPostmarkTool) {
+            const success = await markPostmarkScheduleEmailReviewing(editorState.email);
+            if (!success) {
+                setMessage('Failed to mark email as not ready in Postmark Tool. Please try again.');
+            }
+        }
 
+        const slackRes = await markEmailUnsentInSlack(editorState.email?.uuid ?? '');
         if (!slackRes.success) {
             console.log("Error marking email unsent in slack", slackRes.error);
-            return setMessage('Error marking email unsent in slack: ' + slackRes.error);
+            setMessage('Error marking email unsent in slack: ' + slackRes.error);
         }
         console.log("Marked email unsent in slack", slackRes);
 
         const notionRes = await updateNotionCard(editorState.email?.notionId ?? '', editorState.email?.referenceDocURL ?? '', false);
         if (!notionRes.success) {
             console.log("Error marking email unsent in notion", notionRes.error);
-            return setMessage('Error marking email unsent in notion: ' + notionRes.error);
+            setMessage('Error marking email unsent in notion: ' + notionRes.error);
         }
         console.log("Marked email unsent in notion", notionRes);
-
 
         setEditorState((prev) => ({
             ...prev,
@@ -98,18 +104,24 @@ export function MarkComplete({ shouldAutoStart }: { shouldAutoStart: boolean }) 
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
 
-        const slackRes = await markEmailSentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+        if (editorState.email?.usesPostmarkTool) {
+            const success = await markPostmarkScheduleEmailReady(editorState.email);
+            if (!success) {
+                setMessage('Failed to mark email as ready in Postmark Tool. Please try again.');
+            }
+        }
 
+        const slackRes = await markEmailSentInSlack(editorState.email?.uuid ?? '');
         if (!slackRes.success) {
             console.log("Error marking email sent in slack", slackRes.error);
-            return setMessage('Error marking email sent in slack: ' + slackRes.error);
+            setMessage('Error marking email sent in slack: ' + slackRes.error);
         }
         console.log("Marked email sent in slack", slackRes);
 
         const notionRes = await updateNotionCard(editorState.email?.notionId ?? '', editorState.email?.referenceDocURL ?? '', true);
         if (!notionRes.success) {
             console.log("Error marking email sent in notion", notionRes.error);
-            return setMessage('Error marking email sent in notion: ' + notionRes.error);
+            setMessage('Error marking email sent in notion: ' + notionRes.error);
         }
         console.log("Marked email sent in notion", notionRes);
 

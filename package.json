@@ -48,6 +48,7 @@
     "ssh2-sftp-client": "^12.0.1",
     "tabler": "^1.0.0",
     "tailwind-merge": "^3.2.0",
+    "uuid": "^11.1.0",
     "validatorjs": "^3.22.1"
   },
   "devDependencies": {

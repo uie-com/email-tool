@@ -63,7 +63,6 @@ export function TestCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) 
     const isReady = () => {
         return editorState.email?.messageId !== undefined && editorState.email?.messageId.length > 0
             && editorState.email?.campaignId !== undefined && editorState.email?.campaignId.length > 0;
-
     }
 
     const isDone = () => {

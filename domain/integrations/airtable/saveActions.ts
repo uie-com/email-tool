@@ -191,11 +191,11 @@ async function checkIfEmailExists(emailName?: string): Promise<string | undefine
 
 /**
  * This function checks if an email has been reviewed in Airtable.
- * @param emailId The ID of the email to check.
+ * @param uuid The ID of the email to check.
  * @returns A promise resolving to true if the email has been reviewed, false otherwise.
  */
-export async function isEmailReviewed(emailId: string): Promise<boolean> {
-    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', `?filterByFormula={Email ID}="${emailId}"`, undefined, false);
+export async function isEmailReviewed(uuid: string): Promise<boolean> {
+    const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', `?filterByFormula={UUID}="${uuid}"`, undefined, false);
 
     if (!response.ok || response.status !== 200)
         return false;
@@ -215,7 +215,7 @@ export async function isEmailReviewed(emailId: string): Promise<boolean> {
 
 export async function listReviewedEmails(): Promise<string[]> {
     // Limit to the most recent 100 reviewed emails
-    const formula = '?fields[]=Email ID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
+    const formula = '?fields[]=UUID&sort[0][field]=Last Modified&sort[0][direction]=desc&maxRecords=100';
     const response = await airtableFetch(AT_REVIEW_BASE, AT_REVIEW_TABLE, 'GET', formula, undefined, true, 60, 'reviewed-emails');
 
 
@@ -228,7 +228,7 @@ export async function listReviewedEmails(): Promise<string[]> {
         const data = await response.json();
         console.log('[REVIEW-POLL] Found ' + data.records.length + ' reviewed emails.');
 
-        return data.records.map((record: any) => record.fields['Email ID']);
+        return data.records.map((record: any) => record.fields['UUID']);
     }
     catch (error) {
         console.log('Error checking if record exists:', error);

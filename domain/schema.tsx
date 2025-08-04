@@ -33,6 +33,7 @@ export class Email {
 
     airtableId?: string; // Airtable ID once uploaded
     name?: string; // unique name of the email
+    uuid?: string; // unique ID of the email
 
     values?: Values;
 
@@ -53,6 +54,7 @@ export class Email {
     sentTest?: string; // Whether the test email has been sent
     hasRendered?: string; // Whether the template in Active Campaign has been rendered by Save + Exiting
     hasPostmarkAction?: string; // Whether the email has been sent to Postmark
+    usesPostmarkTool?: boolean; // Whether the email was sent to Postmark Tool
     hasWaitAction?: boolean; // Whether the email has a wait action
     hasSentReview?: boolean; // Whether the email has a pending review ticket
     isDevReviewed?: boolean; // Whether the email has been reviewed

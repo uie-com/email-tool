@@ -11,5 +11,8 @@ export const REVIEW_ACTIVE_REFRESH_INTERVAL = 1000 * 2.5;
 export const AT_EMAIL_BASE = 'app5agCZtiMWKiNYs';
 export const AT_EMAIL_TABLE = 'tblb67ybgW57tuVM3';
 
+export const AT_SCHEDULE_BASE = 'app1KqzidZW6oePcC';
+export const AT_SCHEDULE_TABLE = 'tblb7LRhKpSB1YGYH';
+
 export const AT_REVIEW_BASE = 'app5agCZtiMWKiNYs';
 export const AT_REVIEW_TABLE = 'tbl7ivrKECAGhN968';

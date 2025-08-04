@@ -9,7 +9,7 @@ export async function markEmailDone(editorState?: EditorState) {
         return;
     }
 
-    const slackRes = await markEmailSentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+    const slackRes = await markEmailSentInSlack(editorState.email?.uuid ?? '');
 
     if (!slackRes.success) {
         console.log("Error marking email sent in slack", slackRes.error);
@@ -29,7 +29,7 @@ export async function markEmailIncomplete(editorState?: EditorState) {
         return;
     }
 
-    const slackRes = await markEmailUnsentInSlack(editorState.email?.values?.resolveValue('Email ID', true));
+    const slackRes = await markEmailUnsentInSlack(editorState.email?.uuid ?? '');
 
     if (!slackRes.success) {
         console.log("Error marking email unsent in slack", slackRes.error);

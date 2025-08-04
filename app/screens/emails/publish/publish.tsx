@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { AutomationPublisher } from "./publish-automation";
 import { CampaignPublisher } from "./publish-campaign";
+import { PostmarkPublisher } from "./publish-postmark";
 
 
 export function EmailPublisher() {
@@ -58,6 +59,11 @@ export function EmailPublisher() {
                 {
                     sendType === 'automation' ?
                         <AutomationPublisher />
+                        : null
+                }
+                {
+                    sendType === 'postmark' ?
+                        <PostmarkPublisher />
                         : null
                 }
             </Flex>

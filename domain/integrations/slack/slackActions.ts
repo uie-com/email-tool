@@ -7,9 +7,10 @@ type SlackWebhookPayload = {
     Subject: string
     Priority: string
     EmailId: string
+    UUID: string
 }
 
-export async function createEmailInSlack(notion: string | undefined, referenceDoc: string, subject: string, emailId: string, reviewer: string, priorityFlag: string) {
+export async function createEmailInSlack(notion: string | undefined, referenceDoc: string, subject: string, emailId: string, reviewer: string, priorityFlag: string, UUID: string) {
     const slackData: SlackWebhookPayload = {
         Notion: notion ?? 'https://www.notion.so/centercentre/Email-Calendar-View-087ddad9c1d840fc92dd19179c01f89d?pvs=4',
         Reviewer: reviewer,
@@ -17,6 +18,7 @@ export async function createEmailInSlack(notion: string | undefined, referenceDo
         Subject: subject,
         Priority: priorityFlag,
         EmailId: emailId,
+        UUID
     };
 
 
@@ -48,11 +50,11 @@ export async function createEmailInSlack(notion: string | undefined, referenceDo
     return { success: true };
 }
 
-export async function deleteEmailInSlack(emailId: string) {
+export async function deleteEmailInSlack(uuid: string) {
 
-    if (!emailId) {
-        console.error('Email ID is required to delete the email in Slack');
-        return { success: false, error: 'Email ID is required' };
+    if (!uuid) {
+        console.error('UUID is required to delete the email in Slack');
+        return { success: false, error: 'UUID is required' };
     }
 
     const webhookUrl = process.env.SLACK_DELETE_WEBHOOK_URL;
@@ -60,7 +62,7 @@ export async function deleteEmailInSlack(emailId: string) {
         throw new Error('Missing SLACK_DELETE_WEBHOOK_URL in environment variables');
     }
 
-    console.log('Deleting email in Slack with ID:', emailId);
+    console.log('Deleting email in Slack with ID:', uuid);
 
 
     const response = await fetch(webhookUrl, {
@@ -68,7 +70,7 @@ export async function deleteEmailInSlack(emailId: string) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ emailId: emailId }),
+        body: JSON.stringify({ uuid }),
     });
 
     if (!response.ok) {
@@ -80,10 +82,10 @@ export async function deleteEmailInSlack(emailId: string) {
     return { success: true };
 }
 
-export async function markEmailSentInSlack(emailId: string) {
-    if (!emailId) {
-        console.error('Email ID is required to mark the email as sent in Slack');
-        return { success: false, error: 'Email ID is required' };
+export async function markEmailSentInSlack(uuid: string) {
+    if (!uuid) {
+        console.error('UUID is required to mark the email as sent in Slack');
+        return { success: false, error: 'UUID is required' };
     }
 
     const webhookUrl = process.env.SLACK_SENT_WEBHOOK_URL;
@@ -91,14 +93,14 @@ export async function markEmailSentInSlack(emailId: string) {
         throw new Error('Missing SLACK_SENT_WEBHOOK_URL in environment variables');
     }
 
-    console.log('Marking email as sent in Slack with ID:', emailId);
+    console.log('Marking email as sent in Slack with ID:', uuid);
 
     const response = await fetch(webhookUrl, {
         method: 'POST', // Slack webhooks typically use POST
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ emailId: emailId }),
+        body: JSON.stringify({ uuid }),
     });
 
     if (!response.ok) {
@@ -110,10 +112,10 @@ export async function markEmailSentInSlack(emailId: string) {
     return { success: true };
 }
 
-export async function markEmailUnsentInSlack(emailId: string) {
-    if (!emailId) {
-        console.error('Email ID is required to mark the email as unsent in Slack');
-        return { success: false, error: 'Email ID is required' };
+export async function markEmailUnsentInSlack(uuid: string) {
+    if (!uuid) {
+        console.error('UUID is required to mark the email as unsent in Slack');
+        return { success: false, error: 'UUID is required' };
     }
 
     const webhookUrl = process.env.SLACK_UNDO_SENT_WEBHOOK_URL;
@@ -121,14 +123,14 @@ export async function markEmailUnsentInSlack(emailId: string) {
         throw new Error('Missing SLACK_UNDO_SENT_WEBHOOK_URL in environment variables');
     }
 
-    console.log('Marking email as unsent in Slack with ID:', emailId);
+    console.log('Marking email as unsent in Slack with ID:', uuid);
 
     const response = await fetch(webhookUrl, {
         method: 'POST', // Slack webhooks typically use POST
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ emailId: emailId }),
+        body: JSON.stringify({ uuid }),
     });
 
     if (!response.ok) {

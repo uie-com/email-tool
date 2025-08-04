@@ -30,7 +30,7 @@ export const WIN: Settings<ValuePart<any>> = {
             'Font': { value: 'arial', hide },
 
             // SENDING
-            'Send Type': { value: 'AUTOMATION', hide },
+            'Send Type': { value: 'POSTMARK', hide },
 
             // FOOTER
             'Footer Email Reason': { value: `You're receiving this email because you're a member of the {Cohort (First Word)} cohort of the {Program Name} Online Course.` },
