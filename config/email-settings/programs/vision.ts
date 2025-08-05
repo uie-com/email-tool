@@ -6,7 +6,7 @@ const hide = true;
 
 
 export const VISION: Settings<ValuePart<any>> = {
-    'Program:Vision': {
+    'Program:Visions': {
         settings: {
             // PROGRAM
             'Program Name': { value: 'Craft + Lead a Strategic UX Vision', hide },

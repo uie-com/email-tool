@@ -108,6 +108,8 @@ export const VESSEL: Settings<ValuePart<any>> = {
             'Template': { value: '/workshop/vessel.html', part: 1 },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9518240', hide },
 
+            'Banner': { value: '{Promo Banner}', hide },
+            'Banner Alt': { value: '{Promo Banner Alt}', hide },
 
             'Button': { value: '{Program Name} Course Details' },
 
@@ -125,6 +127,9 @@ export const CONTENT: Settings<ValuePart<any>> = {
             'Email Name': { value: 'Content {Send To}', part: 1 },
             'Template': { value: '/workshop/content.html', part: 1 },
             'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9553025', hide },
+
+            'Banner': { value: '{Promo Banner}', hide },
+            'Banner Alt': { value: '{Promo Banner Alt}', hide },
 
             'Variation Variable': { value: 'Send To', hide },
             'Variation Values': { value: '{Audience}', hide },

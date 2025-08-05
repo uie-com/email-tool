@@ -12,7 +12,7 @@ import moment, { Moment } from "moment-timezone";
 import { useMemo, useState } from "react";
 
 const DEBUG = false;
-const prependVariables = [new Variable('{Send Date}', 0), new Variable('{Subject}', 0), new Variable('{Preview}', 0)];
+const prependVariables = [new Variable('{Send Date}', 0), new Variable('{Subject}', 0), new Variable('{Preview}', 0), new Variable('{Send Type}', 0)];
 const appendVariables = [new Variable('{Global Styles}', 0)];
 
 export function VariableForm({ variables, values, setValue, showHidden, highlightMissing }: { variables: Variables, values?: Values, setValue: (values: Values) => void, showHidden?: boolean, highlightMissing: boolean }) {

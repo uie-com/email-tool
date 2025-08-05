@@ -150,8 +150,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
     },
     'Send Type:CAMPAIGN': {
         settings: {
-            'Banner': { value: '{Promo Banner}', hide },
-            'Banner Alt': { value: '{Promo Banner Alt}', hide },
             'Footer': { value: '{Marketing Footer}', hide },
         }
     },
