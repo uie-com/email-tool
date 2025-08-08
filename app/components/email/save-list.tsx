@@ -407,6 +407,7 @@ function EmailItem({ editorState, selected, setSelectedEmail, setPinSidebar, set
         newEmail.notionURL = editorState.email?.notionURL;
         newEmail.notionId = editorState.email?.notionId;
         newEmail.referenceDocURL = editorState.email?.referenceDocURL;
+        newEmail.uuid = crypto.randomUUID();
 
 
         userValues.initialValues.map((value) => {

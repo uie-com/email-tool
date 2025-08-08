@@ -113,6 +113,17 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
     if (typeof value === 'string') {
         value = value as string;
 
+        // Separate iterations with characters ex. (Separate: + )
+        let separator = '';
+        const separateTransform = remainingTransforms.find(transform =>
+            transform.startsWith('Separate: ')
+        );
+        if (separateTransform) {
+            separator = separateTransform.substring(9, separateTransform.length);
+            value = value.split(separator).map((v: string) => v.trim()).join(separator);
+        }
+        remainingTransforms = remainingTransforms.filter(transform => transform !== separateTransform);
+
         // Iterate variable: {Text to Repeat (Iterate x{Number})}
         // Increments all '#1's in original string to '#2', '#3', etc.
         // Inside of incremental value, use [] instead of {} for variables to be resolved _after_ iteration
@@ -124,7 +135,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             const textToRepeat = value;
             const repeatedText = Array.from({ length: number }, (_, i) => {
                 return textToRepeat.replaceAll('#1', '#' + (i + 1).toString()).replaceAll('|[', '{|{').replaceAll(']|', '}|}').replaceAll('[', '{').replaceAll(']', '}').replaceAll('{|{', '[').replaceAll('}|}', ']');
-            }).join('');
+            }).join(separator);
             if (context.initialValues.length > 0)
                 value = new Variables(repeatedText).resolveWith(context);
             else
