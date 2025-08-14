@@ -4,11 +4,11 @@ import { AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE } from "@/config/save-settings";
 import { airtableFetch } from "./airtableActions";
 
 
-export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, subject: string, automationId: string, sendDate: Date, templateId: string, tag: string): Promise<boolean> {
+export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, subject: string, automationId: string, sendDate: Date, templateId: string, tag: string): Promise<string | undefined> {
 
     if (!emailId || !subject || !automationId || !sendDate || !templateId || !uuid) {
         console.error('Missing required values to add email to schedule');
-        return false;
+        return undefined;
     }
 
     const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'POST', undefined, JSON.stringify(
@@ -33,11 +33,11 @@ export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, 
 
     if (!response.ok) {
         console.error('Failed to add email to schedule', await response.text());
-        return false;
+        return undefined;
     }
 
     const data = await response.json();
-    return data.records && data.records.length > 0 && data.records[0].id ? true : false;
+    return data.records && data.records.length > 0 ? data.records[0].id : undefined;
 }
 
 export async function testPostmarkScheduleEmail(uuid?: string): Promise<boolean> {
@@ -99,14 +99,14 @@ export async function setPostmarkScheduleEmailStatus(status: string, uuid?: stri
 }
 
 
-export async function removeEmailFromPostmarkSchedule(uuid?: string): Promise<boolean> {
+export async function removeEmailFromPostmarkSchedule(id?: string): Promise<boolean> {
 
-    if (!uuid) {
+    if (!id) {
         console.error('Missing UUID to remove email from schedule');
         return false;
     }
 
-    const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'DELETE', uuid);
+    const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'DELETE', '/' + id);
 
     if (!response.ok) {
         console.error('Failed to remove email from schedule');

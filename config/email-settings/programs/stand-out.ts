@@ -26,6 +26,7 @@ export const STAND_OUT: Settings<ValuePart<any>> = {
             'Footer Color': { value: '#BBBBBB', hide },
 
             // SENDING
+            'Send Type': { value: 'POSTMARK', hide },
             'Automation ID': { value: '226', hide },
 
             // FOOTER

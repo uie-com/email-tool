@@ -55,6 +55,7 @@ export class Email {
     hasRendered?: string; // Whether the template in Active Campaign has been rendered by Save + Exiting
     hasPostmarkAction?: string; // Whether the email has been sent to Postmark
     usesPostmarkTool?: boolean; // Whether the email was sent to Postmark Tool
+    postmarkToolId?: string; // ID of the email in Postmark Tool
     hasWaitAction?: boolean; // Whether the email has a wait action
     hasSentReview?: boolean; // Whether the email has a pending review ticket
     isDevReviewed?: boolean; // Whether the email has been reviewed

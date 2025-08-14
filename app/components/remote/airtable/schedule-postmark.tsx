@@ -2,7 +2,7 @@ import { SCHEDULE_AIRTABLE_LINK } from "@/config/integration-settings";
 import { EditorContext } from "@/domain/context";
 import { addEmailToPostmarkSchedule, removeEmailFromPostmarkSchedule, testPostmarkScheduleEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { openPopup } from "@/domain/interface/popup";
-import { Button, Loader, ThemeIcon } from "@mantine/core";
+import { ActionIcon, Button, Loader, ThemeIcon } from "@mantine/core";
 import { IconExternalLink, IconMailbox, IconMailCog, IconMailStar, IconMailX } from "@tabler/icons-react";
 import { useContext } from "react";
 import { RemoteStep, StateContent } from "../step-template";
@@ -50,7 +50,10 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
             icon: <ThemeIcon w={50} h={50} color="green.6"><IconMailbox size={30} strokeWidth={2.5} /></ThemeIcon>,
             title: 'Added to Postmark Tool',
             subtitle: 'Queued email for testing and review.',
-            rightContent: null
+            rightContent:
+                <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => openPopup(SCHEDULE_AIRTABLE_LINK)} >
+                    <IconExternalLink />
+                </ActionIcon>
         }
     };
 
@@ -99,6 +102,7 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
                     hasPostmarkAction: templateId,
                     hasWaitAction: true,
                     usesPostmarkTool: true,
+                    postmarkToolId: success
                 }
             }));
 
@@ -113,10 +117,10 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
     }
 
     const handleUndo = async () => {
-        const uuid = editorState.email?.uuid;
-        if (!uuid || !editorState.email) return;
+        const id = editorState.email?.postmarkToolId;
+        if (!id || !editorState.email) return;
 
-        const deleteSuccess = await removeEmailFromPostmarkSchedule(uuid);
+        const deleteSuccess = await removeEmailFromPostmarkSchedule(id);
         console.log("Removed email from Postmark Tool: " + deleteSuccess);
 
         if (!deleteSuccess) return;
@@ -127,6 +131,7 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
                 ...prev.email,
                 sentTest: undefined,
                 hasPostmarkAction: undefined,
+                postmarkToolId: undefined,
                 hasWaitAction: false,
                 usesPostmarkTool: false,
             }
