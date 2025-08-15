@@ -55,7 +55,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
             usingPostmarkScheduler = 'Yes';
             const scheduledItem = await getPostmarkScheduledEmail(uuid);
             if (scheduledItem) {
-                subject = `\nSubject: ${scheduledItem.fields['Subject']}\nTemplate Name: ${scheduledItem.fields['Template']}\nAutomation Name: ${scheduledItem.fields['Automation']}\nEmail Tag: ${scheduledItem.fields['Email Tag']}\nScheduled For: ${moment(scheduledItem.fields['Schedule Date']).format('YYYY-MM-DD hh:mm A')}\n`;
+                subject = `\n\n📣 Subject: ${scheduledItem.fields['Subject']}\n\n📆 Scheduled For: ${moment(scheduledItem.fields['Schedule Date']).format('YYYY-MM-DD hh:mm A')}\n\n📧 Template Name: ${scheduledItem.fields['Template']}\n\n🧑‍🧑‍🧒‍🧒 Automation Name: ${scheduledItem.fields['Automation']}\n\n🔖 Email Tag: ${scheduledItem.fields['Email Tag']}\n\n`;
             }
         }
 
