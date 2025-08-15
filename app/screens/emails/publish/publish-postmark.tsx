@@ -35,11 +35,11 @@ export function PostmarkPublisher() {
             <CreateTemplate shouldAutoStart={false} />
             <RenderTemplate shouldAutoStart={false} />
 
-            <SchedulePostmark shouldAutoStart={false} />
+            <SchedulePostmark shouldAutoStart={true} />
 
             <MarkReviewed shouldAutoStart={false} />
 
-            <SendReview shouldAutoStart={editorState.email?.hasSentReview ?? false} />
+            <SendReview parentShouldAutoStart={editorState.email?.hasSentReview ?? false} />
             <MarkComplete shouldAutoStart={false} />
             {
                 editorState.email?.isSentOrScheduled ?

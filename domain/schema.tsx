@@ -57,6 +57,7 @@ export class Email {
     usesPostmarkTool?: boolean; // Whether the email was sent to Postmark Tool
     postmarkToolId?: string; // ID of the email in Postmark Tool
     hasWaitAction?: boolean; // Whether the email has a wait action
+    hasPostedReview?: boolean; // Whether the email has been posted to Slack for review
     hasSentReview?: boolean; // Whether the email has a pending review ticket
     isDevReviewed?: boolean; // Whether the email has been reviewed
     isReviewed?: boolean; // Whether the email has been reviewed

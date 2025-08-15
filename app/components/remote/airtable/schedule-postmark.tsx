@@ -1,5 +1,6 @@
 import { SCHEDULE_AIRTABLE_LINK } from "@/config/integration-settings";
 import { EditorContext } from "@/domain/context";
+import { SavedEmailsContext } from "@/domain/email/save/saveData";
 import { addEmailToPostmarkSchedule, removeEmailFromPostmarkSchedule, testPostmarkScheduleEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { openPopup } from "@/domain/interface/popup";
 import { ActionIcon, Button, Loader, ThemeIcon } from "@mantine/core";
@@ -9,6 +10,7 @@ import { RemoteStep, StateContent } from "../step-template";
 
 export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [editorState, setEditorState] = useContext(EditorContext);
+    const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const stateContent: StateContent = {
         waiting: {
@@ -51,7 +53,7 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
             title: 'Added to Postmark Tool',
             subtitle: 'Queued email for testing and review.',
             rightContent:
-                <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => openPopup(SCHEDULE_AIRTABLE_LINK)} >
+                <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => openPopup(SCHEDULE_AIRTABLE_LINK + '/' + editorState.email?.postmarkToolId)} >
                     <IconExternalLink />
                 </ActionIcon>
         }
@@ -75,13 +77,19 @@ export function SchedulePostmark({ shouldAutoStart }: { shouldAutoStart: boolean
 
         if (!email || !values) return setMessage('No email found.');
 
-        const uuid = email.uuid;
+        let uuid = email.uuid;
         const emailId = values.resolveValue('Email ID', true);
         const subject = values.resolveValue('Subject', true);
         const automationId = values.resolveValue('Automation ID', true);
         const sendDate = new Date(values.resolveValue('Send Date', true)).toISOString();
         const templateId = email.templateId;
         const tag = values.resolveValue('Email Tag', true) || 'default';
+
+        if (editorState.email && !uuid) {
+            console.log('No UUID found for email');
+            editorState.email.uuid = crypto.randomUUID();
+            await editEmail(editorState);
+        }
 
         if (!emailId || !subject || !automationId || !sendDate || !templateId || !uuid) {
             console.log('Missing required values to add email to schedule');

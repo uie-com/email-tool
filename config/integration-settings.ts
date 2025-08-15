@@ -13,4 +13,4 @@ export const PRIORITY_ICONS = ['⚪️', '🔵', '🔴'];
 
 export const SLACK_LIST_URL = 'slack://list?team=T025J4SHK&id=F08GTALT9GX';
 
-export const SCHEDULE_AIRTABLE_LINK = 'https://airtable.com/app1KqzidZW6oePcC/tblb7LRhKpSB1YGYH/viwHqcQZ0NdT2Oi8K?blocks=hide';
+export const SCHEDULE_AIRTABLE_LINK = 'https://airtable.com/app1KqzidZW6oePcC/tblb7LRhKpSB1YGYH/viwHqcQZ0NdT2Oi8K';

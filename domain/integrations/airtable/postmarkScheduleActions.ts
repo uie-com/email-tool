@@ -98,11 +98,29 @@ export async function setPostmarkScheduleEmailStatus(status: string, uuid?: stri
     return updateData.records && updateData.records.length > 0 && updateData.records[0].id === recordId ? true : false;
 }
 
+export async function getPostmarkScheduledEmail(uuid?: string): Promise<any> {
+
+    if (!uuid) {
+        console.error('Missing UUID to get email from schedule');
+        return undefined;
+    }
+
+    const response = await airtableFetch(AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE, 'GET', `?filterByFormula=({UUID}='${uuid}')`);
+
+    if (!response.ok) {
+        console.error('Failed to fetch email from schedule', await response.text());
+        return undefined;
+    }
+
+    const data = await response.json();
+    return data.records && data.records.length > 0 ? data.records[0] : undefined;
+}
+
 
 export async function removeEmailFromPostmarkSchedule(id?: string): Promise<boolean> {
 
     if (!id) {
-        console.error('Missing UUID to remove email from schedule');
+        console.error('Missing ID to remove email from schedule');
         return false;
     }
 
@@ -114,4 +132,4 @@ export async function removeEmailFromPostmarkSchedule(id?: string): Promise<bool
     }
 
     return true;
-}   
+}

@@ -349,9 +349,9 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             transform.startsWith('pre:')
         );
         if (prefixTransform && value) {
-            const prefix = prefixTransform.substring(4, prefixTransform.length - 1);
+            const prefix = prefixTransform.substring(4, prefixTransform.length);
             if (value.trim() !== '') {
-                value = prefix + value;
+                value = prefix + ' ' + value;
             } else {
                 value = '';
             }

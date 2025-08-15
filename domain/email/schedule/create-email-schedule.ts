@@ -38,6 +38,7 @@ export function createEmailsFromSession(session: Session, schedule: Settings<str
                 });
 
                 emails[emailType] = new Email(emailValues);
+                emails[emailType].uuid = crypto.randomUUID();
             });
 
         } else if (sessionValues.hasValueForOf(keyName, keyValue) && schedule[key] as Settings<string> !== undefined) {

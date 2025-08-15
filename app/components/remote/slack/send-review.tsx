@@ -2,17 +2,19 @@ import { MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_I
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { EditorContext } from "@/domain/context";
 import { SavedEmailsContext, isPreApprovedTemplate, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
+import { getPostmarkScheduledEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { updateNotionCard } from "@/domain/integrations/notion/notionActions";
 import { calculatePriority, getLastReviewer, getNextReviewer, logReviewer } from "@/domain/integrations/slack/reviews";
-import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack } from "@/domain/integrations/slack/slackActions";
+import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack, postPostmarkScheduledEmailInSlack } from "@/domain/integrations/slack/slackActions";
 import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Image, Loader, Select, Text, ThemeIcon } from "@mantine/core";
-import { IconArrowBackUp, IconCheck, IconExternalLink, IconMessageCheck, IconMessageSearch, IconMessageX } from "@tabler/icons-react";
+import { IconArrowBackUp, IconCheck, IconExternalLink, IconMessage, IconMessageCheck, IconMessageSearch, IconMessageX } from "@tabler/icons-react";
+import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RemoteStep, StateContent } from "../step-template";
 
 
-export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
+export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: boolean }) {
 
     const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -24,7 +26,11 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     const [priority, setPriority] = useState<number>(defaultPriority);
 
     const [isPostPending, setIsPostPending] = useState(false);
-    const [hasPosted, setHasPosted] = useState(false);
+    const [hasPosted, setHasPosted] = useState(editorState.email?.hasPostedReview ?? false);
+    const [shouldAutoStart, setShouldAutoStart] = useState(parentShouldAutoStart);
+
+
+    const sendButton = useRef<HTMLButtonElement>(null);
 
     const slackEmailId = useMemo(() => {
         return editorState.email?.values?.resolveValue('Sent QA Email ID', true) ?? editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
@@ -41,15 +47,27 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         const notionUrl = editorState.email?.notionURL ?? '';
         const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
         const uuid = editorState.email?.uuid ?? '';
+        let subject = editorState.email?.values?.resolveValue('Subject', true) ?? '';
+        let usingPostmarkScheduler = 'No';
+
+        const sendType = editorState.email?.values?.getCurrentValue('Send Type');
+        if (sendType === 'POSTMARK') {
+            usingPostmarkScheduler = 'Yes';
+            const scheduledItem = await getPostmarkScheduledEmail(uuid);
+            if (scheduledItem) {
+                subject = `\nSubject: ${scheduledItem.fields['Subject']}\nTemplate Name: ${scheduledItem.fields['Template']}\nAutomation Name: ${scheduledItem.fields['Automation']}\nEmail Tag: ${scheduledItem.fields['Email Tag']}\nScheduled For: ${moment(scheduledItem.fields['Schedule Date']).format('YYYY-MM-DD hh:mm A')}\n`;
+            }
+        }
 
         const res = await createTicketInSlack(
             notionUrl,
             editorState.email?.referenceDocURL ?? '',
-            editorState.email?.values?.resolveValue('Subject', true),
+            subject,
             slackEmailId,
             userId,
             priorityFlag,
-            uuid
+            uuid,
+            usingPostmarkScheduler
         );
 
         console.log("Created ticket in slack", res);
@@ -62,15 +80,29 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
         console.log("Updated Notion status to started", updateRes);
 
         setHasPosted(true);
+
         setEditorState((prev) => ({
             ...prev,
             email: {
                 ...prev.email,
-                hasSentReview: true,
+                hasPostedReview: true,
+                hasSentReview: false,
+
                 values: new Values(editorState.email?.values?.initialValues ?? []),
             }
         }));
+
+        if (sendType === 'POSTMARK') {
+            setTimeout(() => {
+                if (sendButton.current) {
+                    sendButton.current.click();
+                }
+            }, 2500);
+        }
+
+
         setIsPostPending(false);
+
     }
 
     const handleDeleteTicket = async (forceRefresh: boolean = false) => {
@@ -84,6 +116,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             ...prev,
             email: {
                 ...prev.email,
+                hasPostedReview: false,
                 hasSentReview: false,
             }
         }));
@@ -117,10 +150,19 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
     }
 
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
+        const uuid = editorState.email?.uuid ?? '';
+
+        if (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK') {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const autoPost = await postPostmarkScheduledEmailInSlack(uuid);
+            console.log("Posted postmark scheduled email in slack", autoPost);
+        }
+
         setEditorState((prev) => ({
             ...prev,
             email: {
                 ...prev.email,
+                hasPostedReview: true,
                 hasSentReview: true,
             }
         }));
@@ -146,6 +188,7 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             ...prev,
             email: {
                 ...prev.email,
+                hasPostedReview: true,
                 hasSentReview: true,
                 isReviewed: true,
             }
@@ -172,8 +215,12 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
             title: 'Create Review Ticket',
             subtitle: 'Create Slack review ticket for \'' + slackEmailId + '\'.',
             rightContent:
-                !hasPosted ? <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending} > Already has Ticket</Button> :
-                    <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
+                !hasPosted ?
+                    <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending} > Already has Ticket</Button> :
+                    (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK' ?
+                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconMessage />} ref={sendButton} >Send</Button>
+                        : <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
+                    )
             ,
             expandedContent:
                 <Flex gap={14} direction="column" align="start" justify="space-between" w='100%'>
@@ -203,20 +250,22 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                                         </Box>
                                     </Flex>
                                     :
-                                    <Flex gap={20} direction="column" align="start" justify="space-between">
-                                        <Text size="xs">Add screenshots and switch Review to '{isPreApproved ? 'Pre-Approved' : ''} Template Email Review' to post the review ticket. Then mark sent.</Text>
+                                    editorState.email?.usesPostmarkTool ?
+                                        '' : (<Flex gap={20} direction="column" align="start" justify="space-between">
+                                            <Text size="xs">Add screenshots and switch Review to '{isPreApproved ? 'Pre-Approved' : ''} Template Email Review' to post the review ticket. Then mark sent.</Text>
 
-                                        <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={100} >
-                                            <Image src={'./tutorials/upload-screenshots.gif'} />
-                                        </Box>
-                                        <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={270}>
-                                            <Image src={'./tutorials/send-review.gif'} />
-                                        </Box>
-                                    </Flex>
+                                            <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={100} >
+                                                <Image src={'./tutorials/upload-screenshots.gif'} />
+                                            </Box>
+                                            <Box className=" relative w-full mt-2 overflow-hidden rounded-lg" w={200} h={270}>
+                                                <Image src={'./tutorials/send-review.gif'} />
+                                            </Box>
+                                        </Flex>)
+
                             }
                         </Flex>
                         {
-                            !hasPosted ?
+                            (!hasPosted ?
                                 <Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={15}>
                                     <Button variant="outline" color="blue.5" mt={10} h={40} onClick={handleCreateTicket} disabled={isPostPending} loading={isPostPending}>Create Ticket</Button>
                                 </Flex>
@@ -230,13 +279,14 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                                     <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket()} >
                                         Delete Ticket
                                     </Button>
-                                </Flex>
+                                </Flex>)
 
                         }
                     </Flex>
                     <Box px={10}>
-                        {!hasPosted ? '' :
+                        {hasPosted && !editorState.email?.usesPostmarkTool ?
                             <Text size="xs">The last reviewer was {MARKETING_REVIEWERS[getLastReviewer()]}.</Text>
+                            : ''
                         }
                     </Box>
                 </Flex>
@@ -329,6 +379,9 @@ export function SendReview({ shouldAutoStart }: { shouldAutoStart: boolean }) {
                 isReviewed: false,
             }
         }));
+
+        setHasPosted(false);
+        setIsPostPending(false);
 
         return true;
     }

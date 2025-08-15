@@ -65,7 +65,7 @@ export function SaveContextProvider({ children }: { children: React.ReactNode })
             refreshReviewsInterval.current = setTimeout(async () => {
                 console.log('Refreshing reviews...', saves);
                 const newSaves = await markReviewedEmails(saves);
-                newSaves.forEach(async (id) => {
+                newSaves?.forEach(async (id) => {
                     const save = saves.find((s) => s.email?.name === id);
                     let fullSave = await loadState(id ?? '');
                     if (!fullSave) return;
