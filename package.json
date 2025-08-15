@@ -36,6 +36,7 @@
     "next": "^15.2.4",
     "number-to-words": "^1.2.4",
     "parchment": "^3.0.0",
+    "puppeteer": "^24.16.2",
     "quill": "^2.0.3",
     "quill-delta-to-html": "^0.12.1",
     "react": "^19.0.0",

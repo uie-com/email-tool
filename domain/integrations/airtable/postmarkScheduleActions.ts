@@ -1,8 +1,9 @@
 "use server";
 
 import { AT_SCHEDULE_BASE, AT_SCHEDULE_TABLE } from "@/config/save-settings";
+import puppeteer from "puppeteer";
+import { saveFileAction } from "../ftp/fileActions";
 import { airtableFetch } from "./airtableActions";
-
 
 export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, subject: string, automationId: string, sendDate: Date, templateId: string, tag: string): Promise<string | undefined> {
 
@@ -132,4 +133,43 @@ export async function removeEmailFromPostmarkSchedule(id?: string): Promise<bool
     }
 
     return true;
+}
+
+export async function getScreenshotOfPostmarkScheduledEmail(id?: string): Promise<any> {
+
+    await fetch('https://postmark.centercentre.com');
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    // Set screen size.
+    await page.setViewport({ width: 850, height: 950, deviceScaleFactor: 2 });
+
+    // Navigate the page to a URL.
+    // https://airtable.com/app1KqzidZW6oePcC/shr0wUGrfFuf7mWn7/tblb7LRhKpSB1YGYH/viwHqcQZ0NdT2Oi8K/recxe4HCk2ytxn2Rh
+    await page.goto('https://airtable.com/app1KqzidZW6oePcC/shr0wUGrfFuf7mWn7/tblb7LRhKpSB1YGYH/viwHqcQZ0NdT2Oi8K/' + id + '', {
+        waitUntil: 'networkidle2',
+    });
+
+    const screenshot = await page.screenshot({
+        path: 'screenshot.png',
+        clip: {
+            x: 50,
+            y: 105,
+            width: 750,
+            height: 650,
+        },
+    });
+
+    await browser.close();
+
+    // Convert Node.js Buffer to ArrayBuffer for File constructor
+    const arrayBuffer = screenshot instanceof Buffer ? screenshot.buffer.slice(screenshot.byteOffset, screenshot.byteOffset + screenshot.byteLength) : screenshot;
+    const scFile = new File([arrayBuffer], 'scheduled-email-screenshot.png', { type: 'image/png' });
+
+    const url = await saveFileAction(scFile);
+
+    console.log(`Screenshot saved to: ${url}`);
+
+    return url;
 }

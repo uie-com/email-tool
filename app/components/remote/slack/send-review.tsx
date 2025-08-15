@@ -2,14 +2,13 @@ import { MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_I
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { EditorContext } from "@/domain/context";
 import { SavedEmailsContext, isPreApprovedTemplate, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
-import { getPostmarkScheduledEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
+import { getScreenshotOfPostmarkScheduledEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { updateNotionCard } from "@/domain/integrations/notion/notionActions";
 import { calculatePriority, getLastReviewer, getNextReviewer, logReviewer } from "@/domain/integrations/slack/reviews";
 import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack, postPostmarkScheduledEmailInSlack } from "@/domain/integrations/slack/slackActions";
 import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Image, Loader, Select, Text, ThemeIcon } from "@mantine/core";
 import { IconArrowBackUp, IconCheck, IconExternalLink, IconMessage, IconMessageCheck, IconMessageSearch, IconMessageX } from "@tabler/icons-react";
-import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { RemoteStep, StateContent } from "../step-template";
 
@@ -51,11 +50,20 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
         let usingPostmarkScheduler = 'No';
 
         const sendType = editorState.email?.values?.getCurrentValue('Send Type');
+        // if (sendType === 'POSTMARK') {
+        //     usingPostmarkScheduler = 'Yes';
+        //     const scheduledItem = await getPostmarkScheduledEmail(uuid);
+        //     if (scheduledItem) {
+        //         subject = `\n\n📣  Subject\n${scheduledItem.fields['Subject']}\n\n📆  Scheduled For\n${moment(scheduledItem.fields['Schedule Date']).format('dddd, MMM DD  [at]  hh:mm A')}\n\n\n📧  Template Name\n${scheduledItem.fields['Template']}\n\n👥  Automation Name\n${scheduledItem.fields['Automation']}\n\n🔖  Email Tag\n${scheduledItem.fields['Email Tag']}\n\n`;
+        //         subject = 'https://airtable.com/app1KqzidZW6oePcC/shr0wUGrfFuf7mWn7/tblb7LRhKpSB1YGYH/viwHqcQZ0NdT2Oi8K/' + editorState.email?.postmarkToolId + '?blocks=hide';
+        //     }
+        // }
+
         if (sendType === 'POSTMARK') {
             usingPostmarkScheduler = 'Yes';
-            const scheduledItem = await getPostmarkScheduledEmail(uuid);
+            const scheduledItem = await getScreenshotOfPostmarkScheduledEmail(editorState.email?.postmarkToolId);
             if (scheduledItem) {
-                subject = `\n\n📣 Subject: ${scheduledItem.fields['Subject']}\n\n📆 Scheduled For: ${moment(scheduledItem.fields['Schedule Date']).format('YYYY-MM-DD hh:mm A')}\n\n📧 Template Name: ${scheduledItem.fields['Template']}\n\n🧑‍🧑‍🧒‍🧒 Automation Name: ${scheduledItem.fields['Automation']}\n\n🔖 Email Tag: ${scheduledItem.fields['Email Tag']}\n\n`;
+                subject = scheduledItem;
             }
         }
 
