@@ -97,7 +97,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
             value = moment().toDate();
         }
 
-        // THIS CODE NEEDS TO BE LAST, WE CAN'T INTERPRET VALUE AS A DATE AFTER
+        // THIS CODE NEEDS TO BE THE LAST DATE TRANSFORM, WE CAN'T INTERPRET VALUE AS A DATE AFTER
         // Format date into string ex. (YYYY-MM-DD)
         // NOTE: Ordinals are manually removed here for new style guide compliance
         const formatTransform = remainingTransforms.find(transform =>
@@ -316,7 +316,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         }
         remainingTransforms = remainingTransforms.filter(transform => transform !== numberToAdverbTransform);
 
-        // Convert number to once, twice, etc. ex. (Number to Word)
+        // Convert number to one, two, etc. ex. (Number to Word)
         const numberToWordTransform = remainingTransforms.find(transform =>
             transform.includes('Number to Word')
         );
@@ -344,7 +344,7 @@ export function resolveTransforms(transforms: string[], value: any, context: Val
         }
         remainingTransforms = remainingTransforms.filter(transform => transform !== tuxsTransform);
 
-        // Add prefix if value isn't empty ex. (pre:___}
+        // Add prefix if value isn't empty. Adds space ex. (pre:___)
         const prefixTransform = remainingTransforms.find(transform =>
             transform.startsWith('pre:')
         );

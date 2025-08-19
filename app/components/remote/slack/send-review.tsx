@@ -105,7 +105,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                 if (sendButton.current) {
                     sendButton.current.click();
                 }
-            }, 2500);
+            }, 5000);
         }
 
 
@@ -226,7 +226,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                 !hasPosted ?
                     <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending} > Already has Ticket</Button> :
                     (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK' ?
-                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconMessage />} ref={sendButton} >Send</Button>
+                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconMessage />} ref={sendButton} loading={editorState.email.usesPostmarkTool} >{editorState.email.usesPostmarkTool ? 'Sending' : 'Send'}</Button>
                         : <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
                     )
             ,
@@ -278,16 +278,17 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                                     <Button variant="outline" color="blue.5" mt={10} h={40} onClick={handleCreateTicket} disabled={isPostPending} loading={isPostPending}>Create Ticket</Button>
                                 </Flex>
                                 :
-                                <Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={20}>
-                                    <Anchor href={SLACK_LIST_URL} target="_blank">
-                                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} >
-                                            Open Slack List
+                                editorState.email?.usesPostmarkTool ? ''
+                                    : (<Flex direction="column" align="end" justify="start" mt={10} mr={-5} gap={20}>
+                                        <Anchor href={SLACK_LIST_URL} target="_blank">
+                                            <Button variant="outline" color="blue.5" h={40} rightSection={<IconExternalLink />} >
+                                                Open Slack List
+                                            </Button>
+                                        </Anchor>
+                                        <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket()} >
+                                            Delete Ticket
                                         </Button>
-                                    </Anchor>
-                                    <Button variant="light" color="gray" h={40} leftSection={<IconArrowBackUp />} onClick={() => handleDeleteTicket()} >
-                                        Delete Ticket
-                                    </Button>
-                                </Flex>)
+                                    </Flex>))
 
                         }
                     </Flex>

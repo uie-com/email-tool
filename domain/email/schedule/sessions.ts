@@ -71,6 +71,7 @@ export type Session = {
     "Second Date"?: Date;
     "First Event Link"?: string;
     "Second Event Link"?: string;
+
     "First Homework"?: string;
     "Second Homework"?: string;
 
