@@ -187,7 +187,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Greeting': { value: 'Hello,' },
 
-            'Footer Email Reason': { value: `You're receiving this email because you've attended a Center Centre course or talk with Maven.` },
+            'Footer Email Reason': { value: `You're receiving this email because you've attended a Center Centre course or talk on Maven.` },
             'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `UXAI` },
         }

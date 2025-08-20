@@ -35,10 +35,14 @@ export function ContentHelper() {
     }
 
     return (
-        <Flex align="center" justify="center" className="w-full h-full" gap={20} style={{ position: 'relative' }}>
-            <PlainTextEditor variables={variables} values={values} setVariables={handleVariableChange} displayRendered={displayRendered} handleEditorFocus={handleEditorFocus} />
-            <VariableForm variables={variables} values={values} setValue={handleValueInput} />
+        <Flex dir="column" align="center" justify="center" className="w-full h-full" gap={20} style={{ position: 'relative' }}>
+            <Flex align="center" justify="center" className="w-full h-full" gap={20} style={{ position: 'relative' }}>
+                <PlainTextEditor variables={variables} values={values} setVariables={handleVariableChange} displayRendered={displayRendered} handleEditorFocus={handleEditorFocus} />
+                <VariableForm variables={variables} values={values} setValue={handleValueInput} />
+            </Flex>
+
         </Flex>
+
 
     );
 }
