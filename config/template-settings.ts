@@ -14,6 +14,6 @@ export function parseTemplate(template: string | undefined, values: Values) {
         .replaceAll('#31CB4B', '#{Accent Color} !important')
         .replaceAll('#56D66B', '#{Accent Color} !important')
         .replaceAll('#75de43', '{Link Color}')
-        .replaceAll('<strong>', '<b>')
-        .replaceAll('</strong>', '</b>')
+        .replaceAll('<strong', '<b')
+        .replaceAll('</strong', '</b')
 }

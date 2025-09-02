@@ -71,6 +71,8 @@ export const BEFORE_WEEK: Settings<ValuePart<any>> = {
                     // INTERNAL
                     'Email Name': { value: 'Before Week 1', part: 2 },
 
+                    'Send Type': { value: 'AUTOMATION', hide },
+
                     // SENDING
                     'Subject': { value: '{Program Name}: {Week}: Topics {{Week} Session #1 Topic (#)} + {{Week} Session #2 Topic (#)}' },
 

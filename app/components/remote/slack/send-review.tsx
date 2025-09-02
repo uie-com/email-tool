@@ -84,7 +84,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
 
         const notionId = editorState.email?.notionId;
         const referenceDocURL = editorState.email?.referenceDocURL ?? '';
-        const updateRes = await updateNotionCard(notionId ?? '', referenceDocURL, false, isPreApproved, true);
+        const updateRes = updateNotionCard(notionId ?? '', referenceDocURL, false, isPreApproved, true);
         console.log("Updated Notion status to started", updateRes);
 
         setHasPosted(true);
@@ -99,15 +99,6 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                 values: new Values(editorState.email?.values?.initialValues ?? []),
             }
         }));
-
-        if (sendType === 'POSTMARK') {
-            setTimeout(() => {
-                if (sendButton.current) {
-                    sendButton.current.click();
-                }
-            }, 5000);
-        }
-
 
         setIsPostPending(false);
 
@@ -161,7 +152,6 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
         const uuid = editorState.email?.uuid ?? '';
 
         if (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK') {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
             const autoPost = await postPostmarkScheduledEmailInSlack(uuid);
             console.log("Posted postmark scheduled email in slack", autoPost);
         }
@@ -226,7 +216,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                 !hasPosted ?
                     <Button variant="light" color="gray.6" h={40} disabled={isPostPending} loading={isPostPending} > Already has Ticket</Button> :
                     (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK' ?
-                        <Button variant="outline" color="blue.5" h={40} rightSection={<IconMessage />} ref={sendButton} loading={editorState.email.usesPostmarkTool} >{editorState.email.usesPostmarkTool ? 'Sending' : 'Send'}</Button>
+                        <Button variant="outline" color="blue.5" h={40} ref={sendButton} rightSection={<IconMessage />} >{'Send'}</Button>
                         : <Button variant="outline" color="blue.5" h={40} leftSection={<IconCheck />} >Mark Sent</Button>
                     )
             ,
