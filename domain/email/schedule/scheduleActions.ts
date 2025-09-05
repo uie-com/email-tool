@@ -1,26 +1,20 @@
 "use server";
 
+import console from "console";
+import fs from "fs/promises";
 import moment from "moment-timezone";
+import path from "path";
 import { Email } from "../../schema";
 import { createEmailsFromSession } from "./create-email-schedule";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, getSessionSchedule, Session } from "./sessions";
 
-let emailCache: {
-    email?: Email;
-    session?: Session;
-    emailType?: string;
-}[] = [];
-
-let sessionCache: Session[] | null = null;
 
 export async function getEmailSchedule(offset: number, queries: string[], refresh: boolean = false) {
 
     console.log('[SCHEDULE] Fetching emails with offset:', offset, 'queries:', queries, 'refresh:', refresh);
 
-    let sortedEmails = (emailCache.length > 0 && !refresh) ? emailCache : await getAllEmails(refresh);
-    emailCache = sortedEmails;
+    let sortedEmails = await getAllEmails(refresh);
 
-    console.log('[SCHEDULE] ' + (emailCache.length > 0 && !refresh) ? 'Using ' + emailCache.length + ' cached emails' : 'Fetching emails from Airtable');
 
     const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
     const cutoffIndex = sortedEmails.findIndex((email) => {
@@ -49,8 +43,16 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
 }
 
 async function getAllEmails(refresh: boolean = false, abbreviated: boolean = true) {
-    console.log('[SCHEDULE] Fetching all emails, refresh:', refresh, 'abbreviated:', abbreviated, ' sessionCache:', sessionCache ? sessionCache.length + ' sessions cached' : 'no sessions cached');
-    let sessions = (!abbreviated && sessionCache) ? sessionCache : await getSessionSchedule(refresh, abbreviated);
+    console.log('[SCHEDULE] getAllEmails called with refresh:', refresh, 'abbreviated:', abbreviated);
+
+    let existingEmails = refresh ? null : await readCache('emails') as { email?: Email, session?: Session, emailType?: string }[] | null;
+    if (existingEmails) existingEmails = existingEmails.map(email => ({ ...email, email: email.email ? new Email(email.email.values, email.email) : undefined }));
+    console.log('[SCHEDULE] existingEmails:', existingEmails ? existingEmails.length + ' emails' : 'none');
+    if (existingEmails && !abbreviated) return existingEmails;
+
+    const existingSessions = refresh ? null : await readCache('sessions') as Session[] | null;
+    console.log('[SCHEDULE] existingSessions:', existingSessions ? existingSessions.length + ' sessions' : 'none');
+    let sessions = (!abbreviated && existingSessions) ? existingSessions : await getSessionSchedule(refresh, abbreviated);
 
     const emails = sessions?.map((session) => {
         const emails = createEmailsFromSession(session);
@@ -80,10 +82,15 @@ async function getAllEmails(refresh: boolean = false, abbreviated: boolean = tru
         return 0;
     });
 
-    if (abbreviated && (refresh || !sessionCache))
-        getSessionSchedule(false, false).then((s) => {
-            sessionCache = s;
+    if (abbreviated && (refresh || !existingSessions || !existingEmails))
+        getSessionSchedule(false, false).then(async (s) => {
+            await writeCache('sessions', s);
             console.log('[SCHEDULE] Preloaded full session data in the background', s?.length, 'sessions');
+
+
+            const emails = await getAllEmails(true, false)
+            await writeCache('emails', emails);
+            console.log('[SCHEDULE] Preloaded full email data in the background', emails.length);
         }); // Preload full emails in the background
 
     return sortedEmails;
@@ -99,4 +106,28 @@ export async function getEmailFromSchedule(emailID?: string) {
     });
 
     return JSON.stringify(matchingEmail?.email);
+}
+
+
+/**
+ * Read sessions from the local file cache (if it exists).
+ */
+async function readCache(cache: string): Promise<any | null> {
+    try {
+        const data = await fs.readFile(path.join(process.cwd(), "." + cache + ".json"), "utf-8");
+        return JSON.parse(data);
+    } catch {
+        return null; // No cache file or failed read
+    }
+}
+
+/**
+ * Write sessions to the local file cache.
+ */
+async function writeCache(cache: string, data: any): Promise<void> {
+    try {
+        await fs.writeFile(path.join(process.cwd(), "." + cache + ".json"), JSON.stringify(data, null, 2), "utf-8");
+    } catch (err) {
+        console.error("[SCHEDULE] Failed to write session cache:", err);
+    }
 }
