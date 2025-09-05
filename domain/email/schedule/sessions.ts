@@ -91,7 +91,7 @@ export type Session = {
 export const DAYS_IN_PAST = 3;
 export const EMAILS_IN_PAGE = 20;
 
-export async function getSessionSchedule(refresh: boolean = false): Promise<Session[] | null> {
+export async function getSessionSchedule(refresh: boolean = false, abbreviated: boolean = false): Promise<Session[] | null> {
     let sessions: Session[] = [];
     try {
 
@@ -183,10 +183,12 @@ export async function getSessionSchedule(refresh: boolean = false): Promise<Sess
         sessions = markBreaks(sessions);
 
         sessions = addSessionDateValues(sessions);
-        sessions = addSessionProgramContext(sessions);
+        sessions = addSessionProgramContext(sessions, abbreviated);
 
         sessions = addWeekNumbers(sessions);
-        sessions = addProgramWeekSessionsContext(sessions);
+
+        if (!abbreviated)
+            sessions = addProgramWeekSessionsContext(sessions);
 
 
 
@@ -226,13 +228,18 @@ function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
     const programs = [...new Set(sessions.map((session) => session.Program))];
 
     programs.forEach((program) => {
+        if (program === 'TUXS') return;
+
         const cohorts = [...new Set(sessions.filter((session) => session.Program === program).map((session) => session.Cohort))];
         cohorts.forEach((cohort) => {
             const weeklySessionContext: { [key: string]: string } = {};
-            const programSessions = sessions.filter((session) => (
+            let programSessions = sessions.filter((session) => (
                 session.Cohort === cohort
                 && session.Program === program
             ));
+
+            if (program === 'Stand Out') // Only consider the last 10 Stand Out sessions
+                programSessions = programSessions.slice(-10);
 
             programSessions.forEach((session, i) => {
                 const weekName = session["Week"];
@@ -273,7 +280,7 @@ function addProgramWeekSessionsContext(sessions: Session[]): Session[] {
     return sessions;
 }
 
-function addSessionProgramContext(sessions: Session[]): Session[] {
+function addSessionProgramContext(sessions: Session[], abbreviated: boolean): Session[] {
     sessions.forEach((session, index) => {
         const sessionBeforeInProgram = sessions.find((s) => (
             s.id !== session.id
@@ -294,7 +301,7 @@ function addSessionProgramContext(sessions: Session[]): Session[] {
             session["Is First Session Of Program"] = 'Is First Session Of Program';
 
         session["Number of Upcoming Sessions"] = sessionsAfterInProgram.length + '';
-        if (session.Program === 'TUXS')
+        if (session.Program === 'TUXS' && !abbreviated)
             sessionsAfterInProgram.forEach((s, i) => {
                 const prefix = 'Upcoming Session #' + (i + 1);
                 Object.keys(s).forEach((key) => {

@@ -11,6 +11,8 @@ let emailCache: {
     emailType?: string;
 }[] = [];
 
+let sessionCache: Session[] | null = null;
+
 export async function getEmailSchedule(offset: number, queries: string[], refresh: boolean = false) {
 
     console.log('[SCHEDULE] Fetching emails with offset:', offset, 'queries:', queries, 'refresh:', refresh);
@@ -46,8 +48,10 @@ export async function getEmailSchedule(offset: number, queries: string[], refres
     }
 }
 
-async function getAllEmails(refresh: boolean = false) {
-    const sessions = await getSessionSchedule(refresh);
+async function getAllEmails(refresh: boolean = false, abbreviated: boolean = true) {
+    console.log('[SCHEDULE] Fetching all emails, refresh:', refresh, 'abbreviated:', abbreviated, ' sessionCache:', sessionCache ? sessionCache.length + ' sessions cached' : 'no sessions cached');
+    let sessions = (!abbreviated && sessionCache) ? sessionCache : await getSessionSchedule(refresh, abbreviated);
+
     const emails = sessions?.map((session) => {
         const emails = createEmailsFromSession(session);
         const filteredKeys = Object.keys(emails).filter((key) => {
@@ -76,13 +80,19 @@ async function getAllEmails(refresh: boolean = false) {
         return 0;
     });
 
+    if (abbreviated && (refresh || !sessionCache))
+        getSessionSchedule(false, false).then((s) => {
+            sessionCache = s;
+            console.log('[SCHEDULE] Preloaded full session data in the background', s?.length, 'sessions');
+        }); // Preload full emails in the background
+
     return sortedEmails;
 }
 
 export async function getEmailFromSchedule(emailID?: string) {
     if (!emailID) return null;
 
-    const emails = await getAllEmails(true);
+    const emails = await getAllEmails(false, false);
     const matchingEmail = emails.find((email) => {
         const emailId = email.email?.values?.resolveValue('Email ID', true);
         return emailId === emailID;

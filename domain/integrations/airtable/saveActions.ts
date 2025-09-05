@@ -150,7 +150,7 @@ async function createNewSave(state: EditorState): Promise<string | undefined> {
     const response = await airtableFetch(AT_EMAIL_BASE, AT_EMAIL_TABLE, 'POST', '', JSON.stringify({ records: [airtableRecord] }), false);
 
     if (!response.ok) {
-        console.error(`Couldn't create email: ${response.status} ${response.statusText} ${await response.text()}`);
+        console.error(`Couldn't create email: ${response.status} ${response.statusText} ${await response.text()} ${compressText(JSON.stringify(state)).length}`);
         return undefined;
     }
 

@@ -5,6 +5,7 @@ import { hasStringInLocalStorage, listKeysInLocalStorage, loadStringFromLocalSto
 import { EditorContext, GlobalSettingsContext } from "@/domain/context";
 import { shortenIdentifier } from "@/domain/email/identifiers/parsePrograms";
 import { isPreApprovedTemplate, SavedEmailsContext } from "@/domain/email/save/saveData";
+import { getEmailFromSchedule } from "@/domain/email/schedule/scheduleActions";
 import { DAYS_IN_PAST, EMAILS_IN_PAGE, Session } from "@/domain/email/schedule/sessions";
 import { createVariableEdits } from "@/domain/integrations/google-drive/collabNotes";
 import { createSiblingGoogleDoc, getGoogleDocContentByUrl } from "@/domain/integrations/google-drive/googleActions";
@@ -404,6 +405,7 @@ function EmailEntry({ email }: { email: Email, }) {
     const [savedStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
     const [globalSettings] = useContext(GlobalSettingsContext);
     const [hovering, setHovering] = useState(false);
+    const [isStarting, setIsStarting] = useState(false);
 
     useEffect(() => { }, [JSON.stringify(savedStates)]);
 
@@ -453,10 +455,14 @@ function EmailEntry({ email }: { email: Email, }) {
             console.log('Starting an email as ', email);
             email.values?.setValue('Last Populated', { value: new Date(), source: 'remote' });
 
-            email.uuid = crypto.randomUUID();
-            console.log('Creating email with ID:', email.uuid);
+            setIsStarting(true);
+            const newEmailStr = await getEmailFromSchedule(email.values?.resolveValue('Email ID', true) ?? '') ?? '{}';
+            const newEmail = new Email(JSON.parse(newEmailStr)?.values, JSON.parse(newEmailStr));
 
-            setEditorStateDelayed({ step: 1, email: email });
+            newEmail.uuid = crypto.randomUUID();
+            console.log('Creating email with ID:', newEmail.uuid);
+
+            setEditorStateDelayed({ step: 1, email: newEmail });
         } else {
             if (emailSave.email && !emailSave.email?.uuid)
                 emailSave.email.uuid = crypto.randomUUID();
@@ -646,6 +652,8 @@ function EmailEntry({ email }: { email: Email, }) {
             variant: 'filled',
             color: '',
             px: 12,
+            loading: isStarting,
+            loaderProps: { type: 'bars', size: 'xs', h: 16, pb: 2 }
         };
         if (!emailStatus)
             return <Button {...sharedProps}>Start</Button>;
@@ -665,7 +673,7 @@ function EmailEntry({ email }: { email: Email, }) {
         if (emailStatus === 'Sent')
             return <Button {...sharedProps} pl={10} leftSection={<IconCheck size={16} strokeWidth={3} className=" -mr-0.5" />}>Done</Button>;
         return <Button h={24} onMouseUp={handleSubmit}>Open</Button>;
-    }, [emailStatus, emailSave]);
+    }, [emailStatus, emailSave, isStarting]);
 
 
 
