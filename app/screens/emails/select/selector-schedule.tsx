@@ -137,6 +137,14 @@ export function EmailSchedule() {
         handleScroll();
     }, [loadedEmails, searchQuery]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            console.log('[SCROLL] Restoring scroll position to ', loadStringFromLocalStorage('scheduleScroll'));
+            const scrollHeight = loadStringFromLocalStorage('scheduleScroll');
+            if (ref.current && scrollHeight) ref.current.scrollTo(0, parseInt(scrollHeight));
+        }, 1000)
+    }, [isLoading.current, ref.current]);
+
     const inBoundary = useRef<boolean>(false);
 
     const handleScroll = async () => {
@@ -144,6 +152,7 @@ export function EmailSchedule() {
         const clientHeight = ref.current?.getBoundingClientRect().height;
         const scrollTop = ref.current?.scrollTop;
         const scrollHeight = ref.current?.scrollHeight;
+        saveStringToLocalStorage('scheduleScroll', scrollTop + '');
 
         if (scrollTop + clientHeight >= scrollHeight - 1000) {
             if (inBoundary.current) return;

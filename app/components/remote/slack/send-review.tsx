@@ -151,7 +151,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
     const tryAction = async (setMessage: (m: React.ReactNode) => void): Promise<boolean | void> => {
         const uuid = editorState.email?.uuid ?? '';
 
-        if (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK') {
+        if (editorState.email?.values?.getCurrentValue('Send Type') === 'POSTMARK' && !editorState.email?.hasSentReview) {
             const autoPost = await postPostmarkScheduledEmailInSlack(uuid);
             console.log("Posted postmark scheduled email in slack", autoPost);
         }
