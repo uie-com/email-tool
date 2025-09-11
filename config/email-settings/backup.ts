@@ -854,6 +854,11 @@ export const SETTINGS: Settings<ValuePart<any>> = {
                 'Automation ID': { value: '319', hide },
             }
         },
+        'Cohort:September 2025': {
+            settings: {
+                'Automation ID': { value: '344', hide },
+            }
+        },
     },
     'Program:LoA': {
         settings: {

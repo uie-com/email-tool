@@ -96,10 +96,10 @@ async function getAllEmails(refresh: boolean = false, abbreviated: boolean = tru
     return sortedEmails;
 }
 
-export async function getEmailFromSchedule(emailID?: string) {
+export async function getEmailFromSchedule(emailID?: string, refresh: boolean = false) {
     if (!emailID) return null;
 
-    const emails = await getAllEmails(false, false);
+    const emails = await getAllEmails(refresh, false);
     const matchingEmail = emails.find((email) => {
         const emailId = email.email?.values?.resolveValue('Email ID', true);
         return emailId === emailID;

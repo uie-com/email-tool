@@ -112,7 +112,7 @@ export function ValueReview() {
 
 
         const emailId = editorState.email?.name;
-        const newEmailStr = await getEmailFromSchedule(emailId);
+        const newEmailStr = await getEmailFromSchedule(emailId, true);
         let newEmail = JSON.parse(newEmailStr ?? '{}');
         if (newEmail && newEmail.values) {
             newEmail = new Email(newEmail.values, newEmail);
@@ -146,7 +146,7 @@ export function ValueReview() {
         console.log('Refreshing email with user values: ', userValues.asDict(), ' from state: ', editorState);
 
         const emailId = editorState.email?.name;
-        const newEmailStr = await getEmailFromSchedule(emailId);
+        const newEmailStr = await getEmailFromSchedule(emailId, true);
         let newEmail = JSON.parse(newEmailStr ?? '{}');
         if (newEmail && newEmail.values) {
             newEmail = new Email(newEmail.values, newEmail);

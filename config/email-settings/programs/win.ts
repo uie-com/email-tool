@@ -95,7 +95,7 @@ export const WIN: Settings<ValuePart<any>> = {
             'Is First Session Of Program': {
                 settings: {
                     'Template': { value: '/homework-pillar-1-lab-1.html', part: 2 },
-                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1KDQbgOjxdiy3WKIfaQmk2QLLDJQoUcZOx1ANLVkHh1I/edit' },
+                    'Source Reference Doc': { value: 'https://docs.google.com/document/d/1gOPtAZI3Yi4v6NwTr3JtoJ70iXiPjwZ7CIQcVDS5XRo/edit?tab=t.0#heading=h.hx6ixedf7q1z' },
                     'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9488843', hide },
                 }
             },
