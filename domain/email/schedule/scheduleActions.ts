@@ -59,10 +59,11 @@ async function getAllEmails(refresh: boolean = false, abbreviated: boolean = tru
         const filteredKeys = Object.keys(emails).filter((key) => {
             const email = emails[key];
             const sendDate = email.values?.resolveValue('Send Date', true);
-            const daysAway = sendDate ? moment(sendDate).dayOfYear() - moment().dayOfYear() : null;
-            if (daysAway !== null && daysAway < -1 * DAYS_IN_PAST) {
-                return false;
-            }
+            const cutoffDate = moment().subtract(DAYS_IN_PAST, 'days').toDate();
+
+            if (!sendDate) return false;
+            if (moment(sendDate).isBefore(cutoffDate)) return false;
+
             return true;
         });
         return filteredKeys.map((key) => ({
