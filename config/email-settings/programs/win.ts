@@ -188,18 +188,6 @@ export const WIN: Settings<ValuePart<any>> = {
             },
         },
 
-        'Email Type:Welcome': {
-            settings: {
-                "Send Type": { value: "AUTOMATION", hide },
-
-                'Email Name': { value: 'Welcome', part: 2 },
-                'Subject': { value: 'Welcome to How to Win Stakeholders & Influence Decisions Program!' },
-                'Template': { value: '/welcome.html', part: 2 },
-                'Source Reference Doc': { value: 'https://docs.google.com/document/d/1vGnH3X_0synDw5-r2tbV21B94XiPqNVeBVjBRfyUWEk/edit' },
-                'Stripo Link': { value: 'https://my.stripo.email/editor/v5/727662/email/9540161', hide },
-            },
-        },
-
         'Email Type:Wrap Up': {
             settings: {
                 'Email Name': { value: 'Wrap Up', part: 2 },
