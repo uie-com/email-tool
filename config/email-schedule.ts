@@ -155,11 +155,6 @@ export const EMAILS_PER_SESSION: Settings<string> = {
                     'Onboarding': {
                         'Send Date': '{Session Date(-12d)(12:00pm)}',
                     },
-                    'Welcome': {
-                        'Send Date': '{Session Date(+1d)(10:00am)}',
-                        'Next Cohort': '',
-                        'Cohort': '{Next Cohort}'
-                    }
                 }
             },
         },
