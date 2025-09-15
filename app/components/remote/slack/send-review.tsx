@@ -46,8 +46,9 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
         const notionUrl = editorState.email?.notionURL ?? '';
         const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
         const uuid = editorState.email?.uuid ?? '';
-        let subject = editorState.email?.values?.resolveValue('Subject', true) ?? '';
+        let subject = editorState.email?.values?.resolveValue('Test Subject', true) ?? '';
         let usingPostmarkScheduler = 'No';
+        let screenshotUrl = '';
 
         const sendType = editorState.email?.values?.getCurrentValue('Send Type');
         // if (sendType === 'POSTMARK') {
@@ -63,7 +64,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
             usingPostmarkScheduler = 'Yes';
             const scheduledItem = await getScreenshotOfPostmarkScheduledEmail(editorState.email?.postmarkToolId);
             if (scheduledItem) {
-                subject = scheduledItem;
+                screenshotUrl = scheduledItem;
             }
         }
 
@@ -75,7 +76,8 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
             userId,
             priorityFlag,
             uuid,
-            usingPostmarkScheduler
+            usingPostmarkScheduler,
+            screenshotUrl
         );
 
         console.log("Created ticket in slack", res);

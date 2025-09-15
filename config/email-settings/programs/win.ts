@@ -177,6 +177,8 @@ export const WIN: Settings<ValuePart<any>> = {
 
         'Email Type:Onboarding': {
             settings: {
+                "Send Type": { value: "AUTOMATION", hide },
+
                 'Email Name': { value: 'Onboarding', part: 2 },
                 'Subject': { value: 'Let’s get started! How to Win Stakeholders & Influence Decisions Program.' },
                 'Template': { value: '/onboarding.html', part: 2 },
@@ -188,6 +190,8 @@ export const WIN: Settings<ValuePart<any>> = {
 
         'Email Type:Welcome': {
             settings: {
+                "Send Type": { value: "AUTOMATION", hide },
+
                 'Email Name': { value: 'Welcome', part: 2 },
                 'Subject': { value: 'Welcome to How to Win Stakeholders & Influence Decisions Program!' },
                 'Template': { value: '/welcome.html', part: 2 },
@@ -344,6 +348,11 @@ export const WIN: Settings<ValuePart<any>> = {
         'Cohort:August 2025': {
             settings: {
                 'Automation ID': { value: '319', hide },
+            }
+        },
+        'Cohort:September 2025': {
+            settings: {
+                'Automation ID': { value: '344', hide },
             }
         },
     },

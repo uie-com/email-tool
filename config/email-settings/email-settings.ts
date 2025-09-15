@@ -59,6 +59,7 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         // TESTING
         'Test Email': { value: 'accounts@centercentre.com', hide },
         'Test Subject': { value: '[{Send Date (M-D h:mmA)(-:00)(ASAP)}] {Subject}', hide },
+        'Test Number': { value: '1', hide },
 
 
         // *** SLACK ***
