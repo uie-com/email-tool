@@ -89,7 +89,7 @@ export type Session = {
 }
 
 export const DAYS_IN_PAST = 3;
-export const EMAILS_IN_PAGE = 50;
+export const EMAILS_IN_PAGE = 100;
 
 export async function getSessionSchedule(refresh: boolean = false, abbreviated: boolean = false): Promise<Session[] | null> {
     let sessions: Session[] = [];

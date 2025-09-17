@@ -38,6 +38,7 @@ export const METRICS: Settings<ValuePart<any>> = {
             // BANNER
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/e39a43ca-d9bb-45e7-9d77-98b74c760132.png?id=39152004' },
             'Promo Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/1f3fce1d-b0eb-403b-8208-22a6e5f973aa.png?id=39155955' },
+            'Promo Banner Alt': { value: 'Outcome-Driven UX Metrics; Online Course with Jared Spool at UXMetrics.cc' }
         },
 
         // ** EMAILS **
@@ -109,6 +110,11 @@ export const METRICS: Settings<ValuePart<any>> = {
         'Cohort:Cohort 10': {
             settings: {
                 'Automation ID': { value: '303', hide },
+            }
+        },
+        'Cohort:Cohort 11': {
+            settings: {
+                'Automation ID': { value: '339', hide },
             }
         },
     },

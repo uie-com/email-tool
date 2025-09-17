@@ -53,6 +53,39 @@ export const EMAILS_PER_SESSION: Settings<string> = {
           "Send Date": "{Session Date(-5d)(2:00pm)}",
         },
       },
+      "Is Before Break": {
+        emails: {
+          "Before Break": {
+            "Send Date": "{Session Date(Friday After)(2:00pm)}",
+          },
+        },
+      },
+      "Is First Session Of Program": {
+        "Topic:Pillar 1": {
+          emails: {
+            "First Lab Reminder": {
+              "Send Date": "{Session Date(-1d)(10:00am)}",
+            },
+            Onboarding: {
+              "Send Date": "{Session Date(-12d)(12:00pm)}",
+            },
+          },
+        },
+      },
+      "Session Type:Wrap Up": {
+        emails: {
+          Homework: {},
+          "Wrap Up": {
+            "Send Date": "{Session Date(Friday Before)(2:00pm)}",
+          },
+          Certificate: {
+            "Send Date": "{Session Date(+1d)(10:00am)}",
+          },
+          "Extension Details": {
+            "Send Date": "{Session Date(+2d)(10:00am)}",
+          },
+        },
+      },
     },
     "Is Last Session Of Week": {
       emails: {

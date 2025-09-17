@@ -1,6 +1,7 @@
 import { EditorContext } from "@/domain/context";
 import { sendCampaignTestEmail } from "@/domain/integrations/active-campaign/api";
 import { createCampaignLink } from "@/domain/integrations/links";
+import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Loader, TextInput, ThemeIcon } from "@mantine/core";
 import { IconExternalLink, IconMailbox, IconSend, IconSendOff } from "@tabler/icons-react";
 import { useContext, useState } from "react";
@@ -79,6 +80,7 @@ export function TestCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) 
         const campaignId = parseInt(email.campaignId ?? '');
         const testEmail = values.resolveValue("Test Email", true) ?? '';
         const testSubject = values.resolveValue("Test Subject", true) ?? '';
+        const testNumber = values.resolveValue("Test Number", true) ?? '';
 
         const notFound = (...vs: (string | number | undefined | null)[]) => vs.map((v) => v === undefined || v === null || (typeof v === 'string' && v.trim().length === 0)).find((v) => v);
         if (notFound(messageId, campaignId, testEmail, testSubject))
@@ -88,16 +90,18 @@ export function TestCampaign({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             messageId: messageId ?? '',
             campaignId: campaignId ?? '',
             toEmail: testEmail ?? '',
-            subject: testSubject,
+            subject: `#${testNumber} ${testSubject}`,
         });
         console.log("Send Test Email", response);
 
+        values.setValue("Test Number", { value: (parseInt(testNumber ?? '0') + 1).toString() });
 
         setEditorState((prev) => ({
             ...prev,
             email: {
                 ...prev.email,
                 sentTest: editorState.email?.campaignId,
+                values: new Values(values.initialValues)
             }
         }));
 

@@ -9,9 +9,10 @@ type SlackWebhookPayload = {
     EmailId: string
     UUID: string
     usingPostmarkScheduler: string
+    screenshotUrl: string
 }
 
-export async function createEmailInSlack(notion: string | undefined, referenceDoc: string, subject: string, emailId: string, reviewer: string, priorityFlag: string, UUID: string, usingPostmarkScheduler: string) {
+export async function createEmailInSlack(notion: string | undefined, referenceDoc: string, subject: string, emailId: string, reviewer: string, priorityFlag: string, UUID: string, usingPostmarkScheduler: string, screenshotUrl: string = '') {
     const slackData: SlackWebhookPayload = {
         Notion: notion ?? 'https://www.notion.so/centercentre/Email-Calendar-View-087ddad9c1d840fc92dd19179c01f89d?pvs=4',
         Reviewer: reviewer,
@@ -20,7 +21,8 @@ export async function createEmailInSlack(notion: string | undefined, referenceDo
         Priority: priorityFlag,
         EmailId: emailId,
         UUID,
-        usingPostmarkScheduler
+        usingPostmarkScheduler,
+        screenshotUrl
     };
 
 

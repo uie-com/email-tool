@@ -1,6 +1,7 @@
 import { EditorContext, GlobalSettingsContext } from "@/domain/context";
 import { createCampaignMessage, createEmptyCampaign, deleteCampaign, editMessage, getCampaign, getMessage, getTemplate, populateCampaign, sendCampaignTestEmail } from "@/domain/integrations/active-campaign/api";
 import { createCampaignLink } from "@/domain/integrations/links";
+import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Loader, TextInput, ThemeIcon } from "@mantine/core";
 import { IconExternalLink, IconMailbox, IconSend, IconSendOff } from "@tabler/icons-react";
 import { useContext, useState } from "react";
@@ -88,6 +89,7 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
         const fromName = values.resolveValue("From Name", true) ?? '';
         const fromEmail = values.resolveValue("From Email", true) ?? '';
         const replyToEmail = values.resolveValue("Reply To", true) ?? '';
+        const testNumber = values.resolveValue("Test Number", true) ?? '';
         const testSubject = values.resolveValue("Test Subject", true) ?? '';
 
         const notFound = (...vs: (string | undefined | null)[]) => vs.map((v) => v === undefined || v === null || (typeof v === 'string' && v.trim().length === 0)).find((v) => v);
@@ -135,16 +137,18 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             messageId: messageId ?? '',
             campaignId: campaignId ?? '',
             toEmail: testEmail ?? '',
-            subject: testSubject.length > 0 ? testSubject : subject,
+            subject: testSubject.length > 0 ? `#${testNumber} ${testSubject}` : subject,
         });
         console.log("Sent Test Email", response);
 
+        values.setValue("Test Number", { value: (parseInt(testNumber ?? '0') + 1).toString() });
 
         setEditorState((prev) => ({
             ...prev,
             email: {
                 ...prev.email,
                 sentTest: templateId,
+                values: new Values(values.initialValues)
             }
         }));
 
@@ -159,6 +163,7 @@ export function TestTemplate({ shouldAutoStart }: { shouldAutoStart: boolean }) 
                 campaignId: undefined,
                 messageId: undefined,
                 sentTest: templateId,
+                values: new Values(values.initialValues)
             }
         }));
 
