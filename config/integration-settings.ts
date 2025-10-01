@@ -3,8 +3,8 @@ export const NOTION_CALENDAR = 'https://www.notion.so/centercentre/Email-Calenda
 
 
 
-export const MARKETING_REVIEWERS = ['JyMae', 'Kaylan'];
-export const MARKETING_REVIEWER_IDS = ['U08GK14AJ87', 'U08T9HD6W5P'];
+export const MARKETING_REVIEWERS = ['JyMae', 'Kaylan', 'Maddi', 'Talha'];
+export const MARKETING_REVIEWER_IDS = ['U08GK14AJ87', 'U08T9HD6W5P', 'U09DU2J4CUS', 'U09DU2GL5J6'];
 export const TL_REVIEWERS = ['Amy'];
 export const TL_REVIEWER_IDS = ['U06AE2PB5QD'];
 
