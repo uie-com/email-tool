@@ -1,6 +1,6 @@
 "use client";
 
-import { EMAIL_TYPES } from "@/config/email-types";
+import { EMAIL_TYPES } from "@/config/email-selector";
 import { getAllIdentifiers } from "@/domain/email/identifiers/parsePrograms";
 import { initializeSettings } from "@/domain/values/parseSettings";
 import { Values } from "@/domain/values/valueCollection";

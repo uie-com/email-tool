@@ -1,4 +1,4 @@
-import { EMAIL_TYPES } from "../../../config/email-types";
+import { EMAIL_TYPES } from "../../../config/email-selector";
 import { Settings } from "../../schema";
 import { normalizeName } from "../../variables/normalize";
 

@@ -1,5 +1,5 @@
 import { VariableInput } from "@/app/components/variables/variable-form";
-import { MULTI_SELECT_MANUAL_EMAIL_PARAMS } from "@/config/email-types";
+import { MULTI_SELECT_MANUAL_EMAIL_PARAMS } from "@/config/email-selector";
 import { EditorContext } from "@/domain/context";
 import { createProgramForm, Form } from "@/domain/email/identifiers/parsePrograms";
 import { focusOnNext, focusOnPrev } from "@/domain/interface/focus";
