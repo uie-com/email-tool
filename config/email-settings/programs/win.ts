@@ -64,7 +64,7 @@ export const WIN: Settings<ValuePart<any>> = {
       },
       "Promo Banner": {
         value:
-          "https://content.app-us1.com/O8aW3/2025/05/05/4756c528-8308-4f1b-a870-2a9c8dd8aa1b.png?id=39155999",
+          "https://asset.uie.com/emails/img/75dfeb323db66460ccfb3d8e786d0508a1f9a7cf0a35805986272be70177b8ca.png",
         hide,
       },
     },
@@ -90,11 +90,19 @@ export const WIN: Settings<ValuePart<any>> = {
       "Topic:Pillar 1": {
         settings: {
           "Share Reviews By": { value: "" },
+          "Program Name": {
+            value: "UX Leadership & Influence Program",
+            hide,
+          },
         },
       },
       "Topic:Pillar 2": {
         settings: {
           "Share Reviews By": { value: "" },
+          "Program Name": {
+            value: "UX Leadership & Influence Program",
+            hide,
+          },
         },
       },
       "Session Type:Live Lab 1": {
@@ -226,12 +234,20 @@ export const WIN: Settings<ValuePart<any>> = {
         settings: {
           "Share Reviews By": { value: "" },
           "QA Email Name": { value: "{Email Name}", hide },
+          "Program Name": {
+            value: "UX Leadership & Influence Program",
+            hide,
+          },
         },
       },
       "Topic:Pillar 2": {
         settings: {
           "Share Reviews By": { value: "" },
           "QA Email Name": { value: "{Email Name}", hide },
+          "Program Name": {
+            value: "UX Leadership & Influence Program",
+            hide,
+          },
         },
       },
       "Is Transition": {
@@ -267,6 +283,10 @@ export const WIN: Settings<ValuePart<any>> = {
           value: "https://my.stripo.email/editor/v5/727662/email/9046397",
           hide,
         },
+        "Program Name": {
+          value: "UX Leadership & Influence Program",
+          hide,
+        },
       },
     },
 
@@ -284,6 +304,10 @@ export const WIN: Settings<ValuePart<any>> = {
         },
         "Stripo Link": {
           value: "https://my.stripo.email/editor/v5/727662/email/9540162",
+          hide,
+        },
+        "Program Name": {
+          value: "UX Leadership & Influence Program",
           hide,
         },
       },
