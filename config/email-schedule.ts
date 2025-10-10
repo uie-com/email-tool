@@ -195,4 +195,14 @@ export const EMAILS_PER_SESSION: Settings<string> = {
       },
     },
   },
+  "Program: AI": {
+    emails: {
+      "Before Week": {
+        "Send Date": "{Session Date(-5d)(2:00pm)}",
+      },
+      "Today's Session": {
+        "Send Date": "{Session Date(8:00am)}",
+      },
+    },
+  },
 };
