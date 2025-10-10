@@ -16,6 +16,9 @@ export function createGoogleDocLink(id?: string) {
 }
 
 export function createNotionUri(url?: string) {
+    if (process.env.OPEN_NOTION_IN_WEB === 'true') {
+        return url ?? '';
+    }
     return url?.replaceAll('https://', 'notion://') ?? '';
 }
 

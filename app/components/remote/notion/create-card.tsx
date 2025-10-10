@@ -3,6 +3,7 @@ import { EditorContext, GlobalSettingsContext } from "@/domain/context";
 import { SavedEmailsContext, isPreApprovedTemplate } from "@/domain/email/save/saveData";
 import { createNotionUri } from "@/domain/integrations/links";
 import { createNotionCard, deleteNotionCard, findNotionCard, updateNotionCard } from "@/domain/integrations/notion/notionActions";
+import { openPopup } from "@/domain/interface/popup";
 import { Anchor, Button, Flex, Loader, Text, TextInput, ThemeIcon } from "@mantine/core";
 import { IconExternalLink, IconLink, IconListDetails, IconPlaylistX } from "@tabler/icons-react";
 import moment from "moment";
@@ -81,7 +82,7 @@ export function GetNotionPage({ shouldAutoStart }: { shouldAutoStart: boolean })
                     {/* <ActionIcon variant="light" color="gray.5" h={40} w={40} onClick={() => copy((editorState.email?.notionURL ?? ''))}>
                         <IconCopy />
                     </ActionIcon> */}
-                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank" ml={5}>
+                    <Anchor onClick={process.env.OPEN_NOTION_IN_WEB === 'true' ? () => openPopup(createNotionUri(editorState.email?.notionURL ?? '')) : undefined} href={process.env.OPEN_NOTION_IN_WEB === 'true' ? '' : createNotionUri(editorState.email?.notionURL ?? '')} target="_blank" ml={5}>
                         <Button variant="light" color="green.5" h={40} pl={18} rightSection={<IconExternalLink strokeWidth={1.5} />} >
                             Open Card
                         </Button>

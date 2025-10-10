@@ -192,7 +192,7 @@ export function ValueReview() {
                         </Box>
 
                         <HadIssue.Provider value={[hadIssue, setHadIssue]}>
-                            <CreateReferenceDoc shouldAutoStart={!hadIssue} />
+                            <CreateReferenceDoc shouldAutoStart={false} />
                             <GetNotionPage shouldAutoStart={!hadIssue} />
                             <CreateCollaborativeNotes shouldAutoStart={!hadIssue} hasResolvedRemote={hasResolvedRemote} />
                         </HadIssue.Provider>

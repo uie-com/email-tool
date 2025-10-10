@@ -26,12 +26,12 @@ export const initializeSettings = (values?: Values): Values => {
 
 function saveSettings(settings: SettingDict<ValuePart<any>>, values: Values) {
     if (DEBUG) console.log('[SETTINGS] Adding settings: ', settings);
-    Object.keys(settings).forEach((key) => values.addValue(key, { ...settings[key], source: 'settings' }));
+    Object.keys(settings)?.forEach((key) => values.addValue(key, { ...settings[key], source: 'settings' }));
     return values;
 }
 
 function findSettings(settings: Settings<ValuePart<any>>, values: Values) {
-    Object.keys(settings).forEach((key) => {
+    Object.keys(settings)?.forEach((key) => {
         let [keyName, keyValue] = key.split(':');
         if (keyName.startsWith('Is'))
             keyValue = keyName;

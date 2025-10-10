@@ -23,7 +23,6 @@ export async function addEmailToPostmarkSchedule(uuid: string, emailId: string, 
                         "Template ID": templateId,
                         "Automation ID": automationId,
                         "Schedule Date": sendDate.toISOString(),
-                        "Email Tag": tag,
                         "Status": "Needs Testing",
                     }
                 }

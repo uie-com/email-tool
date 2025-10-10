@@ -15,7 +15,7 @@ export const AI: Settings<ValuePart<any>> = {
 
             // TEMPLATE
             'Link Color': { value: '#bd1f23', hide },
-            'Accent Color': { value: 'bd1f23', hide },
+            'Accent Color': { value: '{Link Color}', hide },
 
             // BANNER
             'Banner': { value: '' },

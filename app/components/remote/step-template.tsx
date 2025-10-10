@@ -158,7 +158,7 @@ export function RemoteStep(
     }
 
     const handleRedo = async () => {
-        if (!noUndoOnRedo)
+        if (!noUndoOnRedo || !handleUndo)
             await handleUndo();
         else
             setStepState('ready');

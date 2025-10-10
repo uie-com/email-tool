@@ -11,12 +11,12 @@ export function GlobalSettingsProvider({ children }: { children: React.ReactNode
     useEffect(() => {
         const storedSettings = localStorage.getItem('globalSettings');
         if (storedSettings) {
-            setSettings(JSON.parse(storedSettings));
+            setSettings(JSON.parse(storedSettings ?? '{}') ?? {});
         }
     }, []);
 
     useEffect(() => {
-        if (Object.keys(settings).length === 0) return;
+        if (Object.keys(settings)?.length === 0) return;
         localStorage.setItem('globalSettings', JSON.stringify(settings));
     }, [settings]);
 

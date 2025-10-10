@@ -33,7 +33,7 @@ export const METRICS: Settings<ValuePart<any>> = {
 
             // STYLES
             'Link Color': { value: '#006f74', hide },
-            'Accent Color': { value: '00a3b4', hide },
+            'Accent Color': { value: '#00a3b4', hide },
 
             // BANNER
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/e39a43ca-d9bb-45e7-9d77-98b74c760132.png?id=39152004' },

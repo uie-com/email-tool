@@ -44,7 +44,7 @@ export const WIN: Settings<ValuePart<any>> = {
 
       // STYLES
       "Link Color": { value: "#a5473d", hide },
-      "Accent Color": { value: "8c9a29", hide },
+      "Accent Color": { value: "#8c9a29", hide },
       "Link Text Decoration": { value: "none" },
       Font: { value: "arial", hide },
 

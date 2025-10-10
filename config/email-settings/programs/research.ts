@@ -33,7 +33,7 @@ export const RESEARCH: Settings<ValuePart<any>> = {
 
             // STYLES
             'Link Color': { value: '#ec621d', hide },
-            'Accent Color': { value: '5e2946', hide },
+            'Accent Color': { value: '#5e2946', hide },
 
             // BANNER
             'Banner': { value: 'https://content.app-us1.com/O8aW3/2025/05/05/456eae66-13b7-4fd1-b959-8d5a9c35e40a.png?id=39152003' },

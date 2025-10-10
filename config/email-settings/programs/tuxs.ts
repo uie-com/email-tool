@@ -215,45 +215,45 @@ export const TUXS: Settings<ValuePart<any>> = {
     // Topic settings
     'Session Type:Job Search Topic': {
       settings: {
-        'Primary Color': { value: '00a1b3' },
-        'Accent Color': { value: 'eb621d' },
-        'Banner Topic': { value: 'Job Search' },
+        'Primary Color': { value: '#00a1b3' },
+        'Accent Color': { value: '#eb621d' },
+        'Banner Topic': { value: 'UX Job Search' },
       }
     },
     'Session Type:Metrics Topic': {
       settings: {
-        'Primary Color': { value: '9b0e5b' },
-        'Accent Color': { value: '00a1b3' },
-        'Banner Topic': { value: 'Metrics' },
+        'Primary Color': { value: '#9b0e5b' },
+        'Accent Color': { value: '#00a1b3' },
+        'Banner Topic': { value: 'UX Metrics' },
 
       }
     },
     'Session Type:Research Topic': {
       settings: {
-        'Primary Color': { value: '662547' },
-        'Accent Color': { value: '00a1b3' },
-        'Banner Topic': { value: 'Research' },
+        'Primary Color': { value: '#662547' },
+        'Accent Color': { value: '#00a1b3' },
+        'Banner Topic': { value: 'UX Research' },
       }
     },
     'Session Type:Win Topic': {
       settings: {
-        'Primary Color': { value: '00a1b3' },
-        'Accent Color': { value: '8c9b29' },
-        'Banner Topic': { value: 'Influence' },
+        'Primary Color': { value: '#00a1b3' },
+        'Accent Color': { value: '#8c9b29' },
+        'Banner Topic': { value: 'UX Influence' },
       }
     },
     'Session Type:Vision Topic': {
       settings: {
-        'Primary Color': { value: '00a1b3' },
-        'Accent Color': { value: '9b0e5b' },
-        'Banner Topic': { value: 'Vision' },
+        'Primary Color': { value: '#00a1b3' },
+        'Accent Color': { value: '#9b0e5b' },
+        'Banner Topic': { value: 'UX Vision' },
       }
     },
     'Session Type:AI Topic': {
       settings: {
-        'Primary Color': { value: '00a1b3' },
-        'Accent Color': { value: 'bc2123' },
-        'Banner Topic': { value: 'AI' },
+        'Primary Color': { value: '#00a1b3' },
+        'Accent Color': { value: '#bc2123' },
+        'Banner Topic': { value: 'UX AI' },
       }
     },
 

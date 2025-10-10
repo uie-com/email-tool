@@ -1,6 +1,7 @@
 import { copyToClipboard } from "@/domain/browser/clipboard";
 import { EditorContext } from "@/domain/context";
 import { createNotionUri } from "@/domain/integrations/links";
+import { openPopup } from "@/domain/interface/popup";
 import { Anchor, Button, Flex, Loader, ThemeIcon } from "@mantine/core";
 import { IconCopy, IconExternalLink, IconListCheck, IconPlaylistX, IconRosetteDiscountCheck } from "@tabler/icons-react";
 import { useContext } from "react";
@@ -25,7 +26,7 @@ export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) 
             rightContent: <Button variant="outline" color="blue.5" h={40} leftSection={<IconRosetteDiscountCheck />} >Mark Reviewed</Button>,
             expandedContent:
                 <Flex gap={20} direction="column" align="start" justify="space-between" w='100%' className="">
-                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                    <Anchor onClick={process.env.OPEN_NOTION_IN_WEB === 'true' ? () => openPopup(createNotionUri(editorState.email?.notionURL ?? '')) : undefined} href={process.env.OPEN_NOTION_IN_WEB === 'true' ? '' : createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
                         <Button variant="light" color="green.5" h={40} rightSection={<IconExternalLink />} mt={5}>
                             Open Checklist
                         </Button>
@@ -43,7 +44,7 @@ export function MarkReviewed({ shouldAutoStart }: { shouldAutoStart: boolean }) 
                     <Button variant="light" color="blue.6" h={40} rightSection={<IconCopy />} mt={10} onClick={() => copyToClipboard(editorState.email?.values?.resolveValue('Subject', true) ?? '')}>
                         Copy Subject
                     </Button>
-                    <Anchor href={createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
+                    <Anchor onClick={process.env.OPEN_NOTION_IN_WEB === 'true' ? () => openPopup(createNotionUri(editorState.email?.notionURL ?? '')) : undefined} href={process.env.OPEN_NOTION_IN_WEB === 'true' ? '' : createNotionUri(editorState.email?.notionURL ?? '')} target="_blank">
                         <Button variant="filled" color="blue.5" h={40} rightSection={<IconExternalLink />} mt={10}>
                             Open Checklist
                         </Button>

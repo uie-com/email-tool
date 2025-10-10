@@ -19,7 +19,7 @@ import { Values } from "@/domain/values/valueCollection";
 import { normalizeName } from "@/domain/variables/normalize";
 import { Variables } from "@/domain/variables/variableCollection";
 import { ActionIcon, Badge, Button, Flex, Image, Loader, Modal, Pill, Progress, ScrollArea, TagsInput, Text } from "@mantine/core";
-import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconFilePlus, IconMailFilled, IconMailPlus, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { IconArrowRight, IconBrandTelegram, IconCalendarPlus, IconCalendarWeekFilled, IconCheck, IconClock, IconDots, IconEdit, IconFilePlus, IconMailFilled, IconMailPlus, IconRefresh, IconRosetteDiscountCheck, IconRosetteDiscountCheckOff, IconSearch } from "@tabler/icons-react";
 import moment from "moment-timezone";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AuthStatus } from "../publish/publish";
@@ -35,6 +35,11 @@ export function EmailSchedule() {
     const [sessionOffset, setSessionOffset] = useState<number>(0);
     const [refresh, setRefresh] = useState(false);
     const loadedSessions = useRef<string[]>([]);
+
+    const [hideFinished, setHideFinished] = useState(loadStringFromLocalStorage('hideFinished') === 'true');
+    useEffect(() => {
+        saveStringToLocalStorage('hideFinished', hideFinished ? 'true' : 'false');
+    }, [hideFinished]);
 
     const [searchQuery, setSearchQuery] = useState<string[] | null>(null);
     if (searchQuery === null) {
@@ -217,8 +222,9 @@ export function EmailSchedule() {
             const dateB = moment((b.email as Email)?.values?.resolveValue('Send Date', true));
             return dateA.diff(dateB);
         });
+
         return sortedEmailsBySession;
-    }, [loadedEmails, manualEmails, refresh]);
+    }, [loadedEmails, manualEmails, refresh, hideFinished]);
 
     console.log('Rendering. total emails ' + sessionsByEmail?.length + ', offset ' + sessionOffset + ', searchQuery ' + searchQuery + ', refresh ' + refresh, sessionsByEmail);
     const className = ' !bg-gray-300';
@@ -245,6 +251,7 @@ export function EmailSchedule() {
                     <Flex direction='row' align='center' justify='start' w="100%" gap={15}>
                         <TagsInput variant="unstyled" placeholder="Filter" bg='gray.1' pl="5" pr="sm" className=" rounded-md overflow-hidden" leftSection={<IconSearch stroke={2} opacity={0.6} className=" mr-2" />} onChange={handleSearch} value={searchQuery ?? []} maw={256} classNames={{ pill: ' !bg-gray-300' }} tt='uppercase' />
                         <ActionIcon variant="light" color='gray.5' w={36} h={36} onClick={handleRefresh}><IconRefresh size={24} /></ActionIcon>
+                        <ActionIcon variant="light" color='gray.5' w={36} h={36} onClick={() => setHideFinished(!hideFinished)}>{!hideFinished ? <IconRosetteDiscountCheck size={24} /> : <IconRosetteDiscountCheckOff size={24} />}</ActionIcon>
 
                         <Button variant="outline" color="blue" ml='auto' mr={16} onClick={() => setCreateManual(true)} leftSection={<IconMailPlus size={20} strokeWidth={2.5} />} >Add Email</Button>
                     </Flex>
@@ -257,12 +264,12 @@ export function EmailSchedule() {
                                 if ((!session.session || (session.session as Session).Program === undefined) && session.email) {
                                     // console.log('Found manual email ', session);
                                     return (
-                                        <EmailEntry key={'me' + i} email={session.email} />
+                                        <EmailEntry key={'me' + i} email={session.email} hideFinished={hideFinished} />
                                     )
                                 }
                                 if (!session.session) return null;
                                 return (
-                                    <SessionEntry key={'s' + i} session={session.session} email={session.email} emailType={session.emailType ?? ''} />
+                                    <SessionEntry key={'s' + i} session={session.session} email={session.email} emailType={session.emailType ?? ''} hideFinished={hideFinished} />
                                 )
                             }) : <Flex className="w-full min-h-96" justify="center" align="center"><TimedProgress seconds={15} /></Flex>}
                         </Flex>
@@ -293,19 +300,34 @@ function TimedProgress({ seconds }: { seconds: number }) {
     );
 }
 
-function SessionEntry({ session, email, emailType }: { session: Session, email?: Email, emailType?: string }) {
+function SessionEntry({ session, email, emailType, hideFinished }: { session: Session, email?: Email, emailType?: string, hideFinished?: boolean }) {
     const colorMain = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + '44';
     const colorPill = PROGRAM_COLORS[session.Program as keyof typeof PROGRAM_COLORS] + 'ff';
     const sessionDateMessage = useMemo(() => {
         return moment(session["Session Date"])?.format('ddd, MMM D');
     }, [])
+    const [savedStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
 
     const emails = {
         ...(emailType ? { [emailType]: email } : {}),
     }
 
+
+    const emailSave = useMemo(() => {
+        if (!email || !email.values || !savedStates) return null;
+        const saveName = email.values.resolveValue('Email ID', true);
+        const saveState = savedStates.find((state) => {
+            return state && normalizeName(state.email?.name) === normalizeName(saveName)
+        });
+        return saveState;
+    }, [email, savedStates]);
+
+    const status = getStatusFromEmail(emailSave?.email);
+
     if (!emails) return null;
+    if (hideFinished && emailSave && (status === 'Sent' || status === 'Scheduled')) return null;
+
 
     return (
         <Flex direction='column' align='start' justify='start' className="w-full relative" gap={10}>
@@ -409,7 +431,7 @@ function SessionEntry({ session, email, emailType }: { session: Session, email?:
     )
 }
 
-function EmailEntry({ email }: { email: Email, }) {
+function EmailEntry({ email, hideFinished }: { email: Email, hideFinished?: boolean }) {
     const [editorState, setEditorState, isLoading, setEditorStateDelayed] = useContext(EditorContext);
     const [savedStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
     const [globalSettings] = useContext(GlobalSettingsContext);
@@ -686,7 +708,8 @@ function EmailEntry({ email }: { email: Email, }) {
 
 
 
-
+    if (hideFinished && (emailStatus === 'Sent' || emailStatus === 'Scheduled'))
+        return null;
 
     return (
         <Flex align="center" justify="start" gap={10} className={`p-2 rounded-md w-full bg-gray-100 cursor-pointer relative overflow-hidden whitespace-nowrap hover:bg-gray-300 max-w-[545px]`}
