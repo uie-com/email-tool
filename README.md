@@ -7,9 +7,9 @@ A full-stack React/TypeScript app that turns structured program data into produc
 - **Plan**: Reads upcoming sessions from Airtable to propose/schedule emails.
 - **Compose**: Fills dynamic HTML templates (Stripo) using a rich variable system + transforms.
 - **Review**: Side-by-side value/template QA, required-field checks, and an optional debug overlay.
-- **Publish**: Semi-automatic pipelines for **Campaign**, **Automation**, and **Postmark** sends.
+- **Publish**: Semi-automatic pipelines for **Campaign**, **Automation**, and **Postmark** scheduling.
 - **Orchestrate**: Creates Notion cards, Google Docs notes, and reference docs on demand.
-- **Collaborate**: Uploads banners/images to the `uieasset` server; posts review tickets to Slack.
+- **Collaborate**: Posts review tickets to Slack.
 
 ## 🏗️ Tech Stack
 
@@ -29,17 +29,18 @@ A full-stack React/TypeScript app that turns structured program data into produc
 ## ✨ Core Concepts
 
 ### Dynamic Templates & Variables
-Templates use **Email Tool Variables** like `{First Name}`, `{Session Date}`, `{Event Link}`. Variables:
-- are **case- and whitespace-insensitive** (`{ Collab Notes }` == `{collabnotes}`)
-- can be **required** via an asterisk (`{Session Date *}`)
-- may include **transforms** in parentheses (`{Session Date (YYYY-MM-DD)(+1d)}`)
+Templates use **Email Tool Variables** like {First Name}, {Session Date}, {Event Link}. Variables:
+- are **case- and whitespace-insensitive** ({ Collab Notes } == {collabnotes})
+- can be **required** via an asterisk ({Session Date *})
+- may include **transforms** in parentheses ({Session Date (YYYY-MM-DD)(+1d)})
 
 Variables can **reference other variables** (values and names) and are resolved safely (self-references error).
 
 ### Transforms (excerpt)
-- **Dates**: `(America/New_York)`, `(YYYY-MM-DD hh:mma)`, `(+1d|+1M|+1h)`, `(Monday before)`, `(12:00pm)`, `(ASAP)`
-- **Strings**: `(Caps)`, `(Title Case)`, `(Tag)`, `(3 Letters)`, `(First Word)`, `(Number to Word)`, `(Iterate x3)` with `(Separate:___)`
-- See **Transforms** below for a fuller list.
+- **Dates**: (America/New_York), (YYYY-MM-DD hh:mma), (+1d|+1M|+1h), (Monday before), (12:00pm), (ASAP)
+- **Strings**: (Caps), (Title Case), (Tag), (3 Letters), (First Word), (Number to Word), (Iterate x3) with (Separate:___)
+
+See **Transforms** below for a fuller list.
 
 ### Config-First Design
 Most behavior is declarative in `/config`:
@@ -48,7 +49,7 @@ Most behavior is declarative in `/config`:
 - **Selector Config**: “Add Email” form options (for non-scheduled emails like Vessels/Content)
 - **Variable Transforms**: custom transforms (`/config/variable-transforms.tsx`)
 
-## 🚦 UX Overview
+## 🚦 UI Overview
 
 Across all pages:
 - **Sidebar (top-left)**: all **in-progress** emails (shared). Bulk actions + quick variant creation.
@@ -112,16 +113,13 @@ Across all pages:
 ```
 Tip: If anything spins for 40s+ or looks odd, reload. Saves are guarded.
 
-⸻
+## 🧩 Configuration
 
-🧩 Configuration
+### Email Settings Config (`/config/email-settings`)
+Hierarchical **SETTINGS** object with conditional “filters” and **settings** dictionaries.  
+Filters are `"Key:Value"` pairs; keys/values map directly to resolved variable names/values.
 
-Email Settings Config (/config/email-settings)
-
-Hierarchical SETTINGS object with conditional “filters” and settings dictionaries.
-Filters are "Key:Value" pairs; keys/values map directly to resolved variable names/values.
-
-Example (abbreviated):
+**Example (abbreviated):**
 ```
 const SETTINGS = {
   settings: { 'Send To': { value: 'LoA' } },
@@ -134,16 +132,16 @@ const SETTINGS = {
   'Send To:LoA': { settings: { 'List ID': { value: '255' } } }
 };
 ```
-Flags per value:
-	•	hide: true — omit from UI
-	•	part: 0..n — build a value from multiple parts (override any piece)
-	•	fetch: 'text' | 'airtable' — dereference at runtime (e.g., import external HTML, or pull a field from Airtable)
 
-Schedule Config (/config/email-schedule.ts)
+**Flags per value:**
+- `hide: true` — omit from UI  
+- `part: 0..n` — build a value from multiple parts (override any piece)  
+- `fetch: 'text' | 'airtable'` — dereference at runtime (e.g., import external HTML, or pull a field from Airtable)
 
-Declares which sessions produce which emails, and assigns send dates relative to session dates using transforms.
+### Schedule Config (`/config/email-schedule.ts`)
+Declares which sessions produce which emails, and assigns send dates **relative** to session dates using transforms.
 
-Example:
+**Example:**
 ```
 const EMAILS_PER_SESSION = {
   'Program:Metrics': {
@@ -160,91 +158,85 @@ const EMAILS_PER_SESSION = {
   }
 };
 ```
-Selector Config (/config/email-selector.ts)
 
-Controls options for Add Email (for items not derived from the schedule).
-Supports multi-select, generated options (e.g., months, numbered), and accepts custom values any time.
+### Selector Config (`/config/email-selector.ts`)
+Controls options for **Add Email** (for items not derived from the schedule).  
+Supports **multi-select**, generated options (e.g., months, numbered), and accepts **custom values** any time.
 
-⸻
+## 🔤 Variables & Transforms
 
-🔤 Variables & Transforms
+### Variables
+- {First Name} — plain variable  
+- { Collab Notes } — spacing/case don’t matter  
+- {Session Date *} — required; blocks publishing if empty  
+- {Session Date (YYYY-MM-DD)(+1d)} — transforms  
+- { {Name Type} Name } — variable in name (resolve “Name Type” first)  
+- Values can also include variables: {Full Name} = "{First Name} {Last Name}"
 
-Variables
-	•	{First Name} — plain variable
-	•	{ Collab Notes } — spacing/case don’t matter
-	•	{Session Date *} — required; blocks publishing if empty
-	•	{Session Date (YYYY-MM-DD)(+1d)} — transforms
-	•	{ {Name Type} Name } — variable in name (resolve “Name Type” first)
-	•	Values can also include variables: {Full Name} = "{First Name} {Last Name}"
+### Transforms (full list)
 
-Transforms (full list)
+| Transformation | Type  | Effect |
+| --- | --- | --- |
+| (America/New_York) (GMT) | Dates | Time zone conversion (source is ET). |
+| (+1d) (-1d) (+1M) (-1M) (+1h) (-1h) | Dates | Relative date/time math. |
+| (Monday before) (Friday after) | Dates | Nearest weekday adjustments. |
+| (12:00pm) | Dates | Replace time of a datetime value. |
+| (ASAP) | Dates | If past, show time as “ASAP” (in h:mmA strings). |
+| (YYYY-MM-DD hh:mma) | Dates | Moment.js-style formatting. |
+| (Iterate x3) | String | Repeat; increment `#` numbers; resolve [] vars after iteration. |
+| (Separate:___) | String | Separator between iterations. |
+| (+1) (-1) | String | Increment/decrement trailing number: Topic 2 → Topic 3. |
+| (-:00) | String | Remove :00. |
+| (Next Cohort) | String | Increment Win/Numbered cohorts. |
+| (Shorthand) | String | Common shortenings (e.g., Cohort → C). |
+| (First Word) | String | First token (e.g., April 2024 → April). |
+| (#) | String | Keep digits only. |
+| (/) | String | Turn ", " into "/". |
+| (3 Letters) | String | Truncate to N letters (per item if combined with (/)). |
+| (, ) | String | Turn "/" into ", ". |
+| (Caps) (Title Case) | String | Uppercase / Title Case. |
+| (Tag) | String | Spaces → dashes. |
+| (Number to Adverb) | String | 1 → once, 2 → twice, … |
+| (Number to Word) | String | 1 → one, 2 → two, … |
+| (1st Person) | String | Convert TUXS descriptions to first-person. |
+| (pre:___) | String | Add prefix only if non-empty. |
+| (Last Paragraph) | String | Extract final paragraph. |
+| (MD to HTML) | String | Markdown → HTML. |
 
-Transformation	Type	Effect
-(America/New_York) (GMT)	Dates	Time zone conversion (source is ET).
-(+1d) (-1d) (+1M) (-1M) (+1h) (-1h)	Dates	Relative date/time math.
-(Monday before) (Friday after)	Dates	Nearest weekday adjustments.
-(12:00pm)	Dates	Replace time of a datetime value.
-(ASAP)	Dates	If past, show time as “ASAP” (in h:mmA strings).
-(YYYY-MM-DD hh:mma)	Dates	Moment.js-style formatting.
-(Iterate x3)	String	Repeat; increment # numbers; resolve [] vars after iteration.
-(Separate:___)	String	Separator between iterations.
-(+1) (-1)	String	Increment/decrement trailing number: Topic 2 → Topic 3.
-(-:00)	String	Remove :00.
-(Next Cohort)	String	Increment Win/Numbered cohorts.
-(Shorthand)	String	Common shortenings (e.g., Cohort → C).
-(First Word)	String	First token (e.g., April 2024 → April).
-(#)	String	Keep digits only.
-(/)	String	Turn ,  into /.
-(3 Letters)	String	Truncate to N letters (works per item if combined with (/)).
-(, )	String	Turn / into , .
-(Caps) (Title Case)	String	Uppercase / Title Case.
-(Tag)	String	Spaces → dashes.
-(Number to Adverb)	String	1 → once, 2 → twice, …
-(Number to Word)	String	1 → one, 2 → two, …
-(1st Person)	String	Convert TUXS descriptions to first-person.
-(pre:___)	String	Add prefix only if non-empty.
-(Last Paragraph)	String	Extract final paragraph.
-(MD to HTML)	String	Markdown → HTML.
+## 📚 Schedule Data (what a session provides)
 
+Every session from **Programs – Sync Utility** is normalized into a key:value set (ET timezone by default). You can reference current, previous, future, first/last, or adjacent session values by name, and even compose dynamic lookups:
+- **Static**: {Week 3 Session 2 [VARIABLE]}
+- **Dynamic**: {{Next Week} Session 1 [VARIABLE]}
 
-⸻
+**Examples of available keys (abridged):**
+- **IDs**: id, Original ID  
+- **Datetimes**: Session Date, Lecture Date, Coaching Date, First Date, Last Date  
+- **Flags** (presence strings): Is DST, Is First Session Of Program, Is Last Session Of Program, Is Combined Workshop Session, Is Combined Options Session, Is Before Break, Is After Break  
+- **Program context**: Program, Cohort, Week, Next Week, Last Week, Session of Week, Session Week Type, counts this/next/prev week  
+- **Content**: Topic, Title, Description (Markdown), Topic Type  
+- **Links**: Lecture Link, Recording Link, Event Link, Collab Notes Link, Collab PDF Link  
+- **Multi-part links**: Lecture Event Link, Coaching Event Link, First Event Link, Second Event Link  
+- **Homework (TUXS)**: First Homework, Second Homework  
+- **Future series**: Number of Upcoming Sessions + {{Upcoming Session #n [VARIABLE]}}
 
-📚 Schedule Data (what a session provides)
+## 🚀 Getting Started
 
-Every session from Programs – Sync Utility is normalized into a key:value set (ET timezone by default). You can reference current, previous, future, first/last, or adjacent session values by name, and even compose dynamic lookups:
-	•	Static: {Week 3 Session 2 [VARIABLE]}
-	•	Dynamic: {{Next Week} Session 1 [VARIABLE]}
+**Run locally.** The tool is resource-intensive and designed for developer machines.
 
-Examples of available keys (abridged):
-	•	IDs: id, Original ID
-	•	Datetimes: Session Date, Lecture Date, Coaching Date, First Date, Last Date
-	•	Booleans/flags (as presence strings): Is DST, Is First Session Of Program, Is Last Session Of Program, Is Combined Workshop Session, Is Combined Options Session, Is Before Break, Is After Break
-	•	Program context: Program, Cohort, Week, Next Week, Last Week, Session of Week, Session Week Type, counts of sessions this/next/prev week
-	•	Content: Topic, Title, Description (Markdown), Topic Type
-	•	Links: Lecture Link, Recording Link, Event Link, Collab Notes Link, Collab PDF Link
-	•	Multi-part links (if combined): Lecture Event Link, Coaching Event Link, First Event Link, Second Event Link
-	•	Homework (TUXS): First Homework, Second Homework
-	•	Future series: Number of Upcoming Sessions + Upcoming Session #n [VARIABLE]
-
-⸻
-
-🚀 Getting Started
-
-Run locally. The tool is resource-intensive and designed for developer machines.
-
-	1.	Clone
-```
+1) **Clone**
+```bash
 git clone https://github.com/uie-com/email-tool
 cd email-tool
 ```
 
-	2.	Install
-```
+2) **Install**
+```bash
 npm install
 ```
 
-	3.	Environment — create .env in project root:
-```
+3) **Environment** — create `.env` in project root:
+```dotenv
 TAILWIND_MODE=watch
 
 AIRTABLE_READ_API_KEY=YOUR_AIRTABLE_KEY
@@ -273,17 +265,15 @@ FTP_HOST=64.207.156.204
 ```
 Never commit secrets. Use a secrets manager (e.g., 1Password) for shared creds.
 
-	4.	Run
-```
+4) **Run**
+```bash
 npm run dev
 # open http://localhost:3000
 ```
-	•	Initial load: ~5–10s to fetch schedule + ~5s for saved emails.
-	•	If loading exceeds ~40s, refresh. The app prevents reload during active saves.
+- Initial load: ~5–10s to fetch schedule + ~5s for saved emails.  
+- If loading exceeds ~40s, refresh. The app prevents reload during active saves.
 
-⸻
-
-🗺️ Project Structure (high level)
+## 🗺️ Project Structure (high level)
 ```
 email-tool/
 ├─ config/
@@ -300,24 +290,17 @@ email-tool/
 └─ ...
 ```
 
-⸻
+## 🔐 Security Notes
+- Keep all API keys server-side and out of client bundles.  
+- Scope integrations to the least privileges necessary.  
+- Rotate tokens regularly. Prefer short-lived tokens where supported.  
+- Validate/escape any untrusted content before injecting into HTML templates.
 
-🔐 Security Notes
-	•	Keep all API keys server-side and out of client bundles.
-	•	Scope integrations to the least privileges necessary.
-	•	Rotate tokens regularly. Prefer short-lived tokens where supported.
-	•	Validate/escape any untrusted content before injecting into HTML templates.
+## 🤝 Contributing
+- Small PRs preferred; include before/after screenshots for UI changes.  
+- Add/edit config in `/config` rather than hard-coding behavior.  
+- Extend transforms in `/config/variable-transforms.tsx` with tests.
 
-⸻
+## 📄 License
 
-🤝 Contributing
-	•	Small PRs preferred; include before/after screenshots for UI changes.
-	•	Add/edit config in /config rather than hard-coding behavior.
-	•	Extend transforms in /config/variable-transforms.tsx with tests.
-
-⸻
-
-📄 License
-
-Internal use by default. If open-sourcing, add a LICENSE file (MIT recommended) and scrub secrets from commit history.
-
+Internal use by default. If open-sourcing, add a `LICENSE` file (MIT recommended) and scrub secrets from commit history.
