@@ -289,18 +289,3 @@ email-tool/
 ├─ pages/ api/                     # Next.js API routes (integrations)
 └─ ...
 ```
-
-## 🔐 Security Notes
-- Keep all API keys server-side and out of client bundles.  
-- Scope integrations to the least privileges necessary.  
-- Rotate tokens regularly. Prefer short-lived tokens where supported.  
-- Validate/escape any untrusted content before injecting into HTML templates.
-
-## 🤝 Contributing
-- Small PRs preferred; include before/after screenshots for UI changes.  
-- Add/edit config in `/config` rather than hard-coding behavior.  
-- Extend transforms in `/config/variable-transforms.tsx` with tests.
-
-## 📄 License
-
-Internal use by default. If open-sourcing, add a `LICENSE` file (MIT recommended) and scrub secrets from commit history.
