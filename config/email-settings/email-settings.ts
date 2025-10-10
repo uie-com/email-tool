@@ -10,16 +10,14 @@ import { VISION } from "./programs/vision";
 import { WIN } from "./programs/win";
 
 
+export const PRE_APPROVED_VALUES = ['Is Last Session Of Week', 'Is First Session Of Week', 'Is First Session Of Program', 'Is Last Session Of Program', 'Is Combined Options Session', 'Program', 'Email Type', 'Is After Break', 'Is Before Break', 'Audience']; // These values are added by session.ts, but should be flagged with 'hide' so the user doesn't see them.
 
+export const REQUIRED_SEND_VALUES = ['Send Date', 'Subject', 'Send Type', 'From Name', 'From Email', 'Reply To']; // These values will not be used in the email template body, but need to be editable to the user.
 
-export const PRE_APPROVED_VALUES = ['Is Last Session Of Week', 'Is First Session Of Week', 'Is First Session Of Program', 'Is Last Session Of Program', 'Is Combined Options Session', 'Program', 'Email Type', 'Is After Break', 'Is Before Break', 'Audience'];
-export const REQUIRED_SEND_VALUES = ['Send Date', 'Subject', 'Send Type', 'From Name', 'From Email', 'Reply To'];
-
-const hide = true; // You can also hide values from the user by adding this flag to the setting.
-
+const hide = true; // You can hide values from the user by adding this flag to the setting.
 
 export const SETTINGS: Settings<ValuePart<any>> = {
-    settings: { // Global email settings. Can be overridden by email settings.
+    settings: { // Global default values. Can be accessed/overridden by program or email-type-specific settings.
         // *** TEMPLATES ***
         'Template Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name (Shorthand)}', hide },
         'Template': { value: './templates', part: 0, fetch: 'text' }, // Base path for email templates
