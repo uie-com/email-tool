@@ -84,14 +84,14 @@ export const AI: Settings<ValuePart<any>> = {
       settings: {
         "Number of Lecture Videos": { value: "six" },
         "Length of Lecture Videos": { value: "50 minutes" },
-        "Last Session Verb": { value: "we kicked off our" },
+        "Last Session Verb": { value: "kicked off our" },
       },
     },
     "Topic: Topic 3": {
       settings: {
         "Number of Lecture Videos": { value: "eight" },
         "Length of Lecture Videos": { value: "2 hours" },
-        "Last Session Verb": { value: "we continued our" },
+        "Last Session Verb": { value: "continued our" },
       },
     },
 
