@@ -107,10 +107,10 @@ export const WIN: Settings<ValuePart<any>> = {
       },
       "Session Type:Live Lab 1": {
         settings: {
-          Template: { value: "/homework-pillar-x-lab-1.html", part: 2 },
+          Template: { value: "/homework-pillar-x-lab-1-old-branding.html", part: 2 },
           "Source Reference Doc": {
             value:
-              "https://docs.google.com/document/d/1sDODxhDrRbsuUEPpw0J9S4eoah5U3L6QQ18Y2E2h_YQ/edit",
+              "https://docs.google.com/document/d/1_l4-Wt3sBkOoJ1Ip1YxkwDcLxgfd1CxcLNXKhL9UZOk/edit?tab=t.0#heading=h.jv1g4dbv6278",
           },
           "Stripo Link": {
             value: "https://my.stripo.email/editor/v5/727662/email/9490127",
@@ -120,10 +120,10 @@ export const WIN: Settings<ValuePart<any>> = {
       },
       "Session Type:Live Lab 2": {
         settings: {
-          Template: { value: "/homework-pillar-x-lab-2.html", part: 2 },
+          Template: { value: "/homework-pillar-x-lab-2-old-branding.html", part: 2 },
           "Source Reference Doc": {
             value:
-              "https://docs.google.com/document/d/1VDqUYv84Js2kSDbKEcGKpLXbyi_-_43bZlfNNdXxnms/edit",
+              "https://docs.google.com/document/d/1_pxEVNxRJ5ULj-E1gfSjbcQJj2oWRqKcYIuQLbnjkFc/edit?tab=t.0#heading=h.jv1g4dbv6278",
           },
           "Stripo Link": {
             value: "https://my.stripo.email/editor/v5/727662/email/9488844",
@@ -471,6 +471,18 @@ export const WIN: Settings<ValuePart<any>> = {
       },
     },
 
+    "Topic:Pillar 1": {
+      settings: {
+        Template: { value: "/homework-pillar-x-lab-1-new-branding.html", part: 2 },
+      },
+    },
+    "Topic:Pillar 2": {
+      settings: {
+        Template: { value: "/homework-pillar-x-lab-2-new-branding.html", part: 2 },
+      },
+    },
+
+
     "Cohort:April 2025": {
       settings: {
         "Automation ID": { value: "273", hide },
@@ -509,6 +521,21 @@ export const WIN: Settings<ValuePart<any>> = {
     "Cohort:August 2025": {
       settings: {
         "Automation ID": { value: "319", hide },
+      },
+    },
+    "Cohort:September 2025": {
+      settings: {
+        "Automation ID": { value: "344", hide },
+      },
+    },
+    "Cohort:October 2025": {
+      settings: {
+        "Automation ID": { value: "355", hide },
+      },
+    },
+    "Cohort:November 2025": {
+      settings: {
+        "Automation ID": { value: "373", hide },
       },
     },
   },
