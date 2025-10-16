@@ -138,6 +138,9 @@ export const VESSEL: Settings<ValuePart<any>> = {
         value: "https://my.stripo.email/editor/v5/727662/email/9518240",
         hide,
       },
+      "Segment ID": {
+        value: "1436",
+      },
 
       Banner: { value: "{Promo Banner}", hide },
       "Banner Alt": { value: "{Promo Banner Alt}", hide },
@@ -160,6 +163,9 @@ export const CONTENT: Settings<ValuePart<any>> = {
       "Stripo Link": {
         value: "https://my.stripo.email/editor/v5/727662/email/9553025",
         hide,
+      },
+      "Segment ID": {
+        value: "1662",
       },
 
       Banner: { value: "{Promo Banner}", hide },
