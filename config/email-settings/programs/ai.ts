@@ -184,6 +184,14 @@ export const AI: Settings<ValuePart<any>> = {
     },
 
     ...VESSEL,
+    "Email Type:VESSEL": {
+      settings: {
+        "Segment ID": {
+          value: "1455",
+        },
+      },
+    },
+
     ...CONTENT,
     ...MESSAGE,
 
