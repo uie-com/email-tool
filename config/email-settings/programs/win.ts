@@ -107,7 +107,10 @@ export const WIN: Settings<ValuePart<any>> = {
       },
       "Session Type:Live Lab 1": {
         settings: {
-          Template: { value: "/homework-pillar-x-lab-1-old-branding.html", part: 2 },
+          Template: {
+            value: "/homework-pillar-x-lab-1-old-branding.html",
+            part: 2,
+          },
           "Source Reference Doc": {
             value:
               "https://docs.google.com/document/d/1_l4-Wt3sBkOoJ1Ip1YxkwDcLxgfd1CxcLNXKhL9UZOk/edit?tab=t.0#heading=h.jv1g4dbv6278",
@@ -120,7 +123,10 @@ export const WIN: Settings<ValuePart<any>> = {
       },
       "Session Type:Live Lab 2": {
         settings: {
-          Template: { value: "/homework-pillar-x-lab-2-old-branding.html", part: 2 },
+          Template: {
+            value: "/homework-pillar-x-lab-2-old-branding.html",
+            part: 2,
+          },
           "Source Reference Doc": {
             value:
               "https://docs.google.com/document/d/1_pxEVNxRJ5ULj-E1gfSjbcQJj2oWRqKcYIuQLbnjkFc/edit?tab=t.0#heading=h.jv1g4dbv6278",
@@ -372,6 +378,9 @@ export const WIN: Settings<ValuePart<any>> = {
       settings: {
         "Link Color": { value: "#646E1A", hide },
         "Link Text Decoration": { value: "underline", hide },
+        "Segment Id": {
+          value: "1662",
+        },
       },
     },
 
@@ -381,6 +390,9 @@ export const WIN: Settings<ValuePart<any>> = {
         "Link Color": { value: "#646E1A", hide },
         "Link Text Decoration": { value: "underline", hide },
         Button: { value: "{Program Name}" },
+        "Segment Id": {
+          value: "1426",
+        },
       },
     },
 
@@ -473,15 +485,20 @@ export const WIN: Settings<ValuePart<any>> = {
 
     "Topic:Pillar 1": {
       settings: {
-        Template: { value: "/homework-pillar-x-lab-1-new-branding.html", part: 2 },
+        Template: {
+          value: "/homework-pillar-x-lab-1-new-branding.html",
+          part: 2,
+        },
       },
     },
     "Topic:Pillar 2": {
       settings: {
-        Template: { value: "/homework-pillar-x-lab-2-new-branding.html", part: 2 },
+        Template: {
+          value: "/homework-pillar-x-lab-2-new-branding.html",
+          part: 2,
+        },
       },
     },
-
 
     "Cohort:April 2025": {
       settings: {

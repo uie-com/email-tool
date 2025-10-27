@@ -184,7 +184,33 @@ export const AI: Settings<ValuePart<any>> = {
     },
 
     ...VESSEL,
+    "Email Type:VESSEL": {
+      settings: {
+        "Segment ID": {
+          value: "1455",
+        },
+      },
+      "Send To:Maven": {
+        "Segment ID": {
+          value: "1645",
+        },
+      },
+    },
+
     ...CONTENT,
+    "Email Type:CONTENT": {
+      settings: {
+        "Segment ID": {
+          value: "1668",
+        },
+      },
+      "Send To:Maven": {
+        "Segment ID": {
+          value: "1669",
+        },
+      },
+    },
+
     ...MESSAGE,
 
     // ** SETTINGS **
