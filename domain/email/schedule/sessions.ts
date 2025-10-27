@@ -18,6 +18,7 @@ export type AirtableSessionRecord = {
         "Event Link"?: string;
         "Collab Notes Link"?: string;
         "Collab PDF Link"?: string;
+        "Collab Notes ID"?: string;
 
         "First Homework"?: string;
         "Second Homework"?: string;
@@ -40,6 +41,7 @@ export type Session = {
     "Event Link"?: string;
     "Collab Notes Link"?: string;
     "Collab PDF Link"?: string;
+    "Collab Notes ID"?: string;
 
     // For TUXS
     "Topic Type"?: string;
@@ -142,6 +144,7 @@ export async function getSessionSchedule(refresh: boolean = false, abbreviated: 
                         "Event Link": record.fields["Event Link"],
                         "Collab Notes Link": record.fields["Collab Notes Link"],
                         "Collab PDF Link": record.fields["Collab PDF Link"],
+                        "Collab Notes ID": record.fields["Collab Notes ID"],
 
                         "First Homework": record.fields["First Homework"],
                         "Second Homework": record.fields["Second Homework"],
@@ -166,6 +169,7 @@ export async function getSessionSchedule(refresh: boolean = false, abbreviated: 
                     "Event Link": record.fields["Event Link"],
                     "Collab Notes Link": record.fields["Collab Notes Link"],
                     "Collab PDF Link": record.fields["Collab PDF Link"],
+                    "Collab Notes ID": record.fields["Collab Notes ID"],
 
                     "First Homework": record.fields["First Homework"],
                     "Second Homework": record.fields["Second Homework"],

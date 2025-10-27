@@ -65,10 +65,6 @@ export const SETTINGS: Settings<ValuePart<any>> = {
         'QA Email ID': { value: '{Send Date (YYYY-MM-DD h:mmA)(-:00)(ASAP)} {QA Email Name (Shorthand)}', hide },
 
 
-        // *** DRIVE ***
-        'Collab Notes Name': { value: '{Send Date (YYYY-MM-DD)} {Email Name}', hide },
-
-
         // *** INTERNAL ***
         // EMAIL IDENTIFIERS
         'Email Name': { value: '{Program} ', part: 0, hide },

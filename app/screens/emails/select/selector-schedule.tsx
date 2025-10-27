@@ -638,7 +638,7 @@ function EmailEntry({ email, hideFinished }: { email: Email, hideFinished?: bool
             return;
         }
 
-        const notesName = values.resolveValue('Collab Notes Name', true) ?? new Variables('{Send Date (YYYY-MM-DD)} {Email Name}').resolveWith(values);
+        const notesName = values.resolveValue('Collab Notes ID', true) ?? '';
         let pdfUrl = values.resolveValue('Collab PDF Link', true) ?? '';
         let ids = [values.resolveValue('id', true)];
         let originalIds = [values.resolveValue('Original ID', true)];
