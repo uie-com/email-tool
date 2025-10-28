@@ -218,5 +218,10 @@ export const RESEARCH: Settings<ValuePart<any>> = {
         "Automation ID": { value: "282", hide },
       },
     },
+    "Cohort:Cohort 5": {
+      settings: {
+        "Automation ID": { value: "", hide },
+      },
+    },
   },
 };

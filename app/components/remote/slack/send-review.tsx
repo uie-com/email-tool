@@ -1,10 +1,10 @@
-import { MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL } from "@/config/integration-settings";
+import { FINAL_REVIEWERS, FINAL_REVIEWER_IDS, MARKETING_REVIEWERS, MARKETING_REVIEWER_IDS, PRIORITY_FLAGS, PRIORITY_ICONS, SLACK_LIST_URL, USERS } from "@/config/integration-settings";
 import { REVIEW_ACTIVE_REFRESH_INTERVAL } from "@/config/save-settings";
 import { EditorContext } from "@/domain/context";
 import { SavedEmailsContext, isPreApprovedTemplate, loadState, markReviewedEmails } from "@/domain/email/save/saveData";
 import { getScreenshotOfPostmarkScheduledEmail } from "@/domain/integrations/airtable/postmarkScheduleActions";
 import { updateNotionCard } from "@/domain/integrations/notion/notionActions";
-import { calculatePriority, getLastReviewer, getNextReviewer, logReviewer } from "@/domain/integrations/slack/reviews";
+import { calculatePriority, getLastReviewer, getNextFinalReviewer, getNextReviewer, getSelf, logFinalReviewer, logReviewer, logSelf } from "@/domain/integrations/slack/reviews";
 import { createEmailInSlack as createTicketInSlack, deleteEmailInSlack, postPostmarkScheduledEmailInSlack } from "@/domain/integrations/slack/slackActions";
 import { Values } from "@/domain/values/valueCollection";
 import { Anchor, Box, Button, Flex, Image, Loader, Select, Text, ThemeIcon } from "@mantine/core";
@@ -21,6 +21,8 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
     const [reviewer, setReviewer] = useState<number>(getNextReviewer());
+    const [finalReviewer, setFinalReviewer] = useState<number>(getNextFinalReviewer(reviewer));
+    const [user, setUser] = useState<number>(getSelf());
     const defaultPriority = useMemo(() => calculatePriority(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
     const [priority, setPriority] = useState<number>(defaultPriority);
 
@@ -43,6 +45,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
 
         const priorityFlag = priority ? PRIORITY_FLAGS[priority] : PRIORITY_FLAGS[defaultPriority];
         const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
+        const finalUserId = finalReviewer ? FINAL_REVIEWER_IDS[finalReviewer] : FINAL_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
         const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
         const uuid = editorState.email?.uuid ?? '';
@@ -74,6 +77,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
             subject,
             slackEmailId,
             userId,
+            finalUserId,
             priorityFlag,
             uuid,
             usingPostmarkScheduler,
@@ -83,6 +87,8 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
         console.log("Created ticket in slack", res);
         editorState.email?.values?.setValue('Sent QA Email ID', slackEmailId);
         logReviewer(reviewer);
+        logFinalReviewer(finalReviewer);
+        logSelf(user);
 
         const notionId = editorState.email?.notionId;
         const referenceDocURL = editorState.email?.referenceDocURL ?? '';
@@ -228,26 +234,48 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                         <Flex gap={20} direction="column" align="start" justify="start" w={320}>
                             {
                                 !hasPosted ?
-                                    <Flex gap={10} direction="row" align="start" justify="space-between">
-                                        <Box className=" relative w-full mt-2">
-                                            <Select
-                                                description='Reviewer'
-                                                value={MARKETING_REVIEWERS[reviewer]}
-                                                data={MARKETING_REVIEWERS}
-                                                onChange={(v) => setReviewer(MARKETING_REVIEWERS.indexOf(v ?? ''))}
-                                                disabled={isPostPending || hasPosted}
-                                            />
-                                        </Box>
-                                        <Box className=" relative w-24 mt-2">
-                                            <Select
-                                                description='Priority'
-                                                value={PRIORITY_ICONS[priority]}
-                                                defaultValue={PRIORITY_ICONS[defaultPriority]}
-                                                data={PRIORITY_ICONS}
-                                                onChange={(v) => setPriority(PRIORITY_ICONS.indexOf(v ?? ''))}
-                                                disabled={isPostPending || hasPosted}
-                                            />
-                                        </Box>
+                                    <Flex gap={10} direction="column" align="stretch" justify="start">
+                                        <Flex gap={10} direction="row" align="start" justify="space-between">
+                                            <Box className=" relative w-full mt-2">
+                                                <Select
+                                                    description='Sender'
+                                                    value={USERS[user]}
+                                                    data={USERS}
+                                                    onChange={(v) => setUser(USERS.indexOf(v ?? ''))}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                            <Box className=" relative w-24 mt-2">
+                                                <Select
+                                                    description='Priority'
+                                                    value={PRIORITY_ICONS[priority]}
+                                                    defaultValue={PRIORITY_ICONS[defaultPriority]}
+                                                    data={PRIORITY_ICONS}
+                                                    onChange={(v) => setPriority(PRIORITY_ICONS.indexOf(v ?? ''))}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                        </Flex>
+                                        <Flex gap={10} direction="row" align="start" justify="space-between">
+                                            <Box className=" relative w-full mt-2">
+                                                <Select
+                                                    description='Reviewer'
+                                                    value={MARKETING_REVIEWERS[finalReviewer]}
+                                                    data={MARKETING_REVIEWERS}
+                                                    onChange={(v) => setReviewer(MARKETING_REVIEWERS.indexOf(v ?? ''))}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                            <Box className=" relative w-full mt-2">
+                                                <Select
+                                                    description='Final Reviewer'
+                                                    value={FINAL_REVIEWERS[reviewer]}
+                                                    data={FINAL_REVIEWERS}
+                                                    onChange={(v) => setFinalReviewer(FINAL_REVIEWERS.indexOf(v ?? ''))}
+                                                    disabled={isPostPending || hasPosted}
+                                                />
+                                            </Box>
+                                        </Flex>
                                     </Flex>
                                     :
                                     editorState.email?.usesPostmarkTool ?
