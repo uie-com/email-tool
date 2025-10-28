@@ -234,5 +234,10 @@ export const METRICS: Settings<ValuePart<any>> = {
         "Automation ID": { value: "339", hide },
       },
     },
+    "Cohort:Cohort 12": {
+      settings: {
+        "Automation ID": { value: "375", hide },
+      },
+    },
   },
 };
