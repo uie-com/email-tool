@@ -20,11 +20,19 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
     const [editorState, setEditorState] = useContext(EditorContext);
     const [emailStates, loadEmail, deleteEmail, editEmail] = useContext(SavedEmailsContext);
 
-    const [reviewer, setReviewer] = useState<number>(getNextReviewer());
-    const [finalReviewer, setFinalReviewer] = useState<number>(getNextFinalReviewer(reviewer));
+    const [reviewer, setReviewer] = useState<number | null>(null);
+    if (reviewer === null)
+        setReviewer(getNextReviewer());
+
+    const [finalReviewer, setFinalReviewer] = useState<number | null>();
+    if (finalReviewer === null && reviewer !== null)
+        setFinalReviewer(getNextFinalReviewer(reviewer))
+
     const [user, setUser] = useState<number>(getSelf());
-    const defaultPriority = useMemo(() => calculatePriority(editorState.email), [editorState.email?.values?.resolveValue('Send Date', true)]);
-    const [priority, setPriority] = useState<number>(defaultPriority);
+
+    const [priority, setPriority] = useState<number | null>(null);
+    if (priority === null && editorState.email?.values)
+        setPriority(calculatePriority(editorState.email));
 
     const [isPostPending, setIsPostPending] = useState(false);
     const [hasPosted, setHasPosted] = useState(editorState.email?.hasPostedReview ?? false);
@@ -43,9 +51,9 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
         if (isPostPending) return;
         setIsPostPending(true);
 
-        const priorityFlag = priority ? PRIORITY_FLAGS[priority] : PRIORITY_FLAGS[defaultPriority];
-        const userId = reviewer ? MARKETING_REVIEWER_IDS[reviewer] : MARKETING_REVIEWER_IDS[0];
-        const finalUserId = finalReviewer ? FINAL_REVIEWER_IDS[finalReviewer] : FINAL_REVIEWER_IDS[0];
+        const priorityFlag = PRIORITY_FLAGS[priority ?? 0] ?? PRIORITY_FLAGS[0];
+        const userId = MARKETING_REVIEWER_IDS[reviewer ?? 0] ?? MARKETING_REVIEWER_IDS[0];
+        const finalUserId = FINAL_REVIEWER_IDS[finalReviewer ?? 0] ?? FINAL_REVIEWER_IDS[0];
         const notionUrl = editorState.email?.notionURL ?? '';
         const slackEmailId = editorState.email?.values?.resolveValue('QA Email ID', true) ?? '';
         const uuid = editorState.email?.uuid ?? '';
@@ -86,8 +94,8 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
 
         console.log("Created ticket in slack", res);
         editorState.email?.values?.setValue('Sent QA Email ID', slackEmailId);
-        logReviewer(reviewer);
-        logFinalReviewer(finalReviewer);
+        logReviewer(reviewer ?? 0);
+        logFinalReviewer(finalReviewer ?? 0);
         logSelf(user);
 
         const notionId = editorState.email?.notionId;
@@ -248,8 +256,8 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                                             <Box className=" relative w-24 mt-2">
                                                 <Select
                                                     description='Priority'
-                                                    value={PRIORITY_ICONS[priority]}
-                                                    defaultValue={PRIORITY_ICONS[defaultPriority]}
+                                                    value={PRIORITY_ICONS[priority ?? 0]}
+                                                    defaultValue={PRIORITY_ICONS[priority ?? 0]}
                                                     data={PRIORITY_ICONS}
                                                     onChange={(v) => setPriority(PRIORITY_ICONS.indexOf(v ?? ''))}
                                                     disabled={isPostPending || hasPosted}
@@ -260,7 +268,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                                             <Box className=" relative w-full mt-2">
                                                 <Select
                                                     description='Reviewer'
-                                                    value={MARKETING_REVIEWERS[finalReviewer]}
+                                                    value={MARKETING_REVIEWERS[reviewer ?? 0]}
                                                     data={MARKETING_REVIEWERS}
                                                     onChange={(v) => setReviewer(MARKETING_REVIEWERS.indexOf(v ?? ''))}
                                                     disabled={isPostPending || hasPosted}
@@ -269,7 +277,7 @@ export function SendReview({ parentShouldAutoStart }: { parentShouldAutoStart: b
                                             <Box className=" relative w-full mt-2">
                                                 <Select
                                                     description='Final Reviewer'
-                                                    value={FINAL_REVIEWERS[reviewer]}
+                                                    value={FINAL_REVIEWERS[finalReviewer ?? 0]}
                                                     data={FINAL_REVIEWERS}
                                                     onChange={(v) => setFinalReviewer(FINAL_REVIEWERS.indexOf(v ?? ''))}
                                                     disabled={isPostPending || hasPosted}
