@@ -15,10 +15,10 @@ export const WIN: Settings<ValuePart<any>> = {
     settings: {
       // PROGRAM
       "Program Name": {
-        value: "How to Win Stakeholders & Influence Decisions",
+        value: "UX Leadership & Influence",
         hide,
       },
-      "Program Website": { value: "https://winstakeholders.com", hide },
+      "Program Website": { value: "https://influence.centercentre.com/", hide },
 
       // AIRTABLE
       "Calendar Table ID": { value: "tblVtIK7hg8LOJfZd", hide },
@@ -43,7 +43,7 @@ export const WIN: Settings<ValuePart<any>> = {
       Pillar: { value: "{Topic}" },
 
       // STYLES
-      "Link Color": { value: "#a5473d", hide },
+      "Link Color": { value: "#6e7922", hide },
       "Accent Color": { value: "#8c9a29", hide },
       "Link Text Decoration": { value: "none" },
       Font: { value: "arial", hide },
@@ -553,6 +553,11 @@ export const WIN: Settings<ValuePart<any>> = {
     "Cohort:November 2025": {
       settings: {
         "Automation ID": { value: "373", hide },
+      },
+    },
+    "Cohort: January 2026": {
+      settings: {
+        "Automation ID": { value: "379", hide },
       },
     },
   },
