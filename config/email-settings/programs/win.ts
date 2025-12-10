@@ -60,7 +60,7 @@ export const WIN: Settings<ValuePart<any>> = {
       // BANNER
       Banner: {
         value:
-          "https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002",
+          "https://asset.uie.com/emails/img/75dfeb323db66460ccfb3d8e786d0508a1f9a7cf0a35805986272be70177b8ca.png",
       },
       "Promo Banner": {
         value:
