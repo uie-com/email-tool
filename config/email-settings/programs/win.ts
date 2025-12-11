@@ -60,7 +60,7 @@ export const WIN: Settings<ValuePart<any>> = {
       // BANNER
       Banner: {
         value:
-          "https://asset.uie.com/emails/img/75dfeb323db66460ccfb3d8e786d0508a1f9a7cf0a35805986272be70177b8ca.png",
+          "https://content.app-us1.com/O8aW3/2025/05/05/9bc6efed-4308-42b8-8e92-c9a887702c61.png?id=39152002",
       },
       "Promo Banner": {
         value:
@@ -108,7 +108,7 @@ export const WIN: Settings<ValuePart<any>> = {
       "Session Type:Live Lab 1": {
         settings: {
           Template: {
-            value: "/homework-pillar-x-lab-1-old-branding.html",
+            value: "/homework-pillar-x-lab-1-new-branding.html",
             part: 2,
           },
           "Source Reference Doc": {
@@ -124,7 +124,7 @@ export const WIN: Settings<ValuePart<any>> = {
       "Session Type:Live Lab 2": {
         settings: {
           Template: {
-            value: "/homework-pillar-x-lab-2-old-branding.html",
+            value: "/homework-pillar-x-lab-2-new-branding.html",
             part: 2,
           },
           "Source Reference Doc": {
@@ -301,7 +301,7 @@ export const WIN: Settings<ValuePart<any>> = {
         "Email Name": { value: "Onboarding", part: 2 },
         Subject: {
           value:
-            "Let’s get started! How to Win Stakeholders & Influence Decisions Program.",
+            "Let’s get started! UX Leadership & Influence Program.",
         },
         Template: { value: "/onboarding.html", part: 2 },
         "Source Reference Doc": {
@@ -340,7 +340,7 @@ export const WIN: Settings<ValuePart<any>> = {
         "Email Name": { value: "Certificate", part: 2 },
         Subject: {
           value:
-            "Your Certificate for The How to Win Stakeholders & Influence Decisions program",
+            "Your Certificate for The UX Leadership & Influence program",
         },
         Template: { value: "/win/certificate.html", part: 1 },
         "Source Reference Doc": {
@@ -359,7 +359,7 @@ export const WIN: Settings<ValuePart<any>> = {
         "Email Name": { value: "Extension Details", part: 2 },
         Subject: {
           value:
-            "Extend Your Access to Our How to Win Stakeholders and Influence Decisions Program.",
+            "Extend Your Access to Our UX Leadership & Influence Program.",
         },
         Template: { value: "/extension-details.html", part: 2 },
         "Source Reference Doc": {
