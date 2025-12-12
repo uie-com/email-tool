@@ -116,7 +116,7 @@ export const WIN: Settings<ValuePart<any>> = {
               "https://docs.google.com/document/d/1_l4-Wt3sBkOoJ1Ip1YxkwDcLxgfd1CxcLNXKhL9UZOk/edit?tab=t.0#heading=h.jv1g4dbv6278",
           },
           "Stripo Link": {
-            value: "https://my.stripo.email/editor/v5/727662/email/9490127",
+            value: "https://my.stripo.email/editor/v5/727662/email/10491228",
             hide,
           },
         },
@@ -132,7 +132,7 @@ export const WIN: Settings<ValuePart<any>> = {
               "https://docs.google.com/document/d/1_pxEVNxRJ5ULj-E1gfSjbcQJj2oWRqKcYIuQLbnjkFc/edit?tab=t.0#heading=h.jv1g4dbv6278",
           },
           "Stripo Link": {
-            value: "https://my.stripo.email/editor/v5/727662/email/9488844",
+            value: "https://my.stripo.email/editor/v5/727662/email/10491242",
             hide,
           },
         },
