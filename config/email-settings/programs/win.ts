@@ -74,7 +74,7 @@ export const WIN: Settings<ValuePart<any>> = {
     "Email Type:Homework": {
       settings: {
         "Email Name": { value: "{Topic} {Lab}", part: 2 },
-        Subject: { value: "Win Program {Topic}. {Title}" },
+        Subject: { value: "Influence Program {Topic}. {Title}" },
         "Share Reviews By": { value: "Cohort" },
         "Last Session Phrase": { value: "This past week in our", hide },
         "Last Lab Phrase": { value: "this week's lab" },
@@ -217,7 +217,7 @@ export const WIN: Settings<ValuePart<any>> = {
     "Email Type:Before Break": {
       settings: {
         "Email Name": { value: "Before Break", part: 2 },
-        Subject: { value: "Win Program: Break {Break Range}" },
+        Subject: { value: "Influence Program: Break {Break Range}" },
         "Share Reviews By": { value: "Cohort" },
         Template: { value: "/before-break.html", part: 2 },
         "Source Reference Doc": {
@@ -279,7 +279,7 @@ export const WIN: Settings<ValuePart<any>> = {
     "Email Type:First Lab Reminder": {
       settings: {
         "Email Name": { value: "First Reminder", part: 2 },
-        Subject: { value: "Win Program: Upcoming live session!" },
+        Subject: { value: "Influence Program: Upcoming live session!" },
         Template: { value: "/first-lab-reminder.html", part: 2 },
         "Source Reference Doc": {
           value:
