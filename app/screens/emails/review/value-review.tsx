@@ -16,7 +16,7 @@ import { Email } from "@/domain/schema";
 import { Values } from "@/domain/values/valueCollection";
 import { Variables } from "@/domain/variables/variableCollection";
 import { Box, Button, Flex, Image, Loader, ScrollArea, Table, TableData, Text } from "@mantine/core";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { AuthStatus } from "../publish/publish";
 
 
@@ -47,13 +47,15 @@ export function ValueReview() {
         return variables;
     }, [editorState.email?.templateHTML]);
 
-    if (!values)
-        return <></>;
+   useEffect(() => {
+        if (!hasResolvedRemote && values) {
+            values.populateRemote();
+            setHasResolvedRemote(true);
+        }
+    }, [hasResolvedRemote, values]);
 
-    if (!hasResolvedRemote) {
-        values.populateRemote();
-        setHasResolvedRemote(true);
-    }
+    if (!values)
+      return <></>;
 
     const tableData: TableData = {
         head: ['Variable', 'Value'],
