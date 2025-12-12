@@ -168,26 +168,85 @@ export const WIN: Settings<ValuePart<any>> = {
       },
     },
 
-    "Is Transition": {
-      settings: {
-        "Email Name": { value: " Transition", part: 3 },
-        "QA Email Name": {
-          value:
-            "{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition",
-          part: 0,
-          hide,
-        },
+    // "Is Transition": {
+    //   settings: {
+    //     "Email Name": { value: " Transition", part: 3 },
+    //     "QA Email Name": {
+    //       value:
+    //         "{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition",
+    //       part: 0,
+    //       hide,
+    //     },
+    //
+    //     "Session Note": {
+    //       value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`,
+    //       hide,
+    //     },
+    //
+    //     "Source Reference Doc": {
+    //       value:
+    //         "https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing",
+    //     },
+    //   },
+    // },
 
-        "Session Note": {
-          value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`,
-          hide,
-        },
-        "Source Reference Doc": {
-          value:
-            "https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?usp=sharing",
-        },
-      },
+    
+"Is Transition Pillar 5 Lab 1": {
+  settings: {
+    "Email Name": { value: " Transition", part: 3 },
+    "QA Email Name": {
+      value:
+        "{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition",
+      part: 0,
+      hide,
     },
+    "Session Note": {
+      value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`,
+      hide,
+    },
+    "Source Reference Doc": {
+      value: "https://docs.google.com/document/d/1dsF1D0TFolDBDx-fDyzZgExuL8FmM9J51XXSCGHQwnU/edit?tab=t.0#heading=h.jv1g4dbv6278",
+    },
+  },
+},
+
+"Is Transition Pillar 3 Lab 1": {
+  settings: {
+    "Email Name": { value: " Transition", part: 3 },
+    "QA Email Name": {
+      value:
+        "{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition",
+      part: 0,
+      hide,
+    },
+    "Session Note": {
+      value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`,
+      hide,
+    },
+    "Source Reference Doc": {
+      value: "https://docs.google.com/document/d/1dx6wwS_Swm4zSsOMsI_lM0xrgc0HBwWolDdjufQohpg/edit?tab=t.0#heading=h.jv1g4dbv6278",
+    },
+  },
+},
+
+"Is Transition Pillar 7 Lab 1": {
+  settings: {
+    "Email Name": { value: " Transition", part: 3 },
+    "QA Email Name": {
+      value:
+        "{Program} {All Cohorts (3 Letters)(/)} {Topic} {Lab} Transition",
+      part: 0,
+      hide,
+    },
+    "Session Note": {
+      value: `<br><br>​<em>Note: Your sessions will now start two hours later, at <strong>{First Date (h:mma z)(:00)} ({First Date (HH.mm z)(GMT)})</strong> or <strong>{Second Date (h:mma z)(:00)} ({Second Date (HH.mm z)(GMT)})</strong>. You'll be joining the {New Sibling Cohort #1} and {New Sibling Cohort #2} cohorts for {Topic}. {Lab}.<br></em>`,
+      hide,
+    },
+    "Source Reference Doc": {
+      value: "https://docs.google.com/document/d/1bONHtUfYs_GDJy-Q9ojmh-BV8Y9Wf80grZtMLzydfAw/edit?tab=t.0",
+    },
+  },
+},
 
     "Is After Break": {
       settings: {
