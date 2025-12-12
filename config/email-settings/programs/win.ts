@@ -11,7 +11,7 @@ import {
 const hide = true;
 
 export const WIN: Settings<ValuePart<any>> = {
-  "Program:Win": {
+  "Program:Influence": {
     settings: {
       // PROGRAM
       "Program Name": {
