@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  font-family: var(--font-sans);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -43,7 +47,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-.ql-editor>* {
+.ql-editor > * {
   padding-top: 0.1rem !important;
   font-size: 13px !important;
   /* padding-bottom: 0.25rem !important; */
