@@ -109,8 +109,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             ] `, part: 0
         },
         // * FOOTER *
-        'Marketing Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Unsubscribe}{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2025, Center Centre, Inc. <br/> {Footer Sender Info} Email sent to: %EMAIL% <br/><br/> {Footer Forward}{Footer Tag} </p> </div> `, hide },
-        'Transactional Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2025, Center Centre, Inc. <br/><br/> Email sent to: %EMAIL% <br/><br/> {Footer Tag} </p> </div> `, hide },
+        'Marketing Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Unsubscribe}{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2026, Center Centre, Inc. <br/> {Footer Sender Info} Email sent to: %EMAIL% <br/><br/> {Footer Forward}{Footer Tag} </p> </div> `, hide },
+        'Transactional Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2026, Center Centre, Inc. <br/><br/> Email sent to: %EMAIL% <br/><br/> {Footer Tag} </p> </div> `, hide },
         // FOOTER SETTINGS
         'Footer Color': { value: '#999999', hide },
         // FOOTER COMPONENTS
