@@ -200,7 +200,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/05/02/43e4647c-9c6d-44ed-974a-9afaa9cf867c.png?id=39120942",
+              "https://content.app-us1.com/O8aW3/2026/06/30/6ad2613b-c09e-4547-b3ce-f4c9b9cbbc3e.png",
           },
         },
       },
@@ -208,7 +208,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/05/02/0c8125fe-ab98-4700-a44c-93d259f42026.png?id=39120940",
+              "https://content.app-us1.com/O8aW3/2026/03/31/258133c8-9f49-4a0e-92dc-6e7ad12bb613.png",
           },
         },
       },
@@ -216,7 +216,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/05/02/66bdae7d-f06e-4efe-8166-9a75ca75870a.png?id=39120943",
+              "https://content.app-us1.com/O8aW3/2026/04/14/d9dfce03-052e-4891-b6f8-411d5ff89000.png",
           },
         },
       },
@@ -224,7 +224,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/05/02/1936e392-5619-4048-b663-1e3a691df378.png?id=39120939",
+              "https://content.app-us1.com/O8aW3/2026/03/24/4b736873-129f-42ea-8611-30124fd3dd4a.png",
           },
         },
       },
@@ -232,7 +232,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/05/02/46e37013-49b9-4334-a5c7-67965201938d.png?id=39120941",
+              "https://content.app-us1.com/O8aW3/2026/04/07/4455f176-9d19-4ba5-9b60-c014fa4b08ab.png",
           },
         },
       },
@@ -240,7 +240,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         settings: {
           Banner: {
             value:
-              "https://content.app-us1.com/O8aW3/2025/07/02/51156b8b-bb19-4889-a941-87d93b2be818.png?id=40219554",
+              "https://content.app-us1.com/O8aW3/2026/06/10/c03c62a3-3c43-4651-935c-9973c0f66fd9.png",
           },
         },
       },
