@@ -28,10 +28,10 @@ export const TUXS: Settings<ValuePart<any>> = {
         value: "{Airtable Session Query}&fields[]=Description",
         fetch: "airtable",
       },
-      "Session Type": {
-        value: "{Airtable Session Query}&fields[]=Topic Type",
-        fetch: "airtable",
-      },
+      // "Session Type": {
+      //   value: "{Airtable Session Query}&fields[]=Topic Type",
+      //   fetch: "airtable",
+      // },
 
       "Airtable Session Query": {
         value:
@@ -49,24 +49,31 @@ export const TUXS: Settings<ValuePart<any>> = {
         value: " ul [ margin-bottom: 1.5rem !important; ] ",
         part: 1,
       },
+      'Link Color Important': { value: '', hide },
 
       // FOOTER
       "Footer Email Reason": {
-        value: `You're receiving this email because you're a member of Leaders of Awesomeness.`,
+        value: `<span style="color: #999999 !important;">You're receiving this email because you're a member of Leaders of Awesomeness.</span>`,
       },
       "Footer Contact": {
-        value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.`,
+        value: `<span style="color: #999999 !important;">If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.</span>`,
       },
       "Footer Tag": { value: `LOA` },
     },
 
     // ** TUXS EMAILS **
 
-    "Session Type:Job Search Topic": {
+    "Session Type:Job Search": {
       settings: {
         "Segment ID": {
           value: "1659",
-        },
+          },
+          "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job&nbsp;Market",
+          },
+          "Topic Course Link": {
+            value: "https://www.centercentre.com/ux-job-search",
+          },
       },
     },
     "Session Type:Metrics Topic": {
@@ -74,6 +81,9 @@ export const TUXS: Settings<ValuePart<any>> = {
         "Segment ID": {
           value: "1529",
         },
+        "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+          },
       },
     },
     "Session Type:Research Topic": {
@@ -81,6 +91,9 @@ export const TUXS: Settings<ValuePart<any>> = {
         "Segment ID": {
           value: "1478",
         },
+        "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+          },
       },
     },
     "Session Type:Win Topic": {
@@ -88,6 +101,9 @@ export const TUXS: Settings<ValuePart<any>> = {
         "Segment ID": {
           value: "1544",
         },
+        "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+          },
       },
     },
     "Session Type:Vision Topic": {
@@ -95,6 +111,9 @@ export const TUXS: Settings<ValuePart<any>> = {
         "Segment ID": {
           value: "1481",
         },
+        "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+          },
       },
     },
     "Session Type:AI Topic": {
@@ -102,6 +121,9 @@ export const TUXS: Settings<ValuePart<any>> = {
         "Segment ID": {
           value: "1508",
         },
+        "Topic Type Course": {
+            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+          },
       },
     },
 
@@ -125,7 +147,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         },
       },
       // Banner Settings
-      "Session Type:Job Search Topic": {
+      "Session Type:Job Search": {
         settings: {
           Banner: {
             value:
@@ -196,7 +218,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         },
       },
       // Banner Settings
-      "Session Type:Job Search Topic": {
+      "Session Type:Job Search": {
         settings: {
           Banner: {
             value:
@@ -266,7 +288,7 @@ export const TUXS: Settings<ValuePart<any>> = {
         },
       },
       // Banner Settings
-      "Session Type:Job Search Topic": {
+      "Session Type:Job Search": {
         settings: {
           Banner: {
             value:
@@ -468,7 +490,7 @@ export const TUXS: Settings<ValuePart<any>> = {
     // ** TUXS SETTINGS **
 
     // Topic settings
-    "Session Type: Job Search Topic": {
+    "Session Type: Job Search": {
       settings: {
         "Primary Color": { value: "#00a1b3" },
         "Accent Color": { value: "#eb621d" },

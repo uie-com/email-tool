@@ -73,25 +73,30 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
 
         // *** DESIGN ***
-        'Link Color': { value: '' },
-        'Link Text Decoration': { value: '', hide },
+        'Link Color': { value: 'inherit' },
+        'Link Text Decoration': { value: 'inherit', hide },
         'Font': { value: '\'Open Sans\'', part: 0, hide },
+        'Link Color Important': { value: '!important', hide },
         // OVERRIDES
         'Global Styles': {
             value: `
             a [ 
-                color: {Link Color} !important; 
-                text-decoration: {Link Text Decoration} !important; 
+                color: {Link Color} { Link Color Important }; 
+                text-decoration: {Link Text Decoration} { Link Color Important }; 
             ]
             ul [ 
                 margin-bottom: 1.75rem !important; 
             ] 
             .footer-text [ 
-                color:{Footer Color} !important;
+                color: #999999 !important;
                 font-size:14px !important;
                 font-family:{Font}, sans-serif !important;
                 line-height:1.5 !important; 
             ] 
+                .footer-text a [
+                color: #999999 !important;
+                text-decoration:underline !important;
+                ]
             @media only screen and (max-width:600px) [ 
                 div.footer p.footer-text,a.footer-text [ 
                     font-size:12px !important; 
@@ -109,18 +114,18 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             ] `, part: 0
         },
         // * FOOTER *
-        'Marketing Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Unsubscribe}{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2026, Center Centre, Inc. <br/> {Footer Sender Info} Email sent to: %EMAIL% <br/><br/> {Footer Forward}{Footer Tag} </p> </div> `, hide },
-        'Transactional Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style=""> © Copyright 2026, Center Centre, Inc. <br/><br/> Email sent to: %EMAIL% <br/><br/> {Footer Tag} </p> </div> `, hide },
+        'Marketing Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Unsubscribe}{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style="color: #999999 !important;"> <span style="color: #999999 !important;"> © Copyright 2026, Center Centre, Inc. </span> <br/> {Footer Sender Info} Email sent to: <span style="color: #999999 !important;">%EMAIL%</span> <br/><br/> <span style="color: #999999 !important;">{Footer Forward}{Footer Tag} </span> </p> </div> `, hide },
+        'Transactional Footer': { value: ` <div class="footer"> <hr style="opacity:0.2;margin:6px 0px 20px 0px;" /> <p class="footer-text"> {Footer Email Reason} <br/><br/> <em>{Footer Contact}</em> </p> <hr style="opacity:0.2;margin:20px 0px;" /> <p class="footer-text" style="color: #999999 !important;"> <span style="color: #999999 !important;"> © Copyright 2026, Center Centre, Inc. </span> <br/><br/> Email sent to: <span style="color: #999999 !important;">%EMAIL%</span> <br/><br/> <span style="color: #999999 !important;">{Footer Tag} </span> </p> </div> `, hide },
         // FOOTER SETTINGS
         'Footer Color': { value: '#999999', hide },
         // FOOTER COMPONENTS
-        'Footer Email Reason': { value: `You're receiving this email because you're a member {Cohort (pre:of)} of the {Program Name} Online Course.`, hide },
-        'Footer Unsubscribe': { value: `Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Unsubscribe</a> from ALL {Footer Organization Name} Emails.<br/><br/>`, hide },
-        'Footer Organization Name': { value: 'Center Centre', hide },
-        'Footer Forward': { value: `<a href="%FORWARD2FRIEND%" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">Forward email to a friend</a> <br/><br/>`, hide },
-        'Footer Contact': { value: `If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.`, hide },
-        'Footer Sender Info': { value: `%SENDER-INFO-SINGLELINE%<br/><br/>`, hide },
-        'Footer Tag': { value: `{Program (Caps)} {Cohort (Caps)}`, hide },
+        'Footer Email Reason': { value: `<span style="color: #999999 !important"> You're receiving this email because you're a member {Cohort (pre:of)} of the {Program Name} Online Course. </span>`, hide },
+        'Footer Unsubscribe': { value: `<span style="color: #999999 !important;">Not interested in this email or topic? <a href="%FORMS_PREF_CENTER*ID:8%" style="color: #999999 !important; text-decoration:underline !important" class="footer-text"> Manage your Center Centre email preferences</a> OR <a href="%UNSUBSCRIBELINK%" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">Unsubscribe</a> from ALL {Footer Organization Name} Emails.<br/><br/></span>`, hide },
+        'Footer Organization Name': { value: '<span style="color: #999999 !important;"> Center Centre </span>', hide },
+        'Footer Forward': { value: `<a href="%FORWARD2FRIEND%" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">Forward email to a friend</a> <br/><br/>`, hide },
+        'Footer Contact': { value: `<span style="color: #999999 !important;">If you have questions about the course, contact us at <a href="mailto:hello@centercentre.com" class="footer-text" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.</span>`, hide },
+        'Footer Sender Info': { value: `<span style="color: #999999 !important;">%SENDER-INFO-SINGLELINE%<br/><br/></span>`, hide },
+        'Footer Tag': { value: `<span style="color: #999999 !important;">{Program (Caps)} {Cohort (Caps)}</span>`, hide },
     },
 
     ...METRICS,
@@ -156,8 +161,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Greeting': { value: 'Hello %FIRSTNAME%,' },
 
-            'Footer Email Reason': { value: `You're receiving this email because you're a member of Leaders of Awesomeness.` },
-            'Footer Contact': { value: `If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
+            'Footer Email Reason': { value: `<span style="color: #999999 !important;">You're receiving this email because you're a member of Leaders of Awesomeness.</span>` },
+            'Footer Contact': { value: `<span style="color: #999999 !important;">If you have questions about the community, contact us at <a href="mailto:hello@centercentre.com" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.</span>` },
             'Footer Tag': { value: `LOA` },
             'Footer Organization Name': { value: 'Leaders of Awesomeness', hide },
         }
@@ -170,8 +175,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
             'Greeting': { value: 'Hello,' },
 
 
-            'Footer Email Reason': { value: `You're receiving this email because you've subscribed to Center Centre emails.` },
-            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
+            'Footer Email Reason': { value: ` <span style="color: #999999 !important;">You're receiving this email because you've subscribed to Center Centre emails.</span>` },
+            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `BL` },
         }
     },
@@ -182,8 +187,8 @@ export const SETTINGS: Settings<ValuePart<any>> = {
 
             'Greeting': { value: 'Hello,' },
 
-            'Footer Email Reason': { value: `You're receiving this email because you signed up for a Center Centre course or talk on Maven.` },
-            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color:{Footer Color} !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
+            'Footer Email Reason': { value: ` <span style="color: #999999 !important;">You're receiving this email because you signed up for a Center Centre course or talk on Maven.</span>` },
+            'Footer Contact': { value: `If you have any questions, contact us at <a href="mailto:hello@centercentre.com" style="color: #999999 !important;text-decoration:underline !important" class="footer-text">hello@centercentre.com</a>.` },
             'Footer Tag': { value: `UXAI` },
         }
     },
