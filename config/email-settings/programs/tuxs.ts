@@ -72,7 +72,7 @@ export const TUXS: Settings<ValuePart<any>> = {
             value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job&nbsp;Market",
           },
           "Topic Course Link": {
-            value: "https://www.centercentre.com/ux-job-search",
+            value: "https://maven.com/centercentre/ux-jobs",
           },
       },
     },
@@ -82,7 +82,10 @@ export const TUXS: Settings<ValuePart<any>> = {
           value: "1529",
         },
         "Topic Type Course": {
-            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+            value: "Outcome-Driven UX Metrics",
+          },
+          "Topic Course Link": {
+            value: "https://metrics.centercentre.com/",
           },
       },
     },
@@ -92,7 +95,10 @@ export const TUXS: Settings<ValuePart<any>> = {
           value: "1478",
         },
         "Topic Type Course": {
-            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+            value: "Advanced Strategic UX Research",
+          },
+          "Topic Course Link": {
+            value: "https://ux-research.centercentre.com/",
           },
       },
     },
@@ -102,7 +108,10 @@ export const TUXS: Settings<ValuePart<any>> = {
           value: "1544",
         },
         "Topic Type Course": {
-            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+            value: "UX Leadership and Influence",
+          },
+          "Topic Course Link": {
+            value: "https://influence.centercentre.com/",
           },
       },
     },
@@ -112,7 +121,10 @@ export const TUXS: Settings<ValuePart<any>> = {
           value: "1481",
         },
         "Topic Type Course": {
-            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+            value: "Craft + Lead A Strategic UX Vision",
+          },
+          "Topic Course Link": {
+            value: "https://visions.centercentre.com/",
           },
       },
     },
@@ -122,7 +134,10 @@ export const TUXS: Settings<ValuePart<any>> = {
           value: "1508",
         },
         "Topic Type Course": {
-            value: "UX Job Search: Stand Out in Today's Crazy, Crowded Job Market",
+            value: "UX & Design for Today's AI Functionality",
+          },
+          "Topic Course Link": {
+            value: "https://maven.com/centercentre/uxai",
           },
       },
     },
